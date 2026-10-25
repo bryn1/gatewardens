@@ -48,7 +48,8 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | BUILD W2 data files + schema tests | DONE — commit 795f61f, 67 pytest green, 3 planted-red proofs (MC 11274.1.8) |
 | BUILD W3a sim core A | DONE — commit f276f2b, 86 pytest green, parse-probe leg live (MC 11274.1.9) |
 | BUILD W3b sim core B | DONE — commit de3b044, 116 pytest green (MC 11274.1.10) |
-| BUILD W4 core objects (game_state/save_store/bridge/GWCompose + persistence tests + parse-leg stderr fix) | spawning |
+| BUILD W4 core objects | DONE — commit 5a4a0e8, 122 pytest green, fresh-process save round-trip incl materials, parse leg stderr-strict (MC 11274.1.11) |
+| BUILD W5 composition root + router + JS push + bridge contract | spawning |
 
 ## Gate rounds log
 
@@ -78,6 +79,10 @@ BN1 check_hygiene must strip comments/strings before the bare-rand scan; BN2 nam
 ## Contradicted finding (child-caught W3b, fix routed to W4)
 
 Parse-probe false-greens on parse failure (non-null broken resource; stderr = true signal) and class_name refs don't resolve clean-checkout under --headless --import. Ruling: new cross-file binds use preload(); parse leg asserts EMPTY stderr; docs/ARCHITECTURE.md I9/conftest row gains the rule in W4's commit. Wave 5+ MUST bind by preload until editor-scan caching is proven here.
+
+## Engine facts (VERIFIED, bind all later waves)
+
+E1 a signal connection does NOT keep a RefCounted method-listener alive — anchor listeners (held callable/WeakRef); inline connect(obj.new(...).method) dead-ports emits. E2 JSON.parse_string float-normalizes all numbers — byte-equality enforced at the save-FILE leg; state re-encode compares _json blobs semantically. E3 quit() under -s does not abort the running frame — probes early-return explicitly.
 
 ## Open questions
 
