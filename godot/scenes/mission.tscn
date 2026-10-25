@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/mission.gd" id="1_mission"]
+[ext_resource type="Script" path="res://scripts/phase_controller.gd" id="2_phase"]
+[ext_resource type="Script" path="res://scripts/enemy_runner.gd" id="3_runner"]
+[ext_resource type="Mesh" path="res://assets/mesh_plane.tres" id="4_ground"]
+[ext_resource type="Material" path="res://assets/mat_ground.tres" id="5_matg"]
+
+[node name="Mission" type="Node3D"]
+script = ExtResource("1_mission")
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = ExtResource("4_ground")
+material_override = ExtResource("5_matg")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 20, 30, 10)
+shadow_enabled = true
+
+[node name="CameraRig" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, 0, 12, 14)
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig"]
+
+[node name="PhaseController" type="Node" parent="."]
+script = ExtResource("2_phase")
+
+[node name="EnemyRunner" type="Node3D" parent="."]
+script = ExtResource("3_runner")
