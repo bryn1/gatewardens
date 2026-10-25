@@ -44,7 +44,8 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | P0 T6 architecture revision c3 | DONE — 13/13 rulings applied 2026-10-25 |
 | P0 T7 DA gate round 3 (FINAL) | DONE — **SHIP** (3rd fresh reviewer, empirical re-probes) |
 | PIN | DESIGN PINNED: docs/ARCHITECTURE.md (c3 + pin header) committed 2026-10-25 |
-| BUILD | W1 scaffold: spawning — waves run SEQUENTIAL (shared checkout), deps per c3 module breakdown |
+| BUILD W1 scaffold | DONE — commit 7b0fea7, pytest 8 green incl planted-red, real export sanity 6321 B live page (MC 11274.1.7) |
+| BUILD W2 data files + schema tests | spawning |
 
 ## Gate rounds log
 
