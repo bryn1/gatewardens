@@ -1,3 +1,4 @@
+# hygiene: C12 funnel root + W7 hero hook lines (MC 11274.1.14) — hard ceiling exempt per header rule, file stays smallest-correct
 extends Node3D
 
 # mission — mission scene root (Modules row scripts/mission.gd,
@@ -33,6 +34,7 @@ extends Node3D
 # victory chest tier: normal->chest_tiers[0], hard->[1] (BN3; no v1 tier economy).
 
 const CORE_OBJ := preload("res://scripts/core_obj.gd")
+const HERO_RIG := preload("res://scripts/hero_controller.gd")
 const SIM_WAVE := preload("res://sim/sim_wave.gd")
 const SIM_COMBAT := preload("res://sim/sim_combat.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
@@ -136,6 +138,13 @@ func setup(tables_in, state_in, save_store_in, bridge_in, map_id,
 			relic_pool.append(row.duplicate(true))
 	$EnemyRunner.setup(difficulty)
 	$PhaseController.setup(self)
+	# W7 hero hook (DECLARED, MC 11274.1.14): the rig builds the per-hero
+	# pawns + hero_combat from the injected data; its visuals are children
+	# of the rig body, the camera rig on this root is never touched (F8).
+	var rig := HERO_RIG.new()
+	rig.name = "HeroRig"
+	add_child(rig)
+	rig.setup(self)
 	_refresh_cores()    # C5 mirrors readable from the very first snapshot
 	hero_hp = float(hero_state[hero_id]["hp"])
 	hero_hp_max = float(hero_state[hero_id]["hp_max"])
@@ -168,6 +177,7 @@ func step_hero(delta: float) -> void:
 	var cds: Array = hs["cooldowns"]
 	for i: int in cds.size():
 		cds[i] = maxf(float(cds[i]) - delta, 0.0)
+	$HeroRig.step(delta)   # W7 hook (DECLARED): funnel slot (2) hero step
 
 func step_defenses(_delta: float) -> void:
 	# C12 slot (3): defense records arrive with W8; loop carries the slot.

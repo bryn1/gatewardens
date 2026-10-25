@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/hero_pawn.gd" id="1_pawn"]
+[ext_resource type="Mesh" path="res://assets/mesh_capsule.tres" id="2_mesh"]
+
+[node name="HeroPawn" type="Node3D"]
+script = ExtResource("1_pawn")
+
+[node name="Visual" type="MeshInstance3D" parent="."]
+mesh = ExtResource("2_mesh")
