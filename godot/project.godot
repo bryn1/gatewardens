@@ -1,0 +1,23 @@
+; Engine configuration file.
+; Gatewardens — Godot 4.7.2 client (Web export, threads OFF).
+; NO autoload section, ever: R3/C1 in docs/ARCHITECTURE.md — composition
+; root + constructor injection only; the hygiene gate greps this file red
+; on any autoload section header.
+
+config_version=5
+
+[application]
+
+config/name="Gatewardens"
+run/main_scene="res://Main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
