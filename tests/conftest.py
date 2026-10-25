@@ -39,6 +39,20 @@ def ensure_class_cache():
     _class_cache_ready = True
 
 
+def run_probe_script(res_path, args=(), data_home=None, timeout=300):
+    """One `-s` probe invocation: godot --headless --path godot/ -s
+    <res_path> -- <args>. With data_home the desktop user:// redirect
+    (XDG_DATA_HOME temp dir, the save_probe/BN4 idiom) is applied, so a
+    probe never touches the developer's real save."""
+    env = dict(os.environ)
+    if data_home is not None:
+        env["XDG_DATA_HOME"] = str(data_home)
+    return subprocess.run(
+        [GODOT, "--headless", "--path", repo_path("godot"),
+         "-s", res_path, "--"] + list(args),
+        capture_output=True, text=True, timeout=timeout, env=env)
+
+
 @pytest.fixture(scope="session")
 def class_cache():
     ensure_class_cache()
