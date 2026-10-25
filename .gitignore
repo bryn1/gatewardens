@@ -1,2 +1,3 @@
 /.tmp/
 godot/.godot/
+__pycache__/
