@@ -10,6 +10,10 @@
 #   SIMPARSE-DONE <count>  last row on full success, rc 0
 # Runner: godot --headless --path godot/ -s res://sim/sim_parse_probe.gd
 # after the F14 class-cache import (tests/test_purity.py drives it).
+# W4 ruling on the W3b finding: a NON-NULL Resource is not proof of a
+# clean parse (a broken resource can load non-null) — the true parse
+# signal is the run's EMPTY stderr, asserted by the pytest leg; the
+# OK/DONE rows below stay exactly as they are.
 extends SceneTree
 
 const HARNESS := "sim_parse_probe.gd"

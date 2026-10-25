@@ -15,7 +15,10 @@
     `godot --headless --path godot/ -s res://sim/sim_parse_probe.gd` and
     judge the machine rows: one SIMPARSE-OK per sim MODULE (every
     sim_*.gd except the harness itself), a final SIMPARSE-DONE carrying
-    that same count, zero SIMPARSE-FAIL, rc 0.
+    that same count, zero SIMPARSE-FAIL, rc 0. SINCE W4 (MC 11302) the
+    verdict additionally requires the -s run's stderr to be EMPTY — the
+    W3b finding: a broken script can load as a non-null resource, so
+    stderr is the true parse signal, not the OK/DONE rows.
 """
 
 import os
@@ -82,6 +85,12 @@ def test_parse_leg_all_modules_parse():
          "-s", "res://sim/" + HARNESS],
         capture_output=True, text=True, timeout=300)
     out = proc.stdout
+    # W4 (W3b ruling): stderr is the TRUE parse signal — a broken script
+    # can load as a non-null resource and keep this probe's stdout green,
+    # so the -s run must have EMPTY stderr. (Checked before rc: this
+    # assertion, not the rc, is what caught the planted-red proof.)
+    assert proc.stderr == "", \
+        "parse leg stderr must be EMPTY (true parse signal):\n%s" % proc.stderr
     assert proc.returncode == 0, \
         "parse probe rc=%d\n%s\n%s" % (proc.returncode, out, proc.stderr)
     lines = [l.strip() for l in out.splitlines()]
