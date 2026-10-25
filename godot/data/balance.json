@@ -1,0 +1,17 @@
+{
+  "max_alive": 100,
+  "build_seconds_default": 20.0,
+  "wave_delay": 1.0,
+  "pickup_radius": 2.5,
+  "respawn_core_ratio": 0.25,
+  "feel": {
+    "gravity": 24.0,
+    "jump_speed": 7.0,
+    "move_accel": 40.0,
+    "move_decel": 48.0,
+    "facing_interp_rate": 12.0,
+    "cam_follow_rate": 8.0,
+    "cam_yaw_rate": 10.0,
+    "death_fade": 1.5
+  }
+}

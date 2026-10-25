@@ -1,0 +1,83 @@
+[
+  {
+    "id": "skitterling",
+    "name": "Skitterling",
+    "hp": {"normal": 30, "hard": 55},
+    "damage": 8,
+    "speed": 5.0,
+    "fly": false,
+    "xp": 4,
+    "green": 2,
+    "drop_table_id": "normal"
+  },
+  {
+    "id": "ash_bandit",
+    "name": "Ash Bandit",
+    "hp": {"normal": 70, "hard": 125},
+    "damage": 14,
+    "speed": 3.8,
+    "fly": false,
+    "xp": 6,
+    "green": 3,
+    "drop_table_id": "normal"
+  },
+  {
+    "id": "bone_lobber",
+    "name": "Bone Lobber",
+    "hp": {"normal": 60, "hard": 110},
+    "damage": 20,
+    "speed": 3.2,
+    "fly": false,
+    "xp": 7,
+    "green": 3,
+    "drop_table_id": "normal",
+    "material_drop": {"id": "torn_hide", "chance": 0.08}
+  },
+  {
+    "id": "husk_brute",
+    "name": "Husk Brute",
+    "hp": {"normal": 300, "hard": 540},
+    "damage": 26,
+    "speed": 2.2,
+    "fly": false,
+    "xp": 14,
+    "green": 8,
+    "drop_table_id": "hard",
+    "material_drop": {"id": "iron_bar", "chance": 0.15}
+  },
+  {
+    "id": "cinder_wisp",
+    "name": "Cinder Wisp",
+    "hp": {"normal": 45, "hard": 80},
+    "damage": 10,
+    "speed": 4.6,
+    "fly": true,
+    "xp": 6,
+    "green": 3,
+    "drop_table_id": "normal",
+    "material_drop": {"id": "ember_core", "chance": 0.05}
+  },
+  {
+    "id": "gale_harpy",
+    "name": "Gale Harpy",
+    "hp": {"normal": 110, "hard": 200},
+    "damage": 18,
+    "speed": 4.0,
+    "fly": true,
+    "xp": 10,
+    "green": 5,
+    "drop_table_id": "hard"
+  },
+  {
+    "id": "warden_breaker",
+    "name": "Warden Breaker",
+    "hp": {"normal": 3500, "hard": 6300},
+    "damage": 60,
+    "speed": 1.8,
+    "fly": false,
+    "xp": 400,
+    "green": 150,
+    "drop_table_id": "hard",
+    "material_drop": {"id": "aether_crystal", "chance": 1.0}
+  }
+]

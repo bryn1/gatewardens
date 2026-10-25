@@ -1,0 +1,30 @@
+{
+  "ladder": ["worn", "sturdy", "powerful", "epic", "mythical", "legendary"],
+  "mod_slots": {
+    "worn": 0,
+    "sturdy": 0,
+    "powerful": 1,
+    "epic": 2,
+    "mythical": 2,
+    "legendary": 3
+  },
+  "drop_weights": {
+    "normal": {
+      "worn": 35,
+      "sturdy": 30,
+      "powerful": 20,
+      "epic": 9,
+      "mythical": 4,
+      "legendary": 2
+    },
+    "hard": {
+      "worn": 15,
+      "sturdy": 28,
+      "powerful": 30,
+      "epic": 16,
+      "mythical": 7,
+      "legendary": 4
+    }
+  },
+  "chest_tiers": ["powerful", "epic", "mythical", "legendary"]
+}

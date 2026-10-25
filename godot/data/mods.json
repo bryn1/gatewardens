@@ -1,0 +1,11 @@
+[
+  {"id": "keen_edge", "name": "Keen Edge", "rarity_min": "sturdy", "effect": {"stat": "damage", "add": 8}},
+  {"id": "heavy_strikes", "name": "Heavy Strikes", "rarity_min": "powerful", "effect": {"stat": "damage", "flat": 10}},
+  {"id": "swift_hands", "name": "Swift Hands", "rarity_min": "sturdy", "effect": {"stat": "atk_speed", "add": 6}},
+  {"id": "critical_eye", "name": "Critical Eye", "rarity_min": "powerful", "effect": {"stat": "crit_chance", "add": 5}},
+  {"id": "executioner", "name": "Executioner", "rarity_min": "epic", "effect": {"stat": "crit_damage", "add": 12}},
+  {"id": "deep_chill", "name": "Deep Chill", "rarity_min": "epic", "effect": {"stat": "slow_duration", "add": 10}},
+  {"id": "rapid_cycle", "name": "Rapid Cycle", "rarity_min": "mythical", "effect": {"stat": "fire_rate", "add": 8}},
+  {"id": "fortress_plate", "name": "Fortress Plate", "rarity_min": "powerful", "effect": {"stat": "health", "flat": 120}},
+  {"id": "luck_of_gate", "name": "Luck of the Gate", "rarity_min": "legendary", "effect": {"stat": "drop_luck", "add": 5}}
+]

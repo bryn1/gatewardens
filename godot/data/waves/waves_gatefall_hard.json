@@ -1,0 +1,101 @@
+{
+  "map": "gatefall",
+  "difficulty": "hard",
+  "waves": [
+    {
+      "kind": "normal", "build_seconds": 25.0,
+      "enemies": [
+        {"enemy_id": "skitterling", "count": 6, "lane": "lane_g1", "delay": 0.0}
+      ]
+    },
+    {
+      "kind": "normal", "build_seconds": 15.0,
+      "enemies": [
+        {"enemy_id": "skitterling", "count": 7, "lane": "lane_g1", "delay": 0.0},
+        {"enemy_id": "ash_bandit", "count": 4, "lane": "lane_g3", "delay": 2.0}
+      ]
+    },
+    {
+      "kind": "normal", "build_seconds": 15.0,
+      "enemies": [
+        {"enemy_id": "skitterling", "count": 8, "lane": "lane_g1", "delay": 0.0},
+        {"enemy_id": "ash_bandit", "count": 5, "lane": "lane_g3", "delay": 1.0},
+        {"enemy_id": "cinder_wisp", "count": 4, "lane": "lane_a1", "delay": 1.0}
+      ]
+    },
+    {
+      "kind": "normal", "build_seconds": 15.0,
+      "enemies": [
+        {"enemy_id": "ash_bandit", "count": 8, "lane": "lane_g1", "delay": 0.0},
+        {"enemy_id": "bone_lobber", "count": 4, "lane": "lane_g3", "delay": 2.0},
+        {"enemy_id": "cinder_wisp", "count": 5, "lane": "lane_a1", "delay": 1.0}
+      ]
+    },
+    {
+      "kind": "normal", "build_seconds": 15.0,
+      "enemies": [
+        {"enemy_id": "skitterling", "count": 10, "lane": "lane_g1", "delay": 0.0},
+        {"enemy_id": "ash_bandit", "count": 7, "lane": "lane_g3", "delay": 1.0},
+        {"enemy_id": "cinder_wisp", "count": 5, "lane": "lane_a1", "delay": 2.0},
+        {"enemy_id": "gale_harpy", "count": 3, "lane": "lane_a2", "delay": 3.0}
+      ]
+    },
+    {
+      "kind": "normal", "build_seconds": 15.0,
+      "enemies": [
+        {"enemy_id": "husk_brute", "count": 2, "lane": "lane_g1", "delay": 2.0},
+        {"enemy_id": "ash_bandit", "count": 8, "lane": "lane_g2", "delay": 0.0},
+        {"enemy_id": "bone_lobber", "count": 5, "lane": "lane_g3", "delay": 2.0},
+        {"enemy_id": "gale_harpy", "count": 3, "lane": "lane_a2", "delay": 2.0}
+      ]
+    },
+    {
+      "kind": "normal", "build_seconds": 15.0,
+      "enemies": [
+        {"enemy_id": "skitterling", "count": 12, "lane": "lane_g1", "delay": 0.0},
+        {"enemy_id": "bone_lobber", "count": 7, "lane": "lane_g2", "delay": 1.0},
+        {"enemy_id": "gale_harpy", "count": 4, "lane": "lane_a1", "delay": 2.0},
+        {"enemy_id": "cinder_wisp", "count": 6, "lane": "lane_a2", "delay": 3.0}
+      ]
+    },
+    {
+      "kind": "normal", "build_seconds": 15.0,
+      "enemies": [
+        {"enemy_id": "husk_brute", "count": 3, "lane": "lane_g1", "delay": 0.0},
+        {"enemy_id": "ash_bandit", "count": 10, "lane": "lane_g2", "delay": 1.0},
+        {"enemy_id": "bone_lobber", "count": 7, "lane": "lane_g3", "delay": 2.0},
+        {"enemy_id": "gale_harpy", "count": 5, "lane": "lane_a1", "delay": 2.0}
+      ]
+    },
+    {
+      "kind": "normal", "build_seconds": 20.0,
+      "enemies": [
+        {"enemy_id": "husk_brute", "count": 3, "lane": "lane_g1", "delay": 0.0},
+        {"enemy_id": "skitterling", "count": 12, "lane": "lane_g2", "delay": 1.0},
+        {"enemy_id": "bone_lobber", "count": 7, "lane": "lane_g3", "delay": 1.0},
+        {"enemy_id": "gale_harpy", "count": 6, "lane": "lane_a1", "delay": 1.0},
+        {"enemy_id": "cinder_wisp", "count": 8, "lane": "lane_a2", "delay": 2.0}
+      ]
+    },
+    {
+      "kind": "normal", "build_seconds": 20.0,
+      "enemies": [
+        {"enemy_id": "husk_brute", "count": 4, "lane": "lane_g1", "delay": 0.0},
+        {"enemy_id": "ash_bandit", "count": 10, "lane": "lane_g2", "delay": 0.0},
+        {"enemy_id": "bone_lobber", "count": 8, "lane": "lane_g3", "delay": 1.0},
+        {"enemy_id": "gale_harpy", "count": 6, "lane": "lane_a1", "delay": 2.0},
+        {"enemy_id": "cinder_wisp", "count": 8, "lane": "lane_a2", "delay": 2.0}
+      ]
+    },
+    {
+      "kind": "boss", "build_seconds": 25.0,
+      "enemies": [
+        {"enemy_id": "warden_breaker", "count": 1, "lane": "lane_g1", "delay": 0.0},
+        {"enemy_id": "gale_harpy", "count": 5, "lane": "lane_a1", "delay": 2.0},
+        {"enemy_id": "ash_bandit", "count": 8, "lane": "lane_g2", "delay": 4.0},
+        {"enemy_id": "cinder_wisp", "count": 7, "lane": "lane_a2", "delay": 3.0},
+        {"enemy_id": "husk_brute", "count": 2, "lane": "lane_g3", "delay": 5.0}
+      ]
+    }
+  ]
+}

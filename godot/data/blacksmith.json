@@ -1,0 +1,30 @@
+{
+  "materials": [
+    {"id": "torn_hide", "name": "Torn Hide"},
+    {"id": "iron_bar", "name": "Iron Bar"},
+    {"id": "ember_core", "name": "Ember Core"},
+    {"id": "aether_crystal", "name": "Aether Crystal"}
+  ],
+  "upgrade": {
+    "gold_by_rarity": {
+      "worn": 40,
+      "sturdy": 80,
+      "powerful": 160,
+      "epic": 320,
+      "mythical": 640,
+      "legendary": 1280
+    },
+    "materials": {"torn_hide": 2, "iron_bar": 1}
+  },
+  "evolve": {
+    "gold": 600,
+    "materials": {"iron_bar": 2, "ember_core": 1}
+  },
+  "reroll": {
+    "gold": 120
+  },
+  "tinkering": {
+    "gold": 150,
+    "materials": {"torn_hide": 1, "ember_core": 1}
+  }
+}

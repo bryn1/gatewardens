@@ -1,0 +1,13 @@
+{
+  "green": {
+    "cap": 10000,
+    "per_kill_default": 3,
+    "per_wave": 40
+  },
+  "upgrade_ratios": [0.5, 1.0, 1.5, 2.0],
+  "repair_ratio": 0.75,
+  "sell_ratio": 0.75,
+  "blue": {
+    "refill_on_phase_start": true
+  }
+}

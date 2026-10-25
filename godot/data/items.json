@@ -1,0 +1,167 @@
+[
+  {
+    "id": "oaken_cleaver",
+    "slot": "weapon",
+    "level_band": [1, 12],
+    "name": "Oaken Cleaver",
+    "primary": "damage",
+    "pool_secondary": ["health", "speed"],
+    "roll_ranges": {"atk_speed": [0.8, 1.2], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["keen_edge", "swift_hands", "heavy_strikes"]
+  },
+  {
+    "id": "twin_fang",
+    "slot": "weapon",
+    "level_band": [1, 12],
+    "name": "Twin Fang",
+    "primary": "damage",
+    "pool_secondary": ["crit_chance", "atk_speed"],
+    "roll_ranges": {"atk_speed": [1.0, 1.5], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["critical_eye", "swift_hands", "executioner"]
+  },
+  {
+    "id": "warden_maul",
+    "slot": "weapon",
+    "level_band": [10, 24],
+    "name": "Warden Maul",
+    "primary": "damage",
+    "pool_secondary": ["health", "crit_damage"],
+    "roll_ranges": {"atk_speed": [0.6, 0.9], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["heavy_strikes", "executioner", "fortress_plate"]
+  },
+  {
+    "id": "ashes_shortbow",
+    "slot": "weapon",
+    "level_band": [1, 12],
+    "name": "Shortbow of Ashes",
+    "primary": "damage",
+    "pool_secondary": ["atk_speed", "crit_chance"],
+    "roll_ranges": {"atk_speed": [0.9, 1.4], "proj_count": [1, 2]},
+    "shot_types": ["single", "pierce"],
+    "mods_pool": ["keen_edge", "critical_eye", "swift_hands"]
+  },
+  {
+    "id": "volley_crossbow",
+    "slot": "weapon",
+    "level_band": [10, 24],
+    "name": "Volley Crossbow",
+    "primary": "damage",
+    "pool_secondary": ["crit_chance", "ability_power"],
+    "roll_ranges": {"atk_speed": [0.7, 1.1], "proj_count": [2, 4]},
+    "shot_types": ["volley", "single"],
+    "mods_pool": ["critical_eye", "executioner", "rapid_cycle"]
+  },
+  {
+    "id": "storm_sling",
+    "slot": "weapon",
+    "level_band": [18, 32],
+    "name": "Storm Sling",
+    "primary": "damage",
+    "pool_secondary": ["ability_power", "speed"],
+    "roll_ranges": {"atk_speed": [0.8, 1.2], "proj_count": [1, 3]},
+    "shot_types": ["arc", "single"],
+    "mods_pool": ["rapid_cycle", "deep_chill", "luck_of_gate"]
+  },
+  {
+    "id": "embercaller_focus",
+    "slot": "weapon",
+    "level_band": [10, 24],
+    "name": "Embercaller Focus",
+    "primary": "ability_power",
+    "pool_secondary": ["ability_power", "crit_chance"],
+    "roll_ranges": {"atk_speed": [0.7, 1.0], "proj_count": [1, 2]},
+    "shot_types": ["bolt", "splash"],
+    "mods_pool": ["keen_edge", "deep_chill", "rapid_cycle"]
+  },
+  {
+    "id": "padded_jerkin",
+    "slot": "armor",
+    "level_band": [1, 12],
+    "name": "Padded Jerkin",
+    "primary": "health",
+    "pool_secondary": ["speed", "crit_chance"],
+    "roll_ranges": {"atk_speed": [1, 1], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["fortress_plate", "swift_hands"]
+  },
+  {
+    "id": "iron_hauberk",
+    "slot": "armor",
+    "level_band": [10, 24],
+    "name": "Iron Hauberk",
+    "primary": "health",
+    "pool_secondary": ["health", "ability_power"],
+    "roll_ranges": {"atk_speed": [1, 1], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["fortress_plate", "heavy_strikes"]
+  },
+  {
+    "id": "gatewarden_mail",
+    "slot": "armor",
+    "level_band": [18, 32],
+    "name": "Gatewarden Mail",
+    "primary": "health",
+    "pool_secondary": ["crit_damage", "speed"],
+    "roll_ranges": {"atk_speed": [1, 1], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["fortress_plate", "executioner", "luck_of_gate"]
+  },
+  {
+    "id": "signet_of_fury",
+    "slot": "ring",
+    "level_band": [1, 24],
+    "name": "Signet of Fury",
+    "primary": "crit_chance",
+    "pool_secondary": ["crit_damage", "atk_speed"],
+    "roll_ranges": {"atk_speed": [1, 1], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["critical_eye", "swift_hands"]
+  },
+  {
+    "id": "band_of_focus",
+    "slot": "ring",
+    "level_band": [10, 32],
+    "name": "Band of Focus",
+    "primary": "ability_power",
+    "pool_secondary": ["health", "ability_power"],
+    "roll_ranges": {"atk_speed": [1, 1], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["keen_edge", "deep_chill"]
+  },
+  {
+    "id": "mark_of_fervor",
+    "slot": "relic",
+    "level_band": [1, 24],
+    "name": "Mark of Fervor",
+    "primary": "damage",
+    "pool_secondary": ["fire_rate"],
+    "roll_ranges": {"atk_speed": [1, 1], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["rapid_cycle"]
+  },
+  {
+    "id": "orb_of_the_deep",
+    "slot": "relic",
+    "level_band": [10, 32],
+    "name": "Orb of the Deep",
+    "primary": "hp",
+    "pool_secondary": ["range"],
+    "roll_ranges": {"atk_speed": [1, 1], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["deep_chill", "fortress_plate"]
+  },
+  {
+    "id": "medallion_of_the_gate",
+    "slot": "relic",
+    "level_band": [18, 50],
+    "name": "Medallion of the Gate",
+    "primary": "fire_rate",
+    "pool_secondary": ["damage", "range"],
+    "roll_ranges": {"atk_speed": [1, 1], "proj_count": [1, 1]},
+    "shot_types": [],
+    "mods_pool": ["rapid_cycle", "keen_edge"]
+  }
+]

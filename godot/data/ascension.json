@@ -1,0 +1,23 @@
+{
+  "points_per_level": 1,
+  "tree": {
+    "offense": [
+      {"id": "power_strike", "max": 50, "per_point": {"stat": "damage", "val": 1}},
+      {"id": "keen_mind", "max": 100, "per_point": {"stat": "crit_chance", "val": 0.002}},
+      {"id": "brutal_force", "max": 100, "per_point": {"stat": "crit_damage", "val": 0.01}},
+      {"id": "arcane_focus", "max": 50, "per_point": {"stat": "ability_power", "val": 1}}
+    ],
+    "defense": [
+      {"id": "iron_will", "max": 80, "per_point": {"stat": "health", "val": 8}},
+      {"id": "second_wind", "max": 60, "per_point": {"stat": "blue_regen", "val": 0.05}},
+      {"id": "reservoir", "max": 50, "per_point": {"stat": "blue_max", "val": 2}},
+      {"id": "stalwart", "max": 80, "per_point": {"stat": "armor", "val": 2}}
+    ],
+    "utility": [
+      {"id": "quick_feet", "max": 40, "per_point": {"stat": "speed", "val": 0.02}},
+      {"id": "keen_senses", "max": 50, "per_point": {"stat": "pickup_radius", "val": 0.1}},
+      {"id": "greener_world", "max": 50, "per_point": {"stat": "green_per_kill_bonus", "val": 1}},
+      {"id": "scholar", "max": 50, "per_point": {"stat": "xp_bonus", "val": 0.01}}
+    ]
+  }
+}

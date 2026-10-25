@@ -1,0 +1,62 @@
+{
+  "id": "gatefall",
+  "name": "Gatefall",
+  "defense_cap": 60,
+  "start_green": 300,
+  "spawners": {
+    "spawn_a": [-40, 0, 0],
+    "spawn_b": [0, 0, -40],
+    "spawn_c": [34, 0, 30]
+  },
+  "cores": {
+    "main": {
+      "hp": {"normal": 1000, "hard": 1800},
+      "pos": [0, 0, 0]
+    },
+    "subs": [
+      {
+        "id": "sub_north",
+        "hp": {"normal": 400, "hard": 700},
+        "pos": [24, 0, 24],
+        "opens_lanes": ["lane_g2"]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "lane_g1",
+      "kind": "ground",
+      "spawner": "spawn_a",
+      "waypoints": [[-40, 0, 0], [-28, 0, 4], [-14, 0, 6], [-6, 0, 3], [0, 0, 0]],
+      "target": "main"
+    },
+    {
+      "id": "lane_g2",
+      "kind": "ground",
+      "spawner": "spawn_b",
+      "waypoints": [[0, 0, -40], [4, 0, -26], [6, 0, -12], [3, 0, -4], [0, 0, 0]],
+      "target": "main"
+    },
+    {
+      "id": "lane_g3",
+      "kind": "ground",
+      "spawner": "spawn_c",
+      "waypoints": [[34, 0, 30], [30, 0, 28], [27, 0, 26], [24, 0, 24]],
+      "target": "sub_north"
+    },
+    {
+      "id": "lane_a1",
+      "kind": "air",
+      "spawner": "spawn_a",
+      "waypoints": [[-40, 2.5, 0], [-24, 2.5, -6], [-10, 2.5, -4], [0, 2.5, 0]],
+      "target": "main"
+    },
+    {
+      "id": "lane_a2",
+      "kind": "air",
+      "spawner": "spawn_b",
+      "waypoints": [[0, 2.5, -40], [-8, 2.5, -24], [-6, 2.5, -10], [0, 2.5, 0]],
+      "target": "main"
+    }
+  ]
+}

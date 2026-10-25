@@ -1,0 +1,80 @@
+[
+  {
+    "id": "warden",
+    "name": "Bram Wardenfell",
+    "archetype": "melee",
+    "base": {
+      "health": 650,
+      "damage": 34,
+      "ability_power": 40,
+      "crit_chance": 0.10,
+      "crit_damage": 1.5,
+      "speed": 6.0,
+      "blue_max": 100,
+      "blue_regen": 3.0
+    },
+    "attacks": {
+      "primary": {"dmg_scale": 1.0, "cooldown": 0.8, "range": 2.4},
+      "secondary": {"dmg_scale": 1.8, "cooldown": 2.0, "range": 3.2}
+    },
+    "abilities": [
+      {"id": "shield_slam", "name": "Shield Slam", "effect": "stun", "mana_cost": 30, "dmg_scale": 1.2, "aoe": 3.0, "cd": 8.0},
+      {"id": "war_charge", "name": "War Charge", "effect": "charge", "mana_cost": 35, "dmg_scale": 1.5, "aoe": 2.5, "cd": 10.0},
+      {"id": "bulwark_roar", "name": "Bulwark Roar", "effect": "taunt", "mana_cost": 25, "dmg_scale": 0.0, "aoe": 6.0, "cd": 14.0},
+      {"id": "unbreakable", "name": "Unbreakable", "effect": "barrier", "mana_cost": 45, "dmg_scale": 0.0, "aoe": 0.0, "cd": 25.0}
+    ],
+    "defense_id": "gate_blockade"
+  },
+  {
+    "id": "deadeye",
+    "name": "Sila Deadeye",
+    "archetype": "ranger",
+    "base": {
+      "health": 480,
+      "damage": 28,
+      "ability_power": 35,
+      "crit_chance": 0.25,
+      "crit_damage": 1.8,
+      "speed": 6.5,
+      "blue_max": 90,
+      "blue_regen": 3.2
+    },
+    "attacks": {
+      "primary": {"dmg_scale": 1.0, "cooldown": 0.7, "range": 18.0},
+      "secondary": {"dmg_scale": 1.6, "cooldown": 1.6, "range": 20.0}
+    },
+    "abilities": [
+      {"id": "piercer", "name": "Piercer", "effect": "pierce", "mana_cost": 25, "dmg_scale": 1.4, "aoe": 0.0, "cd": 7.0},
+      {"id": "arrow_storm", "name": "Arrow Storm", "effect": "multi_arrow", "mana_cost": 55, "dmg_scale": 2.2, "aoe": 5.0, "cd": 16.0},
+      {"id": "snare_shot", "name": "Snare Shot", "effect": "root", "mana_cost": 30, "dmg_scale": 0.5, "aoe": 3.0, "cd": 12.0},
+      {"id": "shadow_step", "name": "Shadow Step", "effect": "dash", "mana_cost": 20, "dmg_scale": 0.0, "aoe": 0.0, "cd": 9.0}
+    ],
+    "defense_id": "ballista"
+  },
+  {
+    "id": "embercaller",
+    "name": "Ysolde Embercaller",
+    "archetype": "mage",
+    "base": {
+      "health": 420,
+      "damage": 24,
+      "ability_power": 60,
+      "crit_chance": 0.08,
+      "crit_damage": 1.5,
+      "speed": 5.8,
+      "blue_max": 140,
+      "blue_regen": 3.6
+    },
+    "attacks": {
+      "primary": {"dmg_scale": 1.0, "cooldown": 0.9, "range": 14.0},
+      "secondary": {"dmg_scale": 1.5, "cooldown": 2.2, "range": 12.0}
+    },
+    "abilities": [
+      {"id": "cinder_burst", "name": "Cinder Burst", "effect": "burn", "mana_cost": 30, "dmg_scale": 1.6, "aoe": 2.5, "cd": 8.0},
+      {"id": "ember_nova", "name": "Ember Nova", "effect": "nova", "mana_cost": 45, "dmg_scale": 2.0, "aoe": 6.0, "cd": 14.0},
+      {"id": "firewall", "name": "Firewall", "effect": "ground_fire", "mana_cost": 50, "dmg_scale": 1.2, "aoe": 7.0, "cd": 18.0},
+      {"id": "hammer_of_meteors", "name": "Hammer of Meteors", "effect": "meteor", "mana_cost": 80, "dmg_scale": 3.5, "aoe": 4.0, "cd": 30.0}
+    ],
+    "defense_id": "bombard"
+  }
+]
