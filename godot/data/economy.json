@@ -9,5 +9,8 @@
   "sell_ratio": 0.75,
   "blue": {
     "refill_on_phase_start": true
+  },
+  "starter": {
+    "gold": 100
   }
 }

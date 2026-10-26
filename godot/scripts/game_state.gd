@@ -27,7 +27,11 @@ extends RefCounted
 #   sections exist only for heroes the meta actually touched.
 # - The W3a GWTables dict-door loads object-shaped files only; this class
 #   therefore reads ONLY xp.json + ascension.json (both objects) from the
-#   tables — heroes.json is an ARRAY file and never enters this class.
+#   tables — heroes.json is an ARRAY file and never enters this class
+#   THROUGH THE TABLE DOOR. W13 amendment (MC 11274.1.22): the fresh-boot
+#   starter deck DOES read the roster through the raw array door (FileAccess
+#   + JSON, the mission.gd _load_array precedent) — seeding, not a table
+#   -door use; the sentence above holds verbatim for the door itself.
 
 const SIM_PROGRESSION := preload("res://sim/sim_progression.gd")
 const SIM_INVENTORY := preload("res://sim/sim_inventory.gd")
@@ -180,8 +184,15 @@ func to_save() -> Dictionary:
 
 
 # I5: empty dict or a foreign schema_version = fresh start, never crash.
+# W13 (MC 11274.1.22 / card 11332): the fresh start now SEEDS the declared
+# starter kit (OPEN-Q of the A9 journey: a fresh browser booted
+# gold=0/deck=[] because every desktop probe pre-seeded a save); the seed
+# is silent — a boot default is not a meta mutation, so no `mutated`
+# emit and no C13 write fires on a fresh boot (A9's ack=0-on-first-boot
+# reading holds; the kit persists with the player's first real mutation).
 func from_save(d: Dictionary) -> void:
 	if d.is_empty() or int(d.get("schema_version", 0)) != SAVE_SCHEMA:
+		_seed_starter_meta()
 		return
 	var heroes_in: Dictionary = d.get("heroes", {})
 	for hero_id: String in heroes_in:
@@ -291,6 +302,29 @@ func next_uid() -> int:
 
 func _table(name: String) -> Dictionary:
 	return tables.table(name) if tables != null else {}
+
+
+# W13 starter kit (OPEN-Q fix, ZERO literals — every value DATA): gold =
+# economy.json "starter.gold"; deck = the heroes.json roster in FILE order
+# (the C4 swap order — roster order IS the declared deck order for a
+# fresh account). Seeded silently: direct field writes, NO mutator call,
+# NO mutated emit (a boot default is not a meta mutation; C13 stays the
+# only save trigger).
+func _seed_starter_meta() -> void:
+	gold = int(_table("economy").get("starter", {}).get("gold", 0))
+	deck = _roster_ids()
+
+
+func _roster_ids() -> Array:
+	# Array-shaped heroes.json has no GWTables dict door (header) — the
+	# raw door, mission.gd._load_array precedent.
+	var text := FileAccess.get_file_as_string("res://data/heroes.json")
+	var parsed: Variant = JSON.parse_string(text)
+	var out: Array = []
+	if parsed is Array:
+		for row: Variant in parsed:
+			out.append(String(row["id"]))
+	return out
 
 
 func _mget(mission: Variant, prop: String, fallback: Variant) -> Variant:

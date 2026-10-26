@@ -172,12 +172,12 @@ def test_file_top_shape(parts):
 def test_economy_exact_shape_and_ratios():
     eco = load("economy.json")
     assert set(eco) == {"green", "upgrade_ratios", "repair_ratio",
-                        "sell_ratio", "blue"}
+                        "sell_ratio", "blue", "starter"}
     assert set(eco["green"]) == {"cap", "per_kill_default", "per_wave"}
     assert all(is_int(v) and v > 0 for v in eco["green"].values())
     assert eco["upgrade_ratios"] == [0.5, 1.0, 1.5, 2.0]
     assert eco["repair_ratio"] == 0.75 and eco["sell_ratio"] == 0.75
-    assert eco["blue"] == {"refill_on_phase_start": True}
+    assert eco["blue"] == {"refill_on_phase_start": True} and set(eco["starter"]) == {"gold"} and isinstance(eco["starter"]["gold"], int) and eco["starter"]["gold"] > 0
 
 
 def test_economy_has_no_map_owned_or_regen_keys():

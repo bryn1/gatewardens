@@ -27,6 +27,11 @@ extends Control
 # the station wiring below, which the hub_probe drives through the real
 # scene and real panels (E5: _ready stays the router-safe no-op, the
 # mission.gd precedent — everything builds in setup() after injection).
+#
+# W13 (MC 11274.1.22 / card 11332): F-1 the layout scheme is containers
+# end to end (the A9 hub-overlap fix, setup() site), and F-2 the war
+# table's start crossing is routed out of the pressed-signal frame
+# (the A9 freed-during-emit console ERROR fix, _retarget_war_buttons).
 
 const WAR_TABLE := preload("res://scripts/war_table.gd")
 const GEAR_PANEL := preload("res://scripts/gear_panel_ui.gd")
@@ -65,9 +70,23 @@ func setup(tables_in, game_state, save_store, bridge_in, rng_in) -> void:
 	save = save_store
 	bridge = bridge_in
 	rng = rng_in
+	# F-1 (W13, MC 11274.1.22 / card 11332): the layout is CONTAINERS,
+	# never origins. The hub root carries ONE layout child, a full-rect
+	# VBox whose rows are the header ("Stations": title / Meta status /
+	# station Bar) and the shared "PanelSlot" that carries the five
+	# station panels — exactly one visible at a time (the shipped _open
+	# model). A Container ASSIGNS its children's positions, so the
+	# A9-finding overlap (title + stations + start entries all stacking at
+	# (0,0)) is structurally impossible: nothing that reads is a bare
+	# child of the origin any more. test_hub_layout.py enforces the
+	# scheme engine-tier AND source-tier (stacking reintroduced = RED).
+	var root_box := VBoxContainer.new()
+	root_box.name = "Layout"
+	root_box.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(root_box)
 	var box := VBoxContainer.new()
 	box.name = "Stations"
-	add_child(box)
+	root_box.add_child(box)
 	var title := Label.new()
 	title.text = "GATEWARDENS — HUB"
 	box.add_child(title)
@@ -85,26 +104,32 @@ func setup(tables_in, game_state, save_store, bridge_in, rng_in) -> void:
 		b.text = String(entry[1])
 		b.pressed.connect(_open.bind(String(entry[0])))
 		bar.add_child(b)
-	# The five station panels (pinned rows), each fed only injected deps.
+	var slot := VBoxContainer.new()
+	slot.name = "PanelSlot"
+	root_box.add_child(slot)
+	# The five station panels (pinned rows), each fed only injected deps,
+	# mounted into the shared slot — placed by the container, never by a
+	# stacked origin (F-1 above).
 	war = WAR_TABLE.new()
 	war.name = "WarTable"
-	add_child(war)
+	slot.add_child(war)
 	war.setup(get_parent(), tables)     # get_parent() IS main at runtime
+	_retarget_war_buttons(war)          # F-2, below
 	gear = GEAR_PANEL.new()
 	gear.name = "GearPanel"
-	add_child(gear)
+	slot.add_child(gear)
 	gear.setup(tables, state)
 	blacksmith = BLACKSMITH_UI.new()
 	blacksmith.name = "Blacksmith"
-	add_child(blacksmith)
+	slot.add_child(blacksmith)
 	blacksmith.setup(tables, state, rng)
 	tinkerer = TINKERER_UI.new()
 	tinkerer.name = "Tinkerer"
-	add_child(tinkerer)
+	slot.add_child(tinkerer)
 	tinkerer.setup(tables, state, rng)
 	dummies = DUMMY_RANGE.new()
 	dummies.name = "DummyRange"
-	add_child(dummies)
+	slot.add_child(dummies)
 	dummies.setup(tables, state, rng)
 	_panels = {"war": war, "gear": gear, "blacksmith": blacksmith,
 		"tinkerer": tinkerer, "dummies": dummies}
@@ -124,6 +149,39 @@ func handle_press(code: String) -> void:
 	if not STATION.has(code):
 		return
 	_open(String(STATION[code]))
+
+
+# F-2 (W13, MC 11274.1.22 / card 11332): the served journey caught the
+# console ERROR "Object was freed or unreferenced while a signal is being
+# emitted from it" on the hub->mission switch — the Button.pressed emit
+# was still on the stack when main._mount freed the hub subtree (the
+# emitter's own ancestors). Engine's OWN remedy, the route-out-of-signal-
+# frame form: the Start buttons keep war_table's EXACT crossing (its own
+# start->router.start_mission callables, bound args untouched — this only
+# re-schedules them), but the crossing lands at idle time, when nothing
+# is emitting. One mechanism, hub-side: main.gd and war_table.gd stay
+# verbatim, no second router. The shipped hub_probe WAR leg is
+# unaffected — it drives war.start() directly (never the button), and
+# the direct call stays synchronous (deferred flush under `-s` is
+# VERIFIED to land only at loop exit, never before the probe's asserts).
+func _retarget_war_buttons(panel: Control) -> void:
+	var table := panel.get_node_or_null("WarTable")
+	if table == null:
+		return
+	for child: Node in table.get_children():
+		var b := child as Button
+		if b == null:
+			continue
+		for c: Dictionary in b.pressed.get_connections():
+			var fn: Callable = c["callable"]
+			if fn.get_object() != panel:
+				continue    # not the station's own crossing — leave it
+			b.pressed.disconnect(fn)
+			b.pressed.connect(_route_out_of_signal_frame.bind(fn))
+
+
+func _route_out_of_signal_frame(fn: Callable) -> void:
+	fn.call_deferred()
 
 
 func _open(which: String) -> void:

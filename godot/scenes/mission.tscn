@@ -1,10 +1,18 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/mission.gd" id="1_mission"]
 [ext_resource type="Script" path="res://scripts/phase_controller.gd" id="2_phase"]
 [ext_resource type="Script" path="res://scripts/enemy_runner.gd" id="3_runner"]
 [ext_resource type="Mesh" path="res://assets/mesh_plane.tres" id="4_ground"]
 [ext_resource type="Material" path="res://assets/mat_ground.tres" id="5_matg"]
+
+[sub_resource type="Environment" id="env_greybox"]
+background_mode = 1
+background_color = Color(0.055, 0.065, 0.085, 1)
+ambient_light_source = 1
+ambient_light_color = Color(0.85, 0.88, 0.95, 1)
+ambient_light_energy = 0.6
+tonemap_mode = 2
 
 [node name="Mission" type="Node3D"]
 script = ExtResource("1_mission")
@@ -13,12 +21,15 @@ script = ExtResource("1_mission")
 mesh = ExtResource("4_ground")
 material_override = ExtResource("5_matg")
 
+[node name="WorldEnv" type="WorldEnvironment" parent="."]
+environment = SubResource("env_greybox")
+
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 20, 30, 10)
 shadow_enabled = true
 
 [node name="CameraRig" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, 0, 12, 14)
+transform = Transform3D(1, 0, 0, 0, 0.667, 0.667, 0, -0.746, 0.746, 0, 58, 46)
 
 [node name="Camera3D" type="Camera3D" parent="CameraRig"]
 

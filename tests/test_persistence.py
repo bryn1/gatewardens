@@ -203,3 +203,119 @@ def test_c5_snapshot_carries_every_pinned_key():
     for key in C5_KEYS:
         assert '"%s":' % key in code, \
             "C5 key %r absent from snapshot_json" % key
+
+
+# ---------- W13 starter meta on fresh boot (OPEN-Q, card 11332) ----------
+# A fresh browser booted gold=0/deck=[] (A9 journey OPEN-Q) because every
+# desktop probe pre-seeded a save. The fix: from_save's FRESH branch seeds
+# the declared starter kit from DATA ONLY (economy.json starter.gold; the
+# heroes.json roster in file order as the deck), silently — no mutated
+# emit, no C13 write on a boot default. The engine leg runs a fresh
+# user:// home (BN4 idiom): boot graph -> from_save -> starter rows, then
+# ONE real mutation -> the write leg fires exactly then.
+
+STARTER_PROBE_SRC = '''
+extends SceneTree
+const GW_TABLES := preload("res://sim/sim_tables.gd")
+const GW_COMPOSE := preload("res://sim/gw_compose.gd")
+func _init() -> void:
+	var tables = GW_TABLES.new("res://data")
+	var graph: Dictionary = GW_COMPOSE.build_graph(tables)
+	var state = graph["state"]
+	var save = graph["save"]
+	var loaded: Dictionary = save.load_save()
+	print("STARTER-LOADED empty=%s" % str(loaded.is_empty()))
+	state.from_save(loaded)
+	print("STARTER-META gold=%d deck=%s ack=%d seq=%d file=%s" % [
+			int(state.gold), ",".join(state.deck),
+			int(state.saved_ack), int(save.write_seq),
+			str(FileAccess.file_exists("user://gatewardens.cfg"))])
+	state.add_gold(1)          # the FIRST real meta mutation writes
+	print("STARTER-MUTATED gold=%d ack=%d seq=%d file=%s" % [
+			int(state.gold), int(state.saved_ack), int(save.write_seq),
+			str(FileAccess.file_exists("user://gatewardens.cfg"))])
+	print("STARTER-OK")
+	quit(0)
+'''
+
+
+def _starter_data():
+    import json
+    with open(repo_path("godot", "data", "economy.json"),
+              encoding="utf-8") as handle:
+        gold = int(json.load(handle)["starter"]["gold"])
+    with open(repo_path("godot", "data", "heroes.json"),
+              encoding="utf-8") as handle:
+        roster = [str(row["id"]) for row in json.load(handle)]
+    return gold, roster
+
+
+def test_fresh_boot_seeds_starter_meta_from_data(tmp_path, class_cache):
+    probe = tmp_path / "gw_starter_probe.gd"
+    probe.write_text(STARTER_PROBE_SRC, encoding="utf-8")
+    proc = conftest.run_probe_script(str(probe), (),
+                                     tmp_path / "user_home")
+    assert proc.returncode == 0, \
+        "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                         proc.stderr)
+    assert proc.stderr == "", \
+        "-s probe stderr must be EMPTY (true parse signal):\n%s" \
+        % proc.stderr
+    out = proc.stdout
+    assert "STARTER-OK" in out, out
+    gold, roster = _starter_data()
+
+    assert "STARTER-LOADED empty=true" in out, \
+        "the fresh user:// home must load NO save: %s" % out
+    m = re.search(r"STARTER-META gold=(\d+) deck=(\S*) ack=(\d+) "
+                  r"seq=(\d+) file=(\S+)", out)
+    assert m, out
+    assert int(m.group(1)) == gold, \
+        "starter gold %s != economy.json starter.gold %d" % (
+            m.group(1), gold)
+    assert m.group(2).rstrip(",") == ",".join(roster), \
+        "starter deck %r != heroes.json roster order %r" % (
+            m.group(2), roster)
+    # Silent seed: a boot default is NOT a meta mutation (C13).
+    assert m.group(3) == "0" and m.group(4) == "0" \
+        and m.group(5) == "false", \
+        "fresh boot wrote a save / bumped the ack (C13 breach): %s" % out
+
+    m2 = re.search(r"STARTER-MUTATED gold=(\d+) ack=(\d+) seq=(\d+) "
+                   r"file=(\S+)", out)
+    assert m2, out
+    assert int(m2.group(1)) == gold + 1 and m2.group(2) == "1" \
+        and m2.group(3) == "1" and m2.group(4) == "true", \
+        "the first real mutation did not write (C13): %s" % out
+
+
+def test_starter_seed_is_data_only_and_silent():
+    raw = read(GAME_STATE)
+    blanked = hyg.blank_code(raw, "gd")
+    # Structural greps on the RAW source (the crosses ARE string
+    # arguments, which blank_code blanks out); literal scan on blanked.
+    body = _body(raw, "_seed_starter_meta") + "\n" + _body(raw,
+                                                           "_roster_ids")
+    blank_body = _body(blanked, "_seed_starter_meta") + "\n" \
+        + _body(blanked, "_roster_ids")
+    # Zero balance literals: only the structural {0} may appear.
+    stray = sorted({float(n) for n in re.findall(r"\b\d+(?:\.\d+)?\b",
+                                                 blank_body)} - {0.0})
+    assert not stray, \
+        "starter seed carries number literals %r — DATA owns these (OPEN-Q)" \
+        % stray
+    assert '_table("economy")' in body and "_roster_ids()" in body, \
+        "starter gold must read economy.json; deck must read the roster"
+    # The roster ids themselves are DATA — never string literals in code.
+    for _gold, roster in [_starter_data()]:
+        for hero_id in roster:
+            assert '"%s"' % hero_id not in raw, \
+                "roster id %r hardcoded in game_state.gd (OPEN-Q: DATA " \
+                "only)" % hero_id
+    # from_save is NOT a mutator: it seeds through direct field writes,
+    # never emits the save signal.
+    fs = _body(blanked, "from_save")
+    assert "_seed_starter_meta()" in fs, \
+        "from_save's fresh branch must seed the starter kit"
+    assert "mutated.emit()" not in fs, \
+        "from_save must never emit mutated (C13 trigger = mutators only)"
