@@ -13,7 +13,7 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
   mana (slow regen, full recharge each combat phase). No lock-on, no dodge (as original).
 - A2 Heroes: level cap 50 + account-wide Ascension points (Offense/Defense/Utility);
   4-hero deck, hot-swap. v1 ships 3 heroes.
-- A3 Defenses: green-mana economy (kills + wave completions, hard cap); place anywhere,
+- A3 Defenses: green-mana economy (kills + wave completions, hard cap); place on buildable slots derived from lane geometry (open placement, no pads; confirm falls to first free slot),
   tier upgrades T1→T5 (50/100/150/200 base ratios), repair = base x 0.75 x missing-health, sell = total-spent x 0.75 x missing-health (cited wiki formulas; corrected 2026-10-25 per DA F12); per-map defense
   cap. Classes in v1: Towers (Ballista/Cannon/Frostbite-like), Blockades, Traps.
 - A4 Mission: main core + sub-core, ground + air lanes, alternating build/combat phases
@@ -58,7 +58,7 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | BUILD W11 golden sim | DONE — commit 338720e, 172 pytest green, golden full-mission WINS byte-stable (MC 11274.1.19) |
 | BUILD W11b P2 fix | DONE — commit 3a8c8b3, 175 pytest green, P2 closed (MC 11274.1.20) |
 | BUILD W12 web export x2 + served contract | DONE — commit da64196, 180 pytest green, repro VERIFIED (9 files byte-identical A/B), doc-sync static/ (MC 11274.1.21) |
-| A9 journey | PASS w/ findings — evidence A9-journey.md + screenshots; findings F-1/F-2/F-3+starter all fixed in W13 |
+| A9 journey | PARTIAL — boot/hub/mission-live/lose/reload + F-1/F-2/F-3/starter fixes VERIFIED served (A9-journey.md, W13 evidence); wave-10+boss/place/upgrade/loot/equip/save+reload browser legs NOT yet run — golden proves them headless only. Full-browser journey leg REQUIRED before GA tag (per MC 11274.1.24 doc-sweep) |
 | BUILD W13 journey-fix (hub layout+signal lifecycle+world visibility+starter data) | DONE — commit 865b668, 190 pytest green, A9 re-journey PASS (0 console errors, visible world, data starter live) (MC 11274.1.22) |
 | CLEAN-CODE AUDIT (pre-GA, owner doctrine MC 11318) | spawning |
 
