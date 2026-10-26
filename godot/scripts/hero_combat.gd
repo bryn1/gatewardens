@@ -26,8 +26,12 @@ extends RefCounted
 #     added that code. Digit1-3 stay the W6 hot-swap press-alias untouched:
 #     this file consumes NO presses (mission step (5) drains the bridge
 #     exactly as W6 shipped); held-level casting cannot re-route presses.
-#   Ability effect fields (stun/taunt/barrier/...) are data for later
-#     waves: a dmg_scale==0 ability pays blue + cooldown and lands no hit.
+#   Ability effect fields: "pierce" on a single-target row has a
+#     consumer (W15b) — the hit continues along the impact entity's
+#     lane via the ONE SimCombat selection static, same rule a tower
+#     tier row rides. The others (stun/taunt/barrier/...) are data for
+#     later waves: a dmg_scale==0 ability pays blue + cooldown and
+#     lands no hit.
 #   Ability damage = base.ability_power x dmg_scale (single source read;
 #     attacks use base.damage x dmg_scale), crits via hero_hit like any
 #     hero hit. aoe>0 hits EVERY entity within the radius of the hero
@@ -93,8 +97,20 @@ func _ability(i: int, hero: Dictionary, pos: Vector3) -> void:
 	else:
 		var solo: Dictionary = _nearest(pos,
 				float(hero["attacks"]["primary"]["range"]))
-		if not solo.is_empty():
-			targets = [solo]
+		if solo.is_empty():
+			return
+		targets = [solo]
+		# W15b: a single-target ability whose row says "pierce" continues
+		# through the lane via the ONE selection static (SimCombat, the
+		# same rule a tower tier row rides) — each extra hit rides the
+		# same dmg through _hit (I4: no second damage path; crit rolls
+		# per hit, the shipped hero_hit shape). The radius is the data
+		# range already used to pick the primary; AoE casts never reach
+		# this leg.
+		targets.append_array(SIM_COMBAT.extra_targets(solo,
+				mission.get_node("EnemyRunner").entities,
+				float(hero["attacks"]["primary"]["range"]),
+				String(ab.get("effect", "none"))))
 	for ent: Variant in targets:
 		_hit(ent, dmg, hero)
 

@@ -62,8 +62,7 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | BUILD W13 journey-fix (hub layout+signal lifecycle+world visibility+starter data) | DONE — commit 865b668, 190 pytest green, A9 re-journey PASS (0 console errors, visible world, data starter live) (MC 11274.1.22) |
 | CLEAN-CODE AUDIT | DONE — REVIEW.md, VERDICT FIX (4 P1 behavior gaps + refactor-safe set; MC 11274.1.23) |
 | BUILD W14 P1 behavior legs | DONE — commit 1067391, 190 pytest green, golden byte-unchanged, all 4 P1 + P2-10 + P3-11 closed (MC 11274.1.25) |
-| BUILD W15 hard-difficulty golden fixture | spawning |
-| BUILD W15 hard-difficulty golden fixture | pending W14 |
+| BUILD W15b pierce/splash consumers + hard golden | DONE — 192 pytest green; the dead towers.json effect strings + deadeye piercer row get their ONE consumer (SimCombat.extra_targets: pierce = lane-chain ∩ tier range, splash = range-radius across lanes; I4 single damage site; zero literals); normal golden DECLARED-REGEN (pierce moves kill timing from tick 11600: stream 8ea42737…→1cbf3f44…, header+in-rows byte-identical, per-row diff in evidence); hard fixture mission_gatefall_hard.jsonl committed — WIN, byte-stable A/B, tampered-red (closes REVIEW P2-9); 2 live planted-reds (consumer removed, radius off-by-one) + shipped matcher red (W15 BLOCKED evidence stands — this card supplied the missing mechanics) (MC 11274.1.26/.27) |
 | REFACTOR RUN (REVIEW.md refactor-safe set, zero behavior change) | pending W15 |
 | FULL browser journey pre-GA (boss/place/loot/equip/save-reload served) | pending W16 |
 | RELEASE DOCS + TAG (A10, MC 11277 rows) | pending W17 |

@@ -1,6 +1,7 @@
-"""W11 golden-simulation gate (MC 11274.1.19 / card 11326).
+"""W11 golden-simulation gate (MC 11274.1.19 / card 11326); hard legs
+W15b (MC 11274.1.27 / card 11379).
 
-tests/fixtures/mission_gatefall_normal.jsonl carries the C12 fixture
+tests/fixtures/mission_gatefall_{normal,hard}.jsonl carry the C12 fixture
 encoding: LINE 1 header {"schema","seed","map","difficulty"}, then
 in-rows {"kind":"in","tick","act","args"} and committed expected
 out-rows {"kind":"out","tick","ev",...,"checks":{...},"ok":true}; the
@@ -20,11 +21,18 @@ Laws exercised here (ledger/contract ids in sim_headless.gd comments):
    (a breach is not a kill, C12 step 4 death-only: no boss crystal);
    boss_neutralized + outcome_win + win_at_last_wave encode it.
 
-Gate legs: (1) fresh replay of the committed fixture: rc 0, empty
-stderr, every row ok:true, and the replayed out-row stream BYTE-EQUAL
-(sha256 on both sides) to the committed rows; (2) two fresh runs are
-byte-stable against each other; (3) mutation leg — one tampered byte
-in a fixture copy (the seed digit) must NOT reproduce the golden.
+Gate legs (BOTH fixtures — the W15b hard leg closes REVIEW P2-9: the
+byte-anchor was normal-only, half the game): (1) fresh replay of the
+committed fixture: rc 0, empty stderr, every row ok:true, and the
+replayed out-row stream BYTE-EQUAL (sha256 on both sides) to the
+committed rows; (2) two fresh runs are byte-stable against each other;
+(3) mutation leg — one tampered byte in a fixture copy (a seed digit)
+must NOT reproduce the golden.
+
+Declared regen (W15b): the pierce/splash consumers (card 11379) move
+kill timing from the first T3 ballista (tick 11600) onward — the normal
+fixture regenerated through the harness; headers/in-rows byte-identical
+(pre/post stream shas + per-row diff in the card evidence).
 """
 
 import hashlib
@@ -35,7 +43,20 @@ import conftest
 from conftest import repo_path
 
 SIM = "res://sim/sim_headless.gd"
-FIXTURE = repo_path("tests", "fixtures", "mission_gatefall_normal.jsonl")
+
+# name -> (fixture path, header, seed line to tamper ONE digit of)
+FIXTURES = {
+    "normal": (
+        repo_path("tests", "fixtures", "mission_gatefall_normal.jsonl"),
+        {"schema": 1, "seed": 11326, "map": "gatefall",
+         "difficulty": "normal"},
+        '"seed":11326', '"seed":11325'),
+    "hard": (
+        repo_path("tests", "fixtures", "mission_gatefall_hard.jsonl"),
+        {"schema": 1, "seed": 11379, "map": "gatefall",
+         "difficulty": "hard"},
+        '"seed":11379', '"seed":11378'),
+}
 
 
 def _out_stream(stdout: str) -> str:
@@ -47,8 +68,8 @@ def _out_stream(stdout: str) -> str:
                    and '"schema"' not in l)
 
 
-def _fixture_out_rows() -> str:
-    with open(FIXTURE, encoding="utf-8") as fh:
+def _fixture_out_rows(fixture: str) -> str:
+    with open(fixture, encoding="utf-8") as fh:
         return "".join(l for l in fh if '"kind":"out"' in l)
 
 
@@ -64,60 +85,67 @@ def _sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _names():
+    return list(FIXTURES)
+
+
 def test_golden_fixture_shape():
-    with open(FIXTURE, encoding="utf-8") as fh:
-        lines = [l.rstrip("\n") for l in fh if l.strip() != ""]
-    header = json.loads(lines[0])
-    assert header == {"schema": 1, "seed": 11326, "map": "gatefall",
-                      "difficulty": "normal"}
-    n_in = n_out = 0
-    for line in lines[1:]:
-        row = json.loads(line)
-        assert row["kind"] in ("in", "out")
-        if row["kind"] == "in":
-            n_in += 1
-            assert isinstance(row["tick"], int)
-            assert row["act"] in ("input", "place", "upgrade", "repair",
-                                  "sell", "assign", "unassign", "hotswap")
-        else:
-            n_out += 1
-            assert row["ok"] is True
-    assert n_in > 0 and n_out > 0
-    assert json.loads(lines[-1])["ev"] == "outcome"
+    for name, (fixture, header, _old, _new) in FIXTURES.items():
+        with open(fixture, encoding="utf-8") as fh:
+            lines = [l.rstrip("\n") for l in fh if l.strip() != ""]
+        assert json.loads(lines[0]) == header, name
+        n_in = n_out = 0
+        for line in lines[1:]:
+            row = json.loads(line)
+            assert row["kind"] in ("in", "out")
+            if row["kind"] == "in":
+                n_in += 1
+                assert isinstance(row["tick"], int)
+                assert row["act"] in ("input", "place", "upgrade",
+                                      "repair", "sell", "assign",
+                                      "unassign", "hotswap")
+            else:
+                n_out += 1
+                assert row["ok"] is True
+        assert n_in > 0 and n_out > 0
+        assert json.loads(lines[-1])["ev"] == "outcome", name
 
 
 def test_golden_replay_matches_committed(class_cache, tmp_path_factory):
-    proc = _replay(FIXTURE, tmp_path_factory)
-    assert proc.stderr == "", "E3: stderr is the verdict channel"
-    assert proc.returncode == 0, "golden replay must exit 0"
-    stream = _out_stream(proc.stdout)
-    rows = [json.loads(l) for l in stream.splitlines()]
-    assert rows and all(r["ok"] is True for r in rows)
-    committed = _fixture_out_rows()
-    assert _sha(stream) == _sha(committed), (
-        "replayed out-rows diverge from committed: %s != %s"
-        % (_sha(stream), _sha(committed)))
+    for name, (fixture, _h, _o, _n) in FIXTURES.items():
+        proc = _replay(fixture, tmp_path_factory)
+        assert proc.stderr == "", "E3: stderr is the verdict channel"
+        assert proc.returncode == 0, "golden replay must exit 0"
+        stream = _out_stream(proc.stdout)
+        rows = [json.loads(l) for l in stream.splitlines()]
+        assert rows and all(r["ok"] is True for r in rows)
+        committed = _fixture_out_rows(fixture)
+        assert _sha(stream) == _sha(committed), (
+            "%s: replayed out-rows diverge from committed: %s != %s"
+            % (name, _sha(stream), _sha(committed)))
 
 
 def test_golden_is_stable_across_runs(class_cache, tmp_path_factory):
-    a = _out_stream(_replay(FIXTURE, tmp_path_factory).stdout)
-    b = _out_stream(_replay(FIXTURE, tmp_path_factory).stdout)
-    assert a != "" and _sha(a) == _sha(b)
+    for name, (fixture, _h, _o, _n) in FIXTURES.items():
+        a = _out_stream(_replay(fixture, tmp_path_factory).stdout)
+        b = _out_stream(_replay(fixture, tmp_path_factory).stdout)
+        assert a != "" and _sha(a) == _sha(b), name
 
 
 def test_golden_red_on_tampered_fixture(class_cache, tmp_path_factory):
     """Mutation leg (verify-discipline: a gate that never went RED is
-    not a gate): one flipped byte — the last seed digit — must not
-    reproduce the golden (RNG-shaped loot/crit stream shifts)."""
-    with open(FIXTURE, encoding="utf-8") as fh:
-        text = fh.read()
-    assert '"seed":11326' in text
-    tampered = text.replace('"seed":11326', '"seed":11325', 1)
-    assert tampered != text
-    bad = tmp_path_factory.mktemp("gw-golden-tamper") / "fixture.jsonl"
-    bad.write_text(tampered, encoding="utf-8")
-    proc = _replay(str(bad), tmp_path_factory)
-    stream = _out_stream(proc.stdout)
-    diverged = (proc.returncode != 0 or proc.stderr != ""
-                or stream != _fixture_out_rows())
-    assert diverged, "tampered fixture still reproduced the golden"
+    not a gate): one flipped byte — a seed digit — must not reproduce
+    the golden (RNG-shaped loot/crit stream shifts)."""
+    for name, (fixture, _h, old, new) in FIXTURES.items():
+        with open(fixture, encoding="utf-8") as fh:
+            text = fh.read()
+        assert old in text
+        tampered = text.replace(old, new, 1)
+        assert tampered != text
+        bad = tmp_path_factory.mktemp("gw-golden-tamper") / "fix.jsonl"
+        bad.write_text(tampered, encoding="utf-8")
+        proc = _replay(str(bad), tmp_path_factory)
+        stream = _out_stream(proc.stdout)
+        diverged = (proc.returncode != 0 or proc.stderr != ""
+                    or stream != _fixture_out_rows(fixture))
+        assert diverged, "%s: tampered fixture reproduced the golden" % name

@@ -27,8 +27,17 @@
 #   nearest idiom; plain 3D distance so air lanes weigh by their F16 y).
 #   No discrete projectile sim ships in v1 (none is pinned; C4's
 #   ownerless-projectile rule is a snapshot-damage rule for when one does).
+# - Effects (W15b, MC 11274.1.27 / card 11379): the tier row's "effect"
+#   string has a consumer for "pierce" (the hit continues along the
+#   impact entity's lane) and "splash" (every entity within the tier's
+#   own range of the impact point, any lane) — the ONE selection static
+#   is SimCombat.extra_targets; each extra hit carries the same dps x
+#   delta through the runner's same damage entry (I4: the application
+#   site above stays the single damage site; the effect changes WHO,
+#   never the math). "slow"/"block" stay honest inert — no magnitude for
+#   them exists in towers.json to read and inventing one breaks I2.
 # - Blockade: fire_rate 0 -> tower_dps 0 -> never fires; the "block"
-#   effect string has no consumer yet (the pinned runner row is lane-walk
+#   effect string has no consumer (the pinned runner row is lane-walk
 #   only — nothing attacks a defense in v1), so a blockade ships as a
 #   placeable hp record that counts to cap and repairs/sells like any
 #   defense. Honest inert, not an invented mechanic.
@@ -154,11 +163,21 @@ func tick(delta: float) -> void:
 
 
 func _fire_tower(delta: float) -> void:
-	var target: Dictionary = _nearest(float(bonus_row()["range"]))
+	var row: Dictionary = bonus_row()
+	var target: Dictionary = _nearest(float(row["range"]))
 	if target.is_empty():
 		return
 	# THE tower_dps application site (slot 3, single I4 site):
-	m.get_node("EnemyRunner").damage(target, dps() * delta)
+	var dmg := dps() * delta
+	var runner = m.get_node("EnemyRunner")
+	runner.damage(target, dmg)
+	# Effect leg (W15b): pierce/splash rows add WHO ELSE is hit through
+	# the ONE SimCombat selection static — the same dmg per extra, no
+	# second damage path (I4).
+	for ent: Dictionary in SIM_COMBAT.extra_targets(
+			target, runner.entities, float(row["range"]),
+			String(row.get("effect", "none"))):
+		runner.damage(ent, dmg)
 
 
 func _fire_blockade(_delta: float) -> void:
