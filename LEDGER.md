@@ -56,7 +56,8 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | BUILD W9 hub full | DONE — commit f2c4e79, 155 pytest green, 11-leg hub probe incl next_uid fix (MC 11274.1.16) |
 | BUILD W10 HUD + hot-swap UI | DONE — commit d9214a2, 167 pytest green, read-only gate live (MC 11274.1.18) |
 | BUILD W11 golden sim | DONE — commit 338720e, 172 pytest green, golden full-mission WINS byte-stable (MC 11274.1.19) |
-| BUILD W11b P2 fix: defense_placer unknown-uid upgrade/repair negative legs | spawning |
+| BUILD W11b P2 fix | DONE — commit 3a8c8b3, 175 pytest green, P2 closed (MC 11274.1.20) |
+| BUILD W12 web export x2 + served contract (server.py, F2-3 served asserts) | spawning |
 
 ## Gate rounds log
 
@@ -97,7 +98,7 @@ v1 GA requires IN ORDER: full suite + A9 journey green -> CLEAN-CODE AUDIT (find
 
 ## Findings open (pre-GA)
 
-P2 defense_placer.gd upgrade()/repair() crash under -s on unknown uids (not-found sentinel non-empty -> rec["obj"] SCRIPT ERROR; sell() pattern is the correct shape) — fix + negative legs in W11b, before W12 serve.
+[CLOSED W11b 2026-10-26, commit 3a8c8b3, MC 11274.1.20: guard fixed to the sell() shape, negative legs shipped.]
 
 ## Open questions
 
