@@ -39,6 +39,12 @@ extends CanvasLayer
 #   refresh() directly — the panel.refresh() precedent. _ready stays a
 #   router-safe no-op (mission.gd E5 idiom: add_child fires _ready
 #   BEFORE setup injection).
+# - Mouse (W17b, MC 11274.1.29 / card 11386): setup() ends with ONE
+#   _ignore_mouse(self) pass — every Control under $Root IGNORE so the
+#   read-only overlay can never swallow a click aimed at the defense
+#   panel beneath it (P1: the code-built hero slots default PASS /
+#   ProgressBars default STOP, VERIFIED headless; the hud.tscn rows were
+#   IGNORE since W10, which is why the bug hid in the CODE-built nodes).
 
 const SIM_WAVE := preload("res://sim/sim_wave.gd")
 
@@ -90,6 +96,16 @@ func setup(mission) -> void:
 	toast_label = Label.new()              # W11 loot toast (the shipped
 	toast_label.name = "ToastLabel"        # hook pattern: code-built node)
 	$Root/TopLeft.add_child(toast_label)
+	# W17b (MC 11274.1.29 / card 11386): the overlay is PURE DISPLAY, so
+	# EVERY Control under $Root takes MOUSE_FILTER_IGNORE. Engine defaults
+	# are NOT display-safe (VERIFIED headless this card): the code-built
+	# hero slots default to PASS and their ProgressBars to STOP, and any
+	# Control on this CanvasLayer that answers a click swallows the build
+	# panel beneath it (the P1). mouse_filter is an input-presentation
+	# property, not mission state (I4 untouched). The pinned read-only
+	# row means no HUD button exists by contract; a future interactive
+	# control must opt back IN by setting its own filter after setup().
+	_ignore_mouse(self)
 	refresh()
 
 
@@ -259,3 +275,13 @@ func _pips(hs: Dictionary) -> String:
 	for cd: Variant in hs["cooldowns"]:
 		pips.append("-" if float(cd) <= 0.0 else "%.1fs" % float(cd))
 	return "cd " + " ".join(pips)
+
+
+# W17b (MC 11274.1.29 / card 11386): one recursive pass setting the whole
+# display overlay to IGNORE (see the setup() call site for the reason).
+# Enums are referenced as Control.MOUSE_FILTER_* — never a literal (I2).
+func _ignore_mouse(n: Node) -> void:
+	if n is Control:
+		(n as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for c: Node in n.get_children():
+		_ignore_mouse(c)

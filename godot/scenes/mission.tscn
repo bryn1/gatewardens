@@ -1,8 +1,8 @@
 [gd_scene load_steps=7 format=3]
 
-[ext_resource type="Script" path="res://scripts/mission.gd" id="1_mission"]
-[ext_resource type="Script" path="res://scripts/phase_controller.gd" id="2_phase"]
-[ext_resource type="Script" path="res://scripts/enemy_runner.gd" id="3_runner"]
+[ext_resource type="Script" uid="uid://duidisb02w2tl" path="res://scripts/mission.gd" id="1_mission"]
+[ext_resource type="Script" uid="uid://d4iftsrpsjard" path="res://scripts/phase_controller.gd" id="2_phase"]
+[ext_resource type="Script" uid="uid://xpjka6ao86h0" path="res://scripts/enemy_runner.gd" id="3_runner"]
 [ext_resource type="Mesh" path="res://assets/mesh_plane.tres" id="4_ground"]
 [ext_resource type="Material" path="res://assets/mat_ground.tres" id="5_matg"]
 

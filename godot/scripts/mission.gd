@@ -173,13 +173,13 @@ func setup(tables_in, state_in, save_store_in, bridge_in, map_id,
 	# mounts HERE — the same declared-hook idiom as the HUD above (E5-safe:
 	# everything builds in setup() after injection). This is the row's own
 	# wiring note ("the scene mount (mission adds this Control) is that
-	# row's wiring"); until now the panel existed only inside the smoke
-	# harness, so placement was UNREACHABLE in the served game. It is pure
-	# UI over mission/defense_obj state (row); step (5) relays its codes.
+	# row's wiring"); until now smoke-only, so placement was UNREACHABLE in
+	# the served game. Pure UI over mission/defense_obj; step (5) relays.
 	var panel := DEF_PANEL.new()
 	panel.name = "DefensePanel"
-	add_child(panel)
-	panel.setup(self)
+	panel.position = Vector2(904, 12)  # W17b card 11386: right column,
+	add_child(panel)                   # clear of EVERY HUD rect at
+	panel.setup(self)                  # 1280x720 (test_mission_clicks)
 
 func step(delta: float) -> void:
 	if outcome != null:
