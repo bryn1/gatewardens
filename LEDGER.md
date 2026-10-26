@@ -51,7 +51,8 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | BUILD W4 core objects | DONE — commit 5a4a0e8, 122 pytest green, fresh-process save round-trip incl materials, parse leg stderr-strict (MC 11274.1.11) |
 | BUILD W5 composition root + router + JS push | DONE — commit dab4b9f, 127 pytest green, headless boot probe green (MC 11274.1.12) |
 | BUILD W6 mission scene core | DONE — commit 9532f56, 131 pytest green, funnel RED-proven, full headless doom-run (MC 11274.1.13) |
-| BUILD W7 heroes (controller+combat+pawn scenes + smoke kill legs) | spawning |
+| BUILD W7 heroes | DONE — commit f51b966, 135 pytest green, first verified kill/blue/cooldown/swap (MC 11274.1.14) |
+| BUILD W8 defenses (placement+objects+panel + smoke tower/repair/sell/cap legs) | spawning |
 
 ## Gate rounds log
 
@@ -84,7 +85,7 @@ Parse-probe false-greens on parse failure (non-null broken resource; stderr = tr
 
 ## Engine facts (VERIFIED, bind all later waves)
 
-E1 a signal connection does NOT keep a RefCounted method-listener alive — anchor listeners (held callable/WeakRef); inline connect(obj.new(...).method) dead-ports emits. E2 JSON.parse_string float-normalizes all numbers — byte-equality enforced at the save-FILE leg; state re-encode compares _json blobs semantically. E3 quit() under -s does not abort the running frame — probes early-return explicitly. E4 off-web JavaScriptBridge EXISTS but is NEUTERED (get_object -> stderr) — guard with OS.has_feature("web"), never singleton existence. E5 under -s add_child does NOT dispatch _ready — harnesses drive _ready directly (boot_probe precedent).
+E1 a signal connection does NOT keep a RefCounted method-listener alive — anchor listeners (held callable/WeakRef); inline connect(obj.new(...).method) dead-ports emits. E2 JSON.parse_string float-normalizes all numbers — byte-equality enforced at the save-FILE leg; state re-encode compares _json blobs semantically. E3 quit() under -s does not abort the running frame — probes early-return explicitly. E4 off-web JavaScriptBridge EXISTS but is NEUTERED (get_object -> stderr) — guard with OS.has_feature("web"), never singleton existence. E5 under -s add_child does NOT dispatch _ready — harnesses drive _ready directly (boot_probe precedent). E6 CharacterBody3D: `var velocity` shadows the built-in -> parse error -> -s probe _init aborts and process HANGS (null-child spam); use `vel` + manual integration (hero_runner/enemy_runner idiom).
 
 ## Release gate (owner doctrine MC 11277 + MC 11318)
 
