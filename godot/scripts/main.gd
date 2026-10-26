@@ -165,17 +165,26 @@ func push_snapshot() -> void:
 
 
 # JS -> GDScript input relay, installed once at boot (4.7 mechanism:
-# create_callback; Godot 3's register() is gone). web_shell.html's relay
-# calls window.gwHost.on_key(code, down); the callback stays referenced
-# by this member so the JSFunction cannot die (E1 anchor discipline).
+# create_callback; Godot 3's register() AND get_object() are gone — W17d
+# measured get_object ABSENT from the shipped 4.7.2 ClassDB, so the old
+# call errored and gwHost.on_key never installed: the dead served
+# keyboard). 4.7's get_interface(name) returns a transparent JS proxy:
+# every METHOD call on it routes to the JS side (host.set(...) never
+# assigns), so the callback installs through the PROPERTY path —
+# host.on_key = _js_relay, on an UNTYPED host var (dynamic by design).
+# VERIFIED live (4.7.2 wasm + shipped shell, card 11396): keydown/keyup
+# reach _on_js_key as one Array [code:String, down:bool]; the JS call
+# returns null synchronously — this engine has no .dispatch, no promise.
+# E1 anchor is load-bearing, not ceremony: a relay held only in a local
+# died at _ready return and the JS side no-op'd silently (measured).
 func _install_js_relay() -> void:
 	if _js_bridge == null:
 		return
 	_js_relay = _js_bridge.call("create_callback", _on_js_key)
 	_js_bridge.call("eval", "window.gwHost = window.gwHost || {};", true)
-	var host: Object = _js_bridge.call("get_object", "gwHost")
+	var host = _js_bridge.call("get_interface", "gwHost")
 	if host != null and _js_relay != null:
-		host.set("on_key", _js_relay)
+		host.on_key = _js_relay
 
 
 func _on_js_key(args: Array) -> void:

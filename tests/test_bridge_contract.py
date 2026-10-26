@@ -87,6 +87,39 @@ def test_f2_3_shell_carries_engine_bootstrap():
             % token
 
 
+# ---------- W17d web-install leg (MC 11274.1.31 / card 11396) ----------
+# The SERVED keyboard contract, measured against the SHIPPED 4.7.2
+# engine (browser probe on the card trail): the web branch must install
+# the create_callback relay onto window.gwHost.on_key through the 4.7
+# get_interface PROPERTY path. get_object is the Godot 3 API absent from
+# 4.7.2 (ClassDB probe false), and METHOD calls on the get_interface
+# proxy route to the JS side (host.set(...) never assigns), so the
+# property assignment host.on_key = _js_relay is the one correct
+# install line; a local-held relay dies and no-ops (E1 anchor).
+
+
+def test_web_branch_installs_gwhost_on_key():
+    main = read(MAIN)
+    for token in ('call("create_callback", _on_js_key)',
+                  'call("get_interface", "gwHost")',
+                  'if OS.has_feature("web"):'):
+        assert token in main, \
+            "web-install token %r missing from main.gd (card 11396)" % token
+    # The assignment must live on a CODE line — card 11396's own
+    # planted-red caught a substring match satisfied by the header
+    # comment alone; an exact stripped-line match closes that hole.
+    assert any(line.strip() == "host.on_key = _js_relay"
+               for line in main.splitlines()), \
+        "install assignment missing as CODE (card 11396)"
+
+
+def test_web_branch_no_godot3_get_object_call():
+    # The retired 4.x-nonexistent call stays grep-zero as a CALL (the
+    # doctrine restatement in the comment above is prose and allowed).
+    assert 'call("get_object"' not in read(MAIN), \
+        "get_object is absent from 4.7.2 — the dead call must not return"
+
+
 # ---------- engine leg: boot probe over the real main flow ----------
 
 def test_boot_probe_boots_main_flow_headless():
