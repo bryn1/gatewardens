@@ -123,14 +123,22 @@ func place(class_id: String, tier: int, slot: int = -1) -> Dictionary:
 
 # Lifecycle routes: resolve the uid onto the mission's defense record and
 # call the obj method that owns the leg (its C3 static + ledger write).
+# Not-found is _rec's refusal ITSELF — the same {"ok": false, "why": "uid"}
+# shape sell() returns (W11b, MC 11274.1.20 / card 11330: the old
+# rec.is_empty() guard could never see the non-empty sentinel, so an
+# unknown uid fell through and rec["obj"] was a SCRIPT ERROR under -s).
 func upgrade(uid: int) -> Dictionary:
 	var rec := _rec(uid)
-	return rec if rec.is_empty() else (rec["obj"] as RefCounted).upgrade()
+	if not rec.has("obj"):
+		return rec
+	return (rec["obj"] as RefCounted).upgrade()
 
 
 func repair(uid: int) -> Dictionary:
 	var rec := _rec(uid)
-	return rec if rec.is_empty() else (rec["obj"] as RefCounted).repair()
+	if not rec.has("obj"):
+		return rec
+	return (rec["obj"] as RefCounted).repair()
 
 
 func sell(uid: int) -> Dictionary:
