@@ -58,7 +58,9 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | BUILD W11 golden sim | DONE — commit 338720e, 172 pytest green, golden full-mission WINS byte-stable (MC 11274.1.19) |
 | BUILD W11b P2 fix | DONE — commit 3a8c8b3, 175 pytest green, P2 closed (MC 11274.1.20) |
 | BUILD W12 web export x2 + served contract | DONE — commit da64196, 180 pytest green, repro VERIFIED (9 files byte-identical A/B), doc-sync static/ (MC 11274.1.21) |
-| A9 journey (orchestrator, clickable browser, served build) | running |
+| A9 journey | PASS w/ findings — evidence A9-journey.md + screenshots; findings F-1/F-2/F-3+starter all fixed in W13 |
+| BUILD W13 journey-fix (hub layout+signal lifecycle+world visibility+starter data) | DONE — commit 865b668, 190 pytest green, A9 re-journey PASS (0 console errors, visible world, data starter live) (MC 11274.1.22) |
+| CLEAN-CODE AUDIT (pre-GA, owner doctrine MC 11318) | spawning |
 
 ## Gate rounds log
 
