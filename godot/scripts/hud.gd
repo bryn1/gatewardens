@@ -27,10 +27,13 @@ extends CanvasLayer
 # - Banner copy maps the shipped outcome field only: "win" -> "VICTORY",
 #   "lose" -> "DEFEAT", null -> hidden (honest copy; no other value
 #   exists in the shipped state machine).
-# - The pinned row also names a "loot toast": DECLARED OPEN, not faked
-#   (W8 item_row precedent) — the toast renders pickup events and
-#   scripts/loot_pickup.gd (W11) does not exist yet; inventing an event
-#   source beside the pinned C12 funnel would be a second mechanism.
+# - The loot toast (W11, MC 11274.1.19 / card 11326): the event source the
+#   W10 row declared open now EXISTS — the pinned C12 funnel's slot (6)
+#   mirrors tray item drops into mission.loot_events (pinned C9 shape);
+#   the toast renders the NEWEST row through toast_text(), a pure read
+#   (zero writes, zero mutators — I4 intact). scripts/loot_pickup.gd (the
+#   Modules row's world-drop pickup rule) stays its own later row; the
+#   mission-local tray + event feed is what ships here.
 # - Live game: _process refreshes every frame (one refresh call, no
 #   math); under -s no frame dispatches (E5), so the smoke drives
 #   refresh() directly — the panel.refresh() precedent. _ready stays a
@@ -50,6 +53,7 @@ var boss_label = null
 var boss_bar = null
 var banner = null
 var slots: Array = []               # deck order, one VBoxContainer per hero
+var toast_label = null              # W11 loot toast (code-built Label)
 
 var _tint_active := Color("d8ecff")     # the highlight IS this tint:
 var _tint_idle := Color("ffffff")       # highlight_index() reads it back
@@ -83,6 +87,9 @@ func setup(mission) -> void:
 		var slot := _build_slot(i)
 		hero_bar.add_child(slot)
 		slots.append(slot)
+	toast_label = Label.new()              # W11 loot toast (the shipped
+	toast_label.name = "ToastLabel"        # hook pattern: code-built node)
+	$Root/TopLeft.add_child(toast_label)
 	refresh()
 
 
@@ -121,6 +128,7 @@ func refresh() -> void:
 		boss_label.text = boss_text()
 	banner.visible = m.outcome != null
 	banner.text = banner_text()
+	toast_label.text = toast_text()
 
 
 # ---- accessors the smoke + pytest legs read back (pure reads) ----
@@ -153,6 +161,17 @@ func core_text() -> String:
 		out += " | %s %d / %d" % [String(sub.get("id", "")),
 				int(float(sub.get("hp", 0))), int(float(sub.get("max", 0)))]
 	return out
+
+
+func toast_text() -> String:
+	# W11 loot toast (card 11326): pure read of the C12 slot-(6) event
+	# feed — the NEWEST mission.loot_events row (pinned C9 shape); "" until
+	# the funnel has emitted one. No write, no mutator, no second source.
+	if m == null or m.loot_events.is_empty():
+		return ""
+	var row: Dictionary = m.loot_events[m.loot_events.size() - 1]
+	return "Picked up %s (%s)" % [String(row["base_id"]),
+			String(row["rarity"])]
 
 
 func boss_text() -> String:

@@ -47,6 +47,8 @@ TOWERS_JSON = conftest.repo_path("godot", "data", "towers.json")
 ECONOMY_JSON = conftest.repo_path("godot", "data", "economy.json")
 ENEMIES_JSON = conftest.repo_path("godot", "data", "enemies.json")
 GATEFALL_JSON = conftest.repo_path("godot", "data", "maps", "gatefall.json")
+ITEMS_JSON = conftest.repo_path("godot", "data", "items.json")
+RARITY_JSON = conftest.repo_path("godot", "data", "rarity.json")
 
 # The six pinned C12 calls (1)..(6), verbatim call forms, in order.
 FUNNEL = [
@@ -121,6 +123,24 @@ def test_mission_smoke_engine_leg(tmp_path, class_cache):
         "-s smoke stderr must be EMPTY (true parse signal):\n%s" % proc.stderr
     _w7_rows(proc.stdout)
     _w8_rows(proc.stdout)
+    _loot_row(proc.stdout)
+
+
+def _loot_row(out):
+    """W11 (card 11326) MISSION-SMOKE-LOOT: the slot-(6) loot_pickup event
+    feed + HUD toast. base_id re-derives from items.json, rarity from the
+    rarity.json ladder — the row binds to DATA, never literals here."""
+    hits = [l for l in out.splitlines()
+            if l.startswith("MISSION-SMOKE-LOOT ")]
+    assert len(hits) == 1, "MISSION-SMOKE-LOOT row count=%d" % len(hits)
+    loot = dict(kv.split("=", 1) for kv in hits[0].split(" ")[1:])
+    bases = {b["id"] for b in _json(ITEMS_JSON)}
+    ladder = _json(RARITY_JSON)["ladder"]
+    assert int(loot["events"]) >= 1, loot
+    assert loot["base"] in bases, loot
+    assert loot["rarity"] in ladder, loot
+    assert loot["toast"] == "on", loot
+    return loot
 
 
 def _hero_row(hero_id):

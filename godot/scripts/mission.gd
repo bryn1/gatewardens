@@ -67,6 +67,10 @@ var defenses := 0
 var defense_cap := 0
 var relics_assigned := 0
 var loot_pending := 0
+var loot_events: Array = []      # C12 slot-(6) loot_pickup event rows (W11,
+                                 # MC 11274.1.19 / card 11326): item drops in
+                                 # the pinned C9 shape verbatim, HUD-toast read
+var loot_events_seen := 0        # the slot-(6) tray-walk cursor
 var outcome: Variant = null      # "win" | "lose" | null
 var boss_hp: Variant = null      # C5 F13: non-null while wave 10 is live
 var t := 0.0
@@ -244,6 +248,20 @@ func step_bookkeeping(_delta: float) -> void:
 		outcome = "lose"
 
 func step_loot(_delta: float) -> void:
+	# C12 slot (6) loot feed (W11, MC 11274.1.19 / card 11326): the tray
+	# grows in slot-(4) deaths (_on_death drops); the loot_pickup event
+	# mirror drains it HERE, one walk per drop row, item drops carried in
+	# the pinned C9 shape VERBATIM (the rolled row — no field invented;
+	# uid stays the roll-side 0, identity is the bank's C6/C9 concern).
+	# A material row is not a C9 item row (C9 is the item shape): it stays
+	# tray-only and routes to the bank's add_material leg in _end_mission.
+	# The victory-chest row is appended below on the end tick only, after
+	# this walk — it enters the bank directly, never the event feed.
+	while loot_events_seen < loot.size():
+		var drop: Dictionary = loot[loot_events_seen]
+		if String(drop.get("kind", "")) == "item":
+			loot_events.append(drop["item"])
+		loot_events_seen += 1
 	# C12 slot (6) + F2-2: on the win tick the free victory chest rolls
 	# HERE, before the C13 mission-end commit (_end_mission, once). A loss
 	# drops the pending tray (the run's loot is lost; only chest banks).

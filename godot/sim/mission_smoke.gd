@@ -26,6 +26,9 @@
 #   MISSION-SMOKE-KILL t=<tick> wave=<i> green=<x> xp=<y> loot=<l> (W7:
 #                          hero PRIMARY attack kills a live wave-0 enemy,
 #                          awards flow through the pinned death funnel)
+#   MISSION-SMOKE-LOOT events=<n> base=<id> rarity=<r> toast=on (W11: the
+#                          same kill fed the slot-(6) loot_pickup event
+#                          mirror; the HUD toast renders the newest C9 row)
 #   MISSION-SMOKE-WAVE green=<x> xp=<y>   (wave awards + build alternation)
 #   MISSION-SMOKE-REFILL blue=<x> max=<y> (full refill at combat start)
 #   MISSION-SMOKE-ABILITY ability=<id> cost=<c> blue=<b> gated=1 (W7: blue
@@ -390,6 +393,24 @@ func _init() -> void:
 		return
 	print("MISSION-SMOKE-WAVE kills=%d green=%d xp=%d loot=%d" % [
 			kills + hero_kills, m.green, m.xp_earned, m.loot_pending])
+	# --- 4a) (W11, MC 11274.1.19 / card 11326) the loot_pickup event feed:
+	#        every kill dropped into the tray in funnel slot (4); slot (6)
+	#        mirrored the item rows (pinned C9 shape) into m.loot_events
+	#        and the HUD toast renders the newest one (DECLARED read —
+	#        I4: the HUD writes nothing). The count is rng-shaped (drop
+	#        weights roll per kill), so the leg asserts feed-not-empty +
+	#        C9-field reads; pytest re-derives base/rarity from data.
+	if m.loot_events.is_empty():
+		_fail("loot_events empty after kills (loot=%d)" % m.loot.size())
+		return
+	var ev_last: Dictionary = m.loot_events[m.loot_events.size() - 1]
+	hud.refresh()
+	if String(hud.toast_text()).is_empty():
+		_fail("loot toast empty with %d events" % m.loot_events.size())
+		return
+	print("MISSION-SMOKE-LOOT events=%d base=%s rarity=%s toast=on" % [
+			m.loot_events.size(), String(ev_last["base_id"]),
+			String(ev_last["rarity"])])
 	# --- 5) the blue pool refills FULL at every combat start (C4/I4)
 	m.blue = 0.0
 	guard = 0
