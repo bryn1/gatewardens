@@ -52,7 +52,7 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | BUILD W5 composition root + router + JS push | DONE — commit dab4b9f, 127 pytest green, headless boot probe green (MC 11274.1.12) |
 | BUILD W6 mission scene core | DONE — commit 9532f56, 131 pytest green, funnel RED-proven, full headless doom-run (MC 11274.1.13) |
 | BUILD W7 heroes | DONE — commit f51b966, 135 pytest green, first verified kill/blue/cooldown/swap (MC 11274.1.14) |
-| BUILD W8 defenses | DONE — commit 26575a1, 139 pytest green, win path live (tower kills via slot-3 single site) (MC 11274.1.15) |
+| BUILD W8 defenses | DONE — commit 26575a1, 139 pytest green, win path live (tower kills via slot-3 single site) (MC 11274.1.17; card 11322 cancelled — brief-probe paraphrased the pinned file name, re-filed 11324, trail on both cards) |
 | BUILD W9 hub full (war table, gear panel+item_row, blacksmith/evolve/reroll, tinkerer, dummies, victory-chest leg) | spawning |
 
 ## Gate rounds log
