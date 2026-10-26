@@ -124,6 +124,37 @@ def test_mission_smoke_engine_leg(tmp_path, class_cache):
     _w7_rows(proc.stdout)
     _w8_rows(proc.stdout)
     _loot_row(proc.stdout)
+    _w14_rows(proc.stdout)
+
+
+def _w14_rows(out):
+    """W14 machine rows (MC 11274.1.25 / card 11341): placement is
+    reachable THROUGH the mission-mounted panel over the shipped bridge
+    (green drops EXACTLY the data base_cost; the pinned R1 full-HP sell
+    refunds 0), and the Digit2 press casts WITHOUT swapping the active
+    hero while the F-keys stay the swap path (P1-1 / P1-4). Every number
+    re-derives from towers.json / heroes.json / gatefall.json."""
+    towers = _json(TOWERS_JSON)
+    seen, first = set(), None
+    for row in towers:
+        if row["class"] not in seen:
+            seen.add(row["class"])
+            if first is None:
+                first = row
+    panel = _row(out, "MISSION-SMOKE-W14PANEL")
+    assert panel["mount"] == "1", panel
+    assert panel["class"] == first["class"], panel
+    assert int(panel["cost"]) == int(first["base_cost"]), panel
+    assert int(panel["refund"]) == 0, panel          # R1: full-HP refund 0
+    assert int(panel["green"]) == _json(GATEFALL_JSON)["start_green"], panel
+    swap = _row(out, "MISSION-SMOKE-W14SWAP")
+    warden = _hero_row("warden")
+    ab = warden["abilities"][1]                        # Digit2 = ability 2
+    assert swap["hero"] == "warden" and swap["digit2_cast"] == "1", swap
+    expected = float(ab["mana_cost"]) \
+            - float(warden["base"]["blue_regen"]) / 60.0   # regen ticks once
+    assert abs(float(swap["blue_drop"]) - expected) < 1e-6, (swap, expected)
+    assert swap["f2_hero"] == "deadeye", swap
 
 
 def _loot_row(out):

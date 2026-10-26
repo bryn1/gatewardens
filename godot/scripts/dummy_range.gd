@@ -3,18 +3,20 @@ extends Control
 # dummy_range — training dummies station (Modules row scripts/
 # dummy_range.gd, MC 11274.1.16 / card 11323). Pinned row wording:
 # "invulnerable dummy + live DPS readout", "uses real mission combat on
-# a mini-spawn"; the W9 brief words the leg "XP sink" and names the row
-# terse — DECLARED READING (both readings, no invented mechanism):
+# a mini-spawn". W14 (MC 11274.1.25 / card 11341, P3-11) REPLACES the
+# W9 XP-reading at this single site. DECLARED READING: acceptance row A6
+# names dummies ONLY as the "DPS test" and the pinned row words above
+# promise no XP; W9's "practice XP" rode on the brief's paraphrase and
+# made hub-side leveling an unbounded grind faucet (finding P3-11). The
+# faucet is CLOSED: a strike deals real damage through SimCombat.hero_hit
+# and feeds the DPS readout, and pays ZERO xp — no add_hero_xp call
+# exists in this file anymore (test_hub.py's single-site gate now
+# requires zero). A bounded variant was rejected on the zero-literal law
+# (no data file declares a bound; inventing one breaks I2).
 #   - Combat resolution is the shipped combat static SimCombat.hero_hit
 #     (the C2 single damage site heroes also ride; hero_combat itself is
 #     mission-RefCounted-bound and cannot leave the mission scene), the
 #     crit draw flows through the injected rng receiver-qualified (F2-1).
-#   - Each landed practice hit pays ONE hero exactly xp.json's declared
-#     enemy_xp_base.normal (the nearest declared XP row — no dummy-only
-#     xp key exists in the pinned data set, and inventing one would be
-#     an undeclared number, I2) through the shipped add_hero_xp mutator:
-#     SimProgression's level math and the C13 save ride inside that one
-#     mutator, nowhere else.
 #   - The dummy is INVULNERABLE BY CONSTRUCTION: the record has no hp
 #     key, so no damage path can kill it; it only accumulates absorbed
 #     damage, and the live DPS readout is absorbed / elapsed (the tick
@@ -57,8 +59,9 @@ func setup(tables_in, game_state, rng_in) -> void:
 
 
 # One practice hit by hero_id against the invulnerable dummy: damage
-# through SimCombat.hero_hit (crit roll from the injected rng), the
-# declared practice XP through the shipped C13 mutator.
+# through SimCombat.hero_hit (crit roll from the injected rng), the DPS
+# readout fed — and NO xp (P3-11 closing, header reading; meta state is
+# never touched by this station).
 func strike(hero_id: String) -> Dictionary:
 	var hero: Dictionary = {}
 	for row: Dictionary in _load_array("heroes"):
@@ -73,10 +76,8 @@ func strike(hero_id: String) -> Dictionary:
 			float(base["crit_chance"]), float(base["crit_damage"]),
 			rng.randf())
 	dummy["absorbed"] = float(dummy["absorbed"]) + float(hit["damage"])
-	var xp := int(tables.table("xp")["enemy_xp_base"]["normal"])
-	state.add_hero_xp(hero_id, xp)          # the ONE xp app site (C13)
 	last = {"ok": true, "hero": hero_id, "damage": float(hit["damage"]),
-			"crit": bool(hit["crit"]), "xp": xp}
+			"crit": bool(hit["crit"])}
 	refresh()
 	return last
 

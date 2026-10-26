@@ -37,6 +37,17 @@
 #   MISSION-SMOKE-F1SWAP hero=<id> swap_blue=<b> deadeye_max=<m> (W7: F2/F1
 #                          swap changes the ACTIVE pawn visual; the C4 blue
 #                          swap clamp bites exactly at the new hero's cap)
+#   MISSION-SMOKE-W14PANEL mount=1 class=<c> cost=<c> refund=<r> green=<g>
+#                          (W14 P1-1: the panel is mounted by mission.setup
+#                          itself; a KeyM press enters the shipped bridge,
+#                          step (5) relays it to panel.poll, the tower
+#                          lands for EXACTLY the data base_cost, and the
+#                          undo sell through the SAME panel refunds the
+#                          pinned R1 full-HP 0)
+#   MISSION-SMOKE-W14SWAP hero=<id> digit2_cast=1 blue_drop=<b> f2_hero=
+#                          <id> (W14 P1-4: a held Digit2 CASTS and changes
+#                          NO hero — pre-W14 it teleported warden->deadeye;
+#                          the F-keys stay the swap path)
 #   MISSION-SMOKE-DOWN pawns=<n> visible=<v> (all-down F2-9 with pawns live)
 #   MISSION-SMOKE-LOSE outcome=<o> ack=<a> seq=<s> (F2-9 same-tick LOSE
 #                          wins + the single C13 mission-end commit)
@@ -163,6 +174,41 @@ func _init() -> void:
 		return
 	print("MISSION-SMOKE-HUD-BUILD wave=%d secs=%d text=%s" % [
 			m.wave, build_secs, hud.wave_text()])
+	# --- W14 P1-1 (MC 11274.1.25 / card 11341): placement is reachable
+	#        IN THE LIVE PATH — mission.setup() mounted the panel itself
+	#        (the W10 HUD idiom); a KeyM press enters the SHIPPED bridge,
+	#        mission step (5) relays it to panel.poll, and the tower
+	#        lands for EXACTLY the towers.json base_cost — THROUGH the
+	#        panel path, never around it. Undo: the fresh full-HP defense
+	#        is sold through the SAME panel (pinned R1: full-HP refund 0)
+	#        and green is harness-written back to start_green (the W8
+	#        green-write / boot_probe license, declared) so the W8 legs
+	#        below run on the state they were authored against.
+	var panel = m.get_node("DefensePanel")
+	if panel == null:
+		_fail("mission.setup() mounted no DefensePanel (P1-1)")
+		return
+	if panel.class_rows.is_empty() or panel.placer == null:
+		_fail("DefensePanel.setup() built no classes/placer")
+		return
+	var p_green0 := int(m.green)
+	var p_class: Dictionary = panel.class_rows[0]
+	m.bridge.on_key("KeyM", true)
+	m.bridge.on_key("KeyM", false)
+	m.step(1.0 / 60.0)                 # step (5) routes the relayed press
+	if m.defense_list.size() != 1 \
+			or int(m.green) != p_green0 - int(p_class["cost"]):
+		_fail("P1-1 bridge place: green=%d count=%d" % [
+				m.green, m.defense_list.size()])
+		return
+	panel.select_defense(int(m.defense_list[0]["uid"]))
+	panel.handle_press("KeyN")         # full-HP sell: the pinned R1 refund
+	var p_after_sell := int(m.green)
+	var p_refund := p_after_sell - (p_green0 - int(p_class["cost"]))
+	m.green = p_green0                 # license write (header comment)
+	print("MISSION-SMOKE-W14PANEL mount=1 class=%s cost=%d refund=%d green=%d" % [
+			String(p_class["class"]), int(p_class["cost"]), p_refund,
+			int(m.green)])
 	# --- W0) W8 defense legs (MC 11274.1.15 / card 11322), all in the
 	#        build phase; every price/refund is asserted against the data
 	#        files by the pytest leg, never decided from literals here.
@@ -253,9 +299,9 @@ func _init() -> void:
 	# can_afford, and its actions route THROUGH the placer/obj APIs. The
 	# gate count rides a harness green write at exactly the trap price
 	# (the two data-cheap classes affordable, the tower class not).
-	var panel = DEF_PANEL.new()
-	root.add_child(panel)
-	panel.setup(m, placer)
+	# W14 (MC 11274.1.25): this leg now drives the SAME panel the mission
+	# mounted at setup (reuse-first; the pre-W14 smoke instantiated its
+	# own second panel around the live one).
 	m.green = int(trap_row["base_cost"])
 	panel.refresh()
 	var ids: Array = []
@@ -269,17 +315,17 @@ func _init() -> void:
 	var ps0 := int(m.green)
 	panel.select_defense(int(tres["uid"]))
 	panel.handle_press("KeyN")        # sell the full-HP trap: pinned refund 0
-	var p_refund := int(m.green) - ps0
+	var w8_refund := int(m.green) - ps0
 	panel.select_class(1)             # data order: tower, blockade, trap
 	panel.handle_press("KeyM")        # place blockade, first free slot
 	var p_cost := ps0 - int(m.green)
-	if p_refund != 0 or p_cost != int(blockade_row["base_cost"]) \
+	if w8_refund != 0 or p_cost != int(blockade_row["base_cost"]) \
 			or m.defense_list.size() != int(m.defense_cap):
 		_fail("W8 panel actions: refund=%d cost=%d count=%d" % [
-				p_refund, p_cost, m.defense_list.size()])
+				w8_refund, p_cost, m.defense_list.size()])
 		return
 	print("MISSION-SMOKE-W8PANEL-ACT refund=%d cost=%d green=%d" % [
-			p_refund, p_cost, m.green])
+			w8_refund, p_cost, m.green])
 	var w8_left := int(m.green)       # the wave-award formula's green base
 	# --- 1) build phase lasts build_seconds(waves[0]) = 25.0s, and the
 	#        wave-0 delay-0 group spawns at combat-local t = 0 (tick 1)
@@ -555,6 +601,31 @@ func _init() -> void:
 	print("MISSION-SMOKE-F1SWAP hero=%s swap_blue=%s deadeye_max=%s" % [
 			m.hero_id, str(swap_blue),
 			str(m.hero_defs["deadeye"]["base"]["blue_max"])])
+	# --- 6b2) W14 P1-4 (MC 11274.1.25 / card 11341): the digit-as-swap
+	#        collision is GONE. A held Digit2 press CASTS ability 2 (blue
+	#        drops EXACTLY heroes.json mana_cost, the shipped hero_combat
+	#        crossing) and changes the ACTIVE HERO NOT AT ALL — the same
+	#        press pre-W14 teleported the hero warden->deadeye (the audit
+	#        P1-4 RED). The F-keys stay the swap path: the follow-up F2
+	#        press DOES swap (C4 pinned keys).
+	var w14_hero := String(m.hero_id)
+	var w14_blue := float(m.blue)
+	m.bridge.on_key("Digit2", true)
+	m.step(1.0 / 60.0)
+	m.bridge.on_key("Digit2", false)
+	var w14_cost := w14_blue - float(m.blue)
+	if String(m.hero_id) != w14_hero or w14_cost <= 0.0:
+		_fail("digit-collision: hero=%s (was %s) blue-drop=%s" % [
+				m.hero_id, w14_hero, str(w14_cost)])
+		return
+	m.bridge.on_key("F2", true)
+	m.step(1.0 / 60.0)
+	m.bridge.on_key("F2", false)
+	if String(m.hero_id) == w14_hero:
+		_fail("F2 stopped swapping after the digit-alias removal")
+		return
+	print("MISSION-SMOKE-W14SWAP hero=%s digit2_cast=1 blue_drop=%s f2_hero=%s" % [
+			w14_hero, str(w14_cost), m.hero_id])
 	# --- 6c) (W10) boss bar on the boss wave: the harness writes the wave
 	#        index and calls the REAL start_wave entry (boot_probe drive-
 	#        real-entry-points license — nothing in v1 clears waves 0..9 to

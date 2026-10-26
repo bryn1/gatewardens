@@ -38,6 +38,7 @@ const GEAR_PANEL := preload("res://scripts/gear_panel_ui.gd")
 const BLACKSMITH_UI := preload("res://scripts/blacksmith_ui.gd")
 const TINKERER_UI := preload("res://scripts/tinkerer_ui.gd")
 const DUMMY_RANGE := preload("res://scripts/dummy_range.gd")
+const ASCENSION_UI := preload("res://scripts/ascension_ui.gd")
 
 # Bridge relay code -> station (Escape maps to "": closes every panel).
 const STATION := {"Digit1": "war", "Digit2": "gear", "Digit3": "blacksmith",
@@ -54,6 +55,7 @@ var gear = null
 var blacksmith = null
 var tinkerer = null
 var dummies = null
+var ascension = null    # W14 leg 3 station (MC 11274.1.25 / card 11341)
 var _panels: Dictionary = {}
 var _status = null
 
@@ -98,7 +100,7 @@ func setup(tables_in, game_state, save_store, bridge_in, rng_in) -> void:
 	box.add_child(bar)
 	for entry: Array in [["war", "War Table"], ["gear", "Gear"],
 			["blacksmith", "Blacksmith"], ["tinkerer", "Tinkerer"],
-			["dummies", "Dummies"]]:
+			["dummies", "Dummies"], ["ascension", "Ascension"]]:
 		var b := Button.new()
 		b.name = "Open_" + String(entry[0])
 		b.text = String(entry[1])
@@ -131,8 +133,15 @@ func setup(tables_in, game_state, save_store, bridge_in, rng_in) -> void:
 	dummies.name = "DummyRange"
 	slot.add_child(dummies)
 	dummies.setup(tables, state, rng)
+	# W14 leg 3 (MC 11274.1.25 / card 11341): the ascension spend station,
+	# sixth panel in the same shared slot, opened from the bar (mouse path
+	# — the Digit map above stays exactly as shipped, no new bridge codes).
+	ascension = ASCENSION_UI.new()
+	ascension.name = "Ascension"
+	slot.add_child(ascension)
+	ascension.setup(tables, state)
 	_panels = {"war": war, "gear": gear, "blacksmith": blacksmith,
-		"tinkerer": tinkerer, "dummies": dummies}
+		"tinkerer": tinkerer, "dummies": dummies, "ascension": ascension}
 	state.mutated.connect(_refresh_status)
 	_open("war")
 

@@ -11,7 +11,7 @@ plus the F-2 relay mechanism pin, each gated:
   stops quitting inside _init — a child Node's _process fires and
   Container layout computes for real), reads the shipped hub's REAL
   geometry back, and asserts title / Meta / Bar / station are four
-  mutually DISJOINT laid-out rows with the five station buttons on one
+  mutually DISJOINT laid-out rows with the six station buttons on one
   distinct laid-out row of their own. EMPTY stderr (W4 ruling). The
   arg "stacked" runs the same overlap check against the F-1 regression
   shape (labels piled at the origin) — the check MUST go RED there
@@ -109,7 +109,7 @@ class Monitor:
 			rects["bar"] = stations.get_node("Bar").get_global_rect()
 			rects["station"] = hub.war.get_global_rect()
 			for key: String in ["war", "gear", "blacksmith", "tinkerer",
-					"dummies"]:
+					"dummies", "ascension"]:
 				parents += String(hub.get(key).get_parent().name) + ","
 			for b: Node in stations.get_node("Bar").get_children():
 				btns.append((b as Control).get_global_rect())
@@ -161,7 +161,7 @@ class Monitor:
 		if rects["station"].position.y < rects["bar"].position.y \\
 				+ rects["bar"].size.y:
 			return false                  # station area below the bar
-		if btns.size() != 5:
+		if btns.size() != 6:
 			return false
 		var last_x := -1.0
 		for r: Rect2 in btns:
@@ -227,8 +227,8 @@ def test_hub_layout_engine_leg(tmp_path, class_cache):
     assert out.rstrip().endswith("GWLAYOUT-OK"), out
 
     struct = _kv(out, "GWLAYOUT-STRUCT")
-    assert struct["slot_parents"] == ",".join(["PanelSlot"] * 5) + ",", \
-        "all five stations must share the PanelSlot container: %s" % struct
+    assert struct["slot_parents"] == ",".join(["PanelSlot"] * 6) + ",", \
+        "all six stations must share the PanelSlot container: %s" % struct
 
     rows = _rects(out)
     # The A9 finding inverted: title / Meta / Bar / station pairwise
@@ -243,7 +243,7 @@ def test_hub_layout_engine_leg(tmp_path, class_cache):
 
     btn = _kv(out, "GWLAYOUT-BTN")
     xs = [float(x) for x in btn["x"].rstrip(",").split(",")]
-    assert len(xs) == 5 and xs == sorted(xs) and len(set(xs)) == 5, xs
+    assert len(xs) == 6 and xs == sorted(xs) and len(set(xs)) == 6, xs
 
     # F-2 mechanism pinned live: every war-table Start button crossed
     # through the hub's out-of-signal-frame relay (one mechanism).

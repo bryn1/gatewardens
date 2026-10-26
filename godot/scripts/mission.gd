@@ -36,17 +36,23 @@ extends Node3D
 
 const CORE_OBJ := preload("res://scripts/core_obj.gd")
 const DEF_OBJ := preload("res://scripts/defense_obj.gd")
+const DEF_PANEL := preload("res://scripts/defense_panel.gd")
 const HERO_RIG := preload("res://scripts/hero_controller.gd")
 const HUD_SCENE := preload("res://scenes/hud.tscn")
 const SIM_WAVE := preload("res://sim/sim_wave.gd")
 const SIM_COMBAT := preload("res://sim/sim_combat.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 const SIM_LOOT := preload("res://sim/sim_loot.gd")
+const SIM_PROGRESSION := preload("res://sim/sim_progression.gd")
 const MESH_CORE := preload("res://assets/mesh_core.tres")
 const MAT_CORE := preload("res://assets/mat_core.tres")
 
-const SWAP_KEYS := {"F1": 0, "F2": 1, "F3": 2,   # hero_controller row's
-	"Digit1": 0, "Digit2": 1, "Digit3": 2}        # F1-F3 + Digit aliases
+# W14 (MC 11274.1.25 / card 11341, P1-4): the swap keys are F1-F3 ONLY
+# (C4, the HUD hints). The Digit1..3 swap aliases are REMOVED — Digit1..4
+# are the hero_combat ability codes (W7 hold-level); one press must not
+# cast AND teleport the hero. Hub Digit use is hub-side routing, untouched.
+const SWAP_KEYS := {"F1": 0, "F2": 1, "F3": 2}    # hero_controller row's
+                                                   # pinned F1-F3 swap keys
 
 # ---- C5-readable mission fields (game_state.snapshot_json reads by name)
 var mission_id := ""
@@ -164,6 +170,17 @@ func setup(tables_in, state_in, save_store_in, bridge_in, map_id,
 	hud.name = "HUD"
 	add_child(hud)
 	hud.setup(self)
+	# W14 (MC 11274.1.25 / card 11341, P1-1): the build-phase defense panel
+	# mounts HERE — the same declared-hook idiom as the HUD above (E5-safe:
+	# everything builds in setup() after injection). This is the row's own
+	# wiring note ("the scene mount (mission adds this Control) is that
+	# row's wiring"); until now the panel existed only inside the smoke
+	# harness, so placement was UNREACHABLE in the served game. It is pure
+	# UI over mission/defense_obj state (row); step (5) relays its codes.
+	var panel := DEF_PANEL.new()
+	panel.name = "DefensePanel"
+	add_child(panel)
+	panel.setup(self)
 
 func step(delta: float) -> void:
 	if outcome != null:
@@ -223,9 +240,14 @@ func step_enemies(delta: float) -> void:
 		_on_reach(ent)
 
 func step_bookkeeping(_delta: float) -> void:
-	for code: String in bridge.drain_presses():    # hot-swap = index change
+	var presses: Array = bridge.drain_presses()   # one pump, routed (C12 (5))
+	for code: String in presses:                  # hot-swap = index change
 		if SWAP_KEYS.has(code):
 			_try_swap(SWAP_KEYS[code])
+	# W14 (P1-1): the build panel's codes (KeyM/KeyE/KeyN) route THROUGH
+	# the mounted panel (row: bridge input in, action out); poll() ignores
+	# every non-panel code, so the swap leg above is untouched (P1-4).
+	$DefensePanel.poll(presses)
 	for hid: String in deck:                        # down detection (BN5)
 		var hs: Dictionary = hero_state[hid]
 		if float(hs["hp"]) <= 0.0 and not bool(hs["downed"]):
@@ -235,6 +257,7 @@ func step_bookkeeping(_delta: float) -> void:
 	alive = $EnemyRunner.alive_count()
 	wave_remaining = spawn_queue.size() + alive
 	defenses = defense_list.size()
+	relics_assigned = _relics_live()   # C5 mirror, one recompute site
 	loot_pending = loot.size()
 	hero_id = deck[active] if active < deck.size() else ""
 	hero_hp = float(hero_state[hero_id]["hp"]) if hero_id != "" else 0.0
@@ -321,6 +344,70 @@ func place_defense(row: Dictionary, tier: int, at: Vector3) -> Dictionary:
 	add_child(obj.node)
 	defense_list.append({"uid": defense_uid, "obj": obj, "tick": obj.tick})
 	return {"ok": true, "uid": defense_uid, "cost": cost}
+
+# C11 (R2 relics-for-towers; W14 leg 2, MC 11274.1.25 / card 11341):
+# the pinned mission-row crossing. Build phase ONLY, one relic per
+# defense, one defense per relic (pool uids unique). The bank is NOT
+# consumed — relic_pool is the mission-local copy setup() made; the
+# bonus application lives on defense_obj (the row), the stat math in
+# SimInventory.relic_bonuses (the ONE relic static, never reimplemented).
+func assign_relic(defense_uid: int, relic_uid: int) -> Dictionary:
+	if String(phase_kind) != "build":
+		return {"ok": false, "why": "phase"}
+	var obj = _defense_by_uid(defense_uid)
+	if obj == null:
+		return {"ok": false, "why": "uid"}
+	var relic := _pool_row(relic_uid)
+	if relic.is_empty():
+		return {"ok": false, "why": "relic"}
+	if int(obj.relic_uid) != 0 or _relic_owner(relic_uid) != 0:
+		return {"ok": false, "why": "taken"}
+	obj.assign_relic(relic)
+	relics_assigned = _relics_live()
+	return {"ok": true, "uid": defense_uid, "relic": relic_uid}
+
+func unassign_relic(defense_uid: int) -> Dictionary:
+	if String(phase_kind) != "build":
+		return {"ok": false, "why": "phase"}
+	var obj = _defense_by_uid(defense_uid)
+	if obj == null:
+		return {"ok": false, "why": "uid"}
+	if int(obj.relic_uid) == 0:
+		return {"ok": false, "why": "none"}
+	# Pool semantics (C11): the row never left relic_pool, so the return
+	# IS the clear — the defense drops its bonus leg, the pool is intact.
+	var relic_uid := int(obj.relic_uid)
+	obj.clear_relic()
+	relics_assigned = _relics_live()
+	return {"ok": true, "uid": defense_uid, "relic": relic_uid}
+
+func _defense_by_uid(uid: int):
+	for rec: Dictionary in defense_list:
+		if int(rec["uid"]) == uid:
+			return rec["obj"]
+	return null
+
+func _pool_row(uid: int) -> Dictionary:
+	for row: Dictionary in relic_pool:
+		if int(row.get("uid", 0)) == uid:
+			return row
+	return {}
+
+func _relic_owner(relic_uid: int) -> int:
+	for rec: Dictionary in defense_list:
+		if int((rec["obj"] as RefCounted).relic_uid) == relic_uid:
+			return int(rec["uid"])
+	return 0
+
+# The C5 relics_assigned mirror, ONE site: count of live assignments —
+# sell-safe (a sold defense's relic returns to the pool unassigned,
+# F2-7's ±1 reads after the crossing's own call).
+func _relics_live() -> int:
+	var n := 0
+	for rec: Dictionary in defense_list:
+		if int((rec["obj"] as RefCounted).relic_uid) != 0:
+			n += 1
+	return n
 
 func _try_swap(i: int) -> void:
 	if i < 0 or i >= deck.size() or i == active:
@@ -434,6 +521,20 @@ func _make_core(id: String, kind: String, row: Dictionary, sc: Vector3):
 func _build_heroes() -> void:
 	for row: Dictionary in _load_array("heroes"):
 		hero_defs[String(row["id"])] = row
+	# W14 (MC 11274.1.25 / card 11341, P1-3): the ONE consumer site of
+	# asc_modifier — spent ascension points ride onto the mission-local
+	# hero rows (SimProgression's own aggregation, zero literals here).
+	# The rows are this mission's freshly-parsed _load_array copies, so
+	# the loaded table is never touched (C1 read-only). Every reader of
+	# base stats (hero_state hp, C4 blue_max/regen, hero_combat damage/
+	# crit/ability_power) picks the modifiers up THROUGH THIS ONE WRITE.
+	var mods: Dictionary = SIM_PROGRESSION.asc_modifier(
+			tables.table("ascension").get("tree", {}), state.asc_spent)
+	for stat: String in mods:
+		for hid: String in hero_defs:
+			var hero_base: Dictionary = hero_defs[hid]["base"]
+			if hero_base.has(stat):
+				hero_base[stat] = float(hero_base[stat]) + float(mods[stat])
 	deck = state.deck.duplicate() if not state.deck.is_empty() \
 			else hero_defs.keys()
 	for hid: Variant in deck:

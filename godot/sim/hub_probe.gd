@@ -44,20 +44,35 @@
 #   HUB-PROBE-BOOT bank=<n> gold=<g> mats=<id:n,...>
 #   HUB-PROBE-EQUIP bank_after_first=<n> bank_after_swap=<n> returned=<uid>
 #                   equipped=<base_id> relic_refused=1 bank_after_relic=<n>
+#                   unknown_refused=1 (W14 P2-10: uid not in the bank ->
+#                   pinned {ok:false,bank} refusal, bank AND worn row kept)
 #   HUB-PROBE-UPGRADE cost=<g> mats_dropped=<id:n,...> upgraded=1 rarity=<r> gold_left=<g>
 #   HUB-PROBE-EVOLVE from=<r> to=<r> cost=<g> refused=1 gold_left=<g>
 #   HUB-PROBE-REROLL cost=<g> stats_changed=1 mods_kept=<n> rarity=<r> gold_left=<g>
 #   HUB-PROBE-TINKERCAP refused=1 gold_unchanged=1 mods_unchanged=1
 #   HUB-PROBE-TINKER moved=1 cost=<g> mats_dropped=<id:n,...> source_mods=<n> target_mods=<n> gold_left=<g>
-#   HUB-PROBE-DUMMY xp=<n> level=<l> absorbed=<f> dps=<f> invulnerable=1
+#   HUB-PROBE-DUMMY xp_paid=0 meta_untouched=1 absorbed=<f> dps=<f>
+#                   invulnerable=1 (W14 P3-11: the practice-XP faucet is
+#                   CLOSED — a strike pays zero and emits mutated never)
 #   HUB-PROBE-WAR maps=gatefall:[<diffs>,] start=gatefall difficulty=hard
 #   HUB-PROBE-PANELS open=blacksmith
+#   HUB-PROBE-ASC earned=<n> refused_unknown=1 refused_over=1 spent=1
+#                   available=<n> station=visible (W14 P1-3: refusals are
+#                   spend_asc's own; the spend rides the station button)
+#   HUB-PROBE-RELIC assigned=1 refused_taken=1 refused_uid=1 refused_relic=1
+#                   refused_phase=1 refused_none=1 unequip=1 pool_intact=2
+#                   hp_delta=<f> save_roundtrip=2 asc_kept=1 effect_blue=<f>
+#                   (W14 P1-2 C11 pool crossing + single-site bonus + C13
+#                   file round-trip; effect_blue proves the asc_modifier
+#                   consumer site in mission._build_heroes)
 #   HUB-PROBE-CHEST bank_before=<n> bank_after=<n> gold_untouched=1 rarity=<r> shown=<n>
 #   HUB-PROBE-OK
 extends SceneTree
 
 const GW_TABLES := preload("res://sim/sim_tables.gd")
 const GW_COMPOSE := preload("res://sim/gw_compose.gd")
+const GW_GAME_STATE := preload("res://scripts/game_state.gd")
+const SIM_INV := preload("res://sim/sim_inventory.gd")
 const GEAR_PANEL := preload("res://scripts/gear_panel_ui.gd")
 const BLACKSMITH_UI := preload("res://scripts/blacksmith_ui.gd")
 const TINKERER_UI := preload("res://scripts/tinkerer_ui.gd")
@@ -75,6 +90,8 @@ const ITEM_A := {"base_id": "oaken_cleaver", "rarity": "worn", "ilvl": 5}
 const ITEM_B := {"base_id": "twin_fang", "rarity": "powerful", "ilvl": 12,
 	"mod": true}
 const RELIC_SPEC := {"base_id": "mark_of_fervor", "rarity": "powerful",
+	"ilvl": 3}
+const RELIC2_SPEC := {"base_id": "orb_of_the_deep", "rarity": "powerful",
 	"ilvl": 3}
 const CAP_SPEC := {"base_id": "iron_hauberk", "rarity": "worn", "ilvl": 10}
 const FREE_SPEC := {"base_id": "embercaller_focus", "rarity": "powerful",
@@ -174,8 +191,23 @@ func _init() -> void:
 		_fail("relic equip not refused: ok=%s bank=%d" % [
 				str(relic_ok), state.bank.size()])
 		return
+	# P2-10 (W14, MC 11274.1.25): an equip over a uid the bank does NOT
+	# hold is refused in the pinned {ok,bank} shape — ok only when a row
+	# actually left the bank (the shipped equip static is the site; the
+	# ghost row below is weapon-shaped so the slot gate cannot mask it).
+	var ghost: Dictionary = state.equipped["warden"]["weapon"].duplicate(true)
+	ghost["uid"] = int(ghost["uid"]) + 100000
+	var bank_p210 := int(state.bank.size())
+	var raw_p210: Dictionary = SIM_INV.equip(state.bank.duplicate(), String(DECK[0]), ghost)
+	var ghost_ok: bool = state.equip(String(DECK[0]), "weapon", ghost)
+	if bool(raw_p210["ok"]) or ghost_ok or int(state.bank.size()) != bank_p210 \
+			or int(state.equipped[String(DECK[0])]["weapon"].get("uid", 0)) \
+			== int(ghost["uid"]):
+		_fail("P2-10: unknown-uid equip ok raw=%s panel=%s bank=%d" % [
+				str(raw_p210["ok"]), str(ghost_ok), state.bank.size()])
+		return
 	print(("HUB-PROBE-EQUIP bank_after_first=%d bank_after_swap=%d returned=%d "
-			+ "equipped=%s relic_refused=1 bank_after_relic=%d") % [
+			+ "equipped=%s relic_refused=1 bank_after_relic=%d unknown_refused=1") % [
 			bank_first, bank_swap, uid_a, String(worn["base_id"]),
 			int(state.bank.size())])
 
@@ -288,18 +320,27 @@ func _init() -> void:
 			int(row_b["mods"].size()), int(tgt_row["mods"].size()),
 			int(state.gold)])
 
-	# ---- DUMMY leg: hero_hit damage + declared practice XP ----
+	# ---- DUMMY leg: hero_hit damage + the LIVE DPS readout. W14 P3-11
+	#      (MC 11274.1.25): the practice-XP faucet is CLOSED — a strike
+	#      pays ZERO xp and touches meta NEVER (heroes table and gold do
+	#      not move: the faucet crossed add_hero_xp, a mutated emitter).
+	#      Declared reading: A6 names the dummies as the DPS test only;
+	#      no data file declares a practice-XP bound, so the zero-XP
+	#      closure is the single-site honest fix (the bound would need a
+	#      literal the I2 law forbids). ----
 	var dummy_panel = DUMMY_RANGE.new()
 	root.add_child(dummy_panel)
 	dummy_panel.setup(tables, state, rng)
-	var xp_declared := int(tables.table("xp")["enemy_xp_base"]["normal"])
 	var hero0 := String(DECK[0])
 	gold0 = int(state.gold)
+	var heroes_before := JSON.stringify(state.heroes)
 	res = dummy_panel.strike(hero0)
-	if not bool(res.get("ok", false)) or int(res["xp"]) != xp_declared \
-			or int(state.heroes[hero0]["xp"]) != xp_declared \
-			or int(state.gold) != gold0:
-		_fail("dummy xp: %s state=%s gold=%d" % [str(res), str(state.heroes), state.gold])
+	if not bool(res.get("ok", false)) or res.has("xp") \
+			or float(res["damage"]) <= 0.0 \
+			or int(state.gold) != gold0 \
+			or JSON.stringify(state.heroes) != heroes_before:
+		_fail("dummy paid xp or wrote meta: %s heroes=%s gold=%d" % [
+				str(res), str(state.heroes), state.gold])
 		return
 	# Invulnerable BY SHAPE: the dummy record has no hp key, so no damage
 	# path can lower one — the leg asserts the shape, not a magic number.
@@ -312,9 +353,8 @@ func _init() -> void:
 	if d_absorbed <= 0.0 or absf(dummy_panel.dps() - d_absorbed) > 1e-9:
 		_fail("dummy dps: absorbed=%s dps=%s" % [str(d_absorbed), str(dummy_panel.dps())])
 		return
-	print("HUB-PROBE-DUMMY xp=%d level=%d absorbed=%.2f dps=%.2f invulnerable=1" % [
-			xp_declared, int(state.heroes[hero0]["level"]), d_absorbed,
-			dummy_panel.dps()])
+	print("HUB-PROBE-DUMMY xp_paid=0 meta_untouched=1 absorbed=%.2f dps=%.2f invulnerable=1" % [
+			d_absorbed, dummy_panel.dps()])
 
 	# ---- WAR + PANELS legs: the REAL hub scene ----
 	var spy = RouterSpy.new()
@@ -348,6 +388,47 @@ func _init() -> void:
 		return
 	print("HUB-PROBE-PANELS open=blacksmith")
 
+	# ---- ASC leg (W14 P1-3, MC 11274.1.25 / card 11341): the ascension
+	#      station over the REAL hub mount. Points are earned through the
+	#      shipped level mutator; every refusal (unknown power, over the
+	#      balance) is spend_asc's own answer, never a panel-side copy;
+	#      the spend rides the station's OWN button signal; the balance
+	#      and per-node counts read back off meta + the station's label.
+	#      The EFFECT leg is asserted at the pinned consumer site below
+	#      (mission setup applies the tree modifier — blue_max row).
+	var asc_json: Dictionary = tables.table("ascension")
+	var asc_tree: Dictionary = asc_json["tree"]
+	var per_level := int(asc_json["points_per_level"])
+	state.add_hero_xp(hero0, int(tables.table("xp")["hero_curve"][0]))
+	var asc_earned := int(state.asc_earned)
+	var asc_unknown_no: bool = state.spend_asc(asc_tree, "no_such_power", 1)
+	var asc_over_no: bool = state.spend_asc(asc_tree, "iron_will", asc_earned + 1)
+	if asc_earned != per_level or bool(asc_unknown_no) or bool(asc_over_no) \
+			or not state.asc_spent.is_empty():
+		_fail("asc earn/refusals: earned=%d unknown=%s over=%s spent=%s" % [
+				asc_earned, str(asc_unknown_no), str(asc_over_no),
+				str(state.asc_spent)])
+		return
+	hub._open("ascension")
+	if not bool(hub.ascension.visible) or bool(hub.blacksmith.visible):
+		_fail("ascension station routing wrong: %s" % str(hub._panels))
+		return
+	var spend_btn = hub.ascension.get_node(
+			"Ascension/Trees/Power_reservoir/Spend_reservoir")
+	spend_btn.pressed.emit()                    # the station's own control
+	var res_pts := int(state.asc_spent.get("reservoir", 0))
+	hub.ascension.refresh()
+	if res_pts != 1 or hub.ascension.available() != 0 \
+			or not bool(spend_btn.disabled):
+		_fail("asc spend: pts=%d avail=%d grey=%s" % [
+				res_pts, hub.ascension.available(), str(spend_btn.disabled)])
+		return
+	print("HUB-PROBE-ASC earned=%d refused_unknown=1 refused_over=1 spent=1 available=%d station=visible" % [
+			asc_earned, hub.ascension.available()])
+
+	# ---- RELIC leg (W14 P1-2, MC 11274.1.25 / card 11341): the pinned
+	#      C11 crossing on the REAL mission scene (instantiated below).
+
 	# ---- CHEST leg: the mission-end commit carries the bank +1 ----
 	var mpacked = ResourceLoader.load(MISSION_SCENE)
 	if mpacked == null:
@@ -358,7 +439,119 @@ func _init() -> void:
 	m._ready()
 	var m_rng := RandomNumberGenerator.new()
 	m_rng.seed = 11274
+	state.bank_add(_scripted_item(RELIC2_SPEC))   # pool-side before setup()
 	m.setup(tables, state, save, bridge, "gatefall", "normal", m_rng)
+	# RELIC leg body (comment above): pinned C11 crossing + refusals +
+	# unequip-return + the single-site bonus observable + save round-trip.
+	var pool_a: Dictionary = {}
+	var pool_b: Dictionary = {}
+	for pool_row: Dictionary in m.relic_pool:
+		if String(pool_row["base_id"]) == String(RELIC_SPEC["base_id"]):
+			pool_a = pool_row
+		if String(pool_row["base_id"]) == String(RELIC2_SPEC["base_id"]):
+			pool_b = pool_row
+	if pool_a.is_empty() or pool_b.is_empty() or int(m.relics_assigned) != 0:
+		_fail("relic pool copy: %s assigned=%d" % [str(m.relic_pool.size()),
+				m.relics_assigned])
+		return
+	var tower_row: Dictionary = {}
+	for trow: Dictionary in _rows("towers"):
+		if String(trow["class"]) == "tower":
+			tower_row = trow
+			break
+	var rl_g0 := int(m.green)
+	var rl_p1: Dictionary = m.place_defense(tower_row, 1, Vector3.ZERO)
+	var rl_p2: Dictionary = m.place_defense(tower_row, 1, Vector3(2, 0, 0))
+	if not bool(rl_p1["ok"]) or not bool(rl_p2["ok"]) \
+			or int(m.green) != rl_g0 - 2 * int(tower_row["base_cost"]):
+		_fail("relic leg place: %s %s green=%d" % [str(rl_p1), str(rl_p2),
+				m.green])
+		return
+	var def_a = _probe_defense(m, int(rl_p1["uid"]))
+	var def_b = _probe_defense(m, int(rl_p2["uid"]))
+	var dps0 := float(def_a.dps())
+	var hp0 := float(def_a.hp_max)
+	var ref_none: Dictionary = m.unassign_relic(int(rl_p1["uid"]))
+	var ar1: Dictionary = m.assign_relic(int(rl_p1["uid"]),
+			int(pool_a["uid"]))          # damage leg rides onto the tower
+	if not bool(ar1["ok"]) or int(m.relics_assigned) != 1 \
+			or float(def_a.dps()) <= dps0 or float(def_a.hp_max) != hp0:
+		_fail("assign A: %s assigned=%d dps %s->%s" % [str(ar1),
+				m.relics_assigned, str(dps0), str(def_a.dps())])
+		return
+	var hp_b0 := float(def_b.hp_max)     # BEFORE the bonus leg rides on
+	var dps_b0 := float(def_b.dps())
+	var ar2: Dictionary = m.assign_relic(int(rl_p2["uid"]),
+			int(pool_b["uid"]))          # hp leg: hp_max rises, dps stays
+	if not bool(ar2["ok"]) or int(m.relics_assigned) != 2 \
+			or float(def_b.hp_max) <= hp_b0 or float(def_b.dps()) != dps_b0:
+		_fail("assign B: %s assigned=%d hp %s->%s" % [str(ar2),
+				m.relics_assigned, str(hp_b0), str(def_b.hp_max)])
+		return
+	# Slot-cap refusals BOTH ways: a relic already worn is refused, and
+	# a defense that already carries one is refused; uid/relic/phase/none
+	# refusals ride the same shipped gates.
+	var ref_taken: Dictionary = m.assign_relic(int(rl_p2["uid"]),
+			int(pool_a["uid"]))
+	var ref_uid: Dictionary = m.assign_relic(999999, int(pool_a["uid"]))
+	var ref_rel: Dictionary = m.assign_relic(int(rl_p1["uid"]), 999999)
+	m.phase_kind = "combat"              # drive-real-entry-points write
+	var ref_phase: Dictionary = m.assign_relic(int(rl_p1["uid"]),
+			int(pool_b["uid"]))
+	m.phase_kind = "build"
+	if String(ref_taken["why"]) != "taken" or String(ref_uid["why"]) != "uid" \
+			or String(ref_rel["why"]) != "relic" \
+			or String(ref_none["why"]) != "none" \
+			or String(ref_phase["why"]) != "phase" \
+			or int(m.relics_assigned) != 2:
+		_fail("relic refusals: %s %s %s %s %s count=%d" % [str(ref_taken),
+				str(ref_uid), str(ref_rel), str(ref_none), str(ref_phase),
+				m.relics_assigned])
+		return
+	# Unequip-return (C11 pool): the clear drops the bonus legs; the row
+	# never left relic_pool, so the pool count is intact afterwards.
+	var un: Dictionary = m.unassign_relic(int(rl_p1["uid"]))
+	if not bool(un["ok"]) or int(m.relics_assigned) != 1 \
+			or absf(float(def_a.dps()) - dps0) > 1e-6 \
+			or absf(float(def_a.hp_max) - hp0) > 1e-6 \
+			or m.relic_pool.size() != 2:
+		_fail("unequip-return: %s assigned=%d dps=%s pool=%d" % [str(un),
+				m.relics_assigned, str(def_a.dps()), m.relic_pool.size()])
+		return
+	# Save round-trip (C13): every seeded relic row AND the ascension
+	# spend ride the save FILE into a freshly reloaded state — the pool
+	# of the NEXT mission is rebuilt from that bank (setup() above read
+	# it live; the same source feeds the reload).
+	var raw_r: Dictionary = save.load_save()
+	var st_r = GW_GAME_STATE.new(tables)
+	st_r.from_save(raw_r)
+	var relics_back := 0
+	for row: Dictionary in st_r.bank:
+		if String(row.get("slot", "")) == "relic":
+			relics_back += 1
+	if relics_back != 2 or int(st_r.asc_earned) != asc_earned \
+			or int(st_r.asc_spent.get("reservoir", 0)) != res_pts:
+		_fail("save round-trip: relics=%d asc=%s/%s" % [relics_back,
+				str(st_r.asc_earned), str(st_r.asc_spent)])
+		return
+	# Effect at the pinned consumer site: mission setup applied reservoir
+	# (+val blue_max per point) to the LOCAL hero rows — blue_max reads
+	# it, and the snapshot mirrors the same value.
+	var wbase := 0.0
+	for hrow: Dictionary in _rows("heroes"):
+		if String(hrow["id"]) == hero0:
+			wbase = float(hrow["base"]["blue_max"])
+	var rrow := _asc_power("reservoir")
+	var want_blue := wbase + float(rrow["per_point"]["val"]) * res_pts
+	var snap: Dictionary = JSON.parse_string(state.snapshot_json(m))
+	if absf(float(m.blue_max) - want_blue) > 1e-6 \
+			or absf(float(snap.get("blue_max", -1.0)) - want_blue) > 1e-6 \
+			or int(snap.get("relics_assigned", -1)) != int(m.relics_assigned):
+		_fail("asc effect at mission site: blue_max=%s want=%s snap=%s" % [
+				str(m.blue_max), str(want_blue), str(snap.get("blue_max"))])
+		return
+	print("HUB-PROBE-RELIC assigned=1 refused_taken=1 refused_uid=1 refused_relic=1 refused_phase=1 refused_none=1 unequip=1 pool_intact=2 hp_delta=%.1f save_roundtrip=2 asc_kept=1 effect_blue=%.1f" % [
+			float(def_b.hp_max) - hp_b0, want_blue])
 	var bank_before := int(state.bank.size())
 	gold0 = int(state.gold)
 	m.win_pending = true                           # drive-real-entry-points
@@ -389,6 +582,23 @@ func _init() -> void:
 
 
 # ---------- helpers ----------
+
+func _probe_defense(m, uid: int):
+	for rec: Dictionary in m.defense_list:
+		if int(rec["uid"]) == uid:
+			return rec["obj"]
+	_fail("no defense uid %d" % uid)
+	return null
+
+
+func _asc_power(power: String) -> Dictionary:
+	for branch: Variant in tables.table("ascension")["tree"].values():
+		for row: Dictionary in branch:
+			if String(row["id"]) == power:
+				return row
+	_fail("no ascension power %s" % power)
+	return {}
+
 
 func _fail(why: String) -> void:
 	print("HUB-PROBE FAIL " + why)

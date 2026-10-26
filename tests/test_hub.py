@@ -24,7 +24,7 @@ Readings recorded (R-list, card trail):
 - hub_probe.gd carries `# hygiene:` like mission_smoke: machine-row
   headers hold digit-bearing doc text, so the file is exempt from the
   cost-literal gate (test assets encode the expected numbers; the gate
-  scopes the SHIPPED hub layer: hub.gd + the 6 station scripts).
+  scopes the SHIPPED hub layer: hub.gd + the 7 station scripts).
 - game_state.gd next_uid() now also anchors rows worn mid-session (the
   mission-end chest leg bank_adds while gear is equipped; a bank-only
   max could stamp a uid a worn row still carries and the pinned
@@ -53,10 +53,13 @@ WAR_GD = SCRIPTS / "war_table.gd"
 SMITH_GD = SCRIPTS / "blacksmith_ui.gd"
 TINK_GD = SCRIPTS / "tinkerer_ui.gd"
 DUMMY_GD = SCRIPTS / "dummy_range.gd"
+ASC_GD = SCRIPTS / "ascension_ui.gd"
 GS_GD = SCRIPTS / "game_state.gd"
-# The shipped hub layer W9 authors: the cost-literal gate's scope.
-HUB_LAYER = [HUB_GD, GEAR_GD, ROW_GD, WAR_GD, SMITH_GD, TINK_GD, DUMMY_GD]
-STATIONS = [GEAR_GD, SMITH_GD, TINK_GD, DUMMY_GD]
+# The shipped hub layer W9 authors (+ ascension_ui, W14 leg 3): the
+# cost-literal gate's scope.
+HUB_LAYER = [HUB_GD, GEAR_GD, ROW_GD, WAR_GD, SMITH_GD, TINK_GD, DUMMY_GD,
+             ASC_GD]
+STATIONS = [GEAR_GD, SMITH_GD, TINK_GD, DUMMY_GD, ASC_GD]
 
 # The I2 structural set (ARCHITECTURE.md; test_mission_smoke's reading):
 # math constants, slot/arity indices, sentinels — no cost value survives.
@@ -137,6 +140,9 @@ def test_hub_probe_engine_leg(tmp_path, class_cache):
     assert eq["equipped"] == twin["id"], eq
     assert eq["relic_refused"] == "1", eq
     assert int(eq["bank_after_relic"]) == 2, eq  # A back + the relic row
+    # W14 P2-10: a uid the bank does not hold is refused in the pinned
+    # {ok,bank} shape — ok only when a row actually left the bank.
+    assert eq["unknown_refused"] == "1", eq
 
     up = _rows(out, "HUB-PROBE-UPGRADE")
     cost = int(BLACKSMITH["upgrade"]["gold_by_rarity"]["worn"])
@@ -171,13 +177,14 @@ def test_hub_probe_engine_leg(tmp_path, class_cache):
     assert int(tk["gold_left"]) == int(boot["gold"]) - _service_gold(), tk
 
     dm = _rows(out, "HUB-PROBE-DUMMY")
-    xp_one = int(XP["enemy_xp_base"]["normal"])
-    assert int(dm["xp"]) == xp_one, dm
-    # level from the shipped cumulative curve: 1 + thresholds <= xp.
-    assert int(dm["level"]) == 1 + sum(
-        1 for need in XP["hero_curve"] if xp_one >= need), dm
+    # W14 P3-11 (declared reading, R-list): the practice-XP faucet is
+    # CLOSED — the dummy is the DPS test A6 names; strike pays zero XP
+    # and never emits mutated (meta untouched; the row carries the proof
+    # the probe asserted over the whole heroes table + gold).
+    assert dm["xp_paid"] == "0" and dm["meta_untouched"] == "1", dm
     assert dm["invulnerable"] == "1", dm
     assert abs(float(dm["dps"]) - float(dm["absorbed"])) < 1e-6, dm
+    assert float(dm["dps"]) > 0.0, dm
 
     war = _rows(out, "HUB-PROBE-WAR")
     assert "normal" in war["maps"] and "hard" in war["maps"], war
@@ -185,6 +192,37 @@ def test_hub_probe_engine_leg(tmp_path, class_cache):
 
     panels = _rows(out, "HUB-PROBE-PANELS")
     assert panels["open"] == "blacksmith", panels
+
+    asc = _rows(out, "HUB-PROBE-ASC")
+    # W14 P1-3: one hero level-up earns points_per_level points (xp.json
+    # x ascension.json), both refusals are spend_asc's own answers, the
+    # station's button spent exactly one and left zero available.
+    ascension = read_json("ascension")
+    assert int(asc["earned"]) == int(ascension["points_per_level"]), asc
+    assert asc["refused_unknown"] == "1" and asc["refused_over"] == "1", asc
+    assert asc["spent"] == "1" and int(asc["available"]) == 0, asc
+    assert asc["station"] == "visible", asc
+
+    rl = _rows(out, "HUB-PROBE-RELIC")
+    # W14 P1-2 (C11 pool) machine rows: the probe asserted the pinned
+    # mission crossing + both slot-cap refusals + uid/relic/phase/none
+    # refusals + unequip-return; hp_delta re-derives from items.json
+    # (orb_of_the_deep primary = hp) and the scripted ilvl the probe
+    # seeds (fixture input, not a balance literal). effect_blue proves
+    # the asc_modifier consumer site: heroes.json base + reservoir val.
+    assert all(rl[k] == "1" for k in ("assigned", "refused_taken",
+               "refused_uid", "refused_relic", "refused_phase",
+               "refused_none", "unequip", "asc_kept")), rl
+    assert rl["pool_intact"] == "2" and rl["save_roundtrip"] == "2", rl
+    orb = next(r for r in ITEMS if r["id"] == "orb_of_the_deep")
+    assert orb["primary"] == "hp", orb           # the hp leg is the data
+    assert abs(float(rl["hp_delta"]) - 3.0) < 1e-6, rl   # scripted ilvl 3
+    heroes = {h["id"]: h for h in read_json("heroes")}
+    res_row = next(row for row in ascension["tree"]["defense"]
+                   if row["id"] == "reservoir")
+    want_blue = float(heroes["warden"]["base"]["blue_max"]) \
+        + float(res_row["per_point"]["val"])
+    assert abs(float(rl["effect_blue"]) - want_blue) < 1e-6, (rl, want_blue)
 
     chest = _rows(out, "HUB-PROBE-CHEST")
     assert int(chest["bank_after"]) == int(chest["bank_before"]) + 1, chest
@@ -269,13 +307,25 @@ def test_payment_and_xp_sites_are_named_and_scoped():
         "blacksmith pays through exactly one spend_gold site"
     assert len(re.findall(r"state\.spend_gold\(", _blank(TINK_GD))) == 1, \
         "tinkerer pays through exactly one spend_gold site"
-    for path in (GEAR_GD, WAR_GD, DUMMY_GD):
+    for path in (GEAR_GD, WAR_GD, DUMMY_GD, ASC_GD):
         assert not re.search(r"spend_gold|consume_material", _blank(path)), \
             "%s is a free leg: no meta spend allowed" % path.name
+    # W14 P3-11 (declared reading): the dummy practice-XP faucet is
+    # CLOSED — ZERO add_hero_xp sites in the hub layer. The bound the
+    # brief paraphrased names no data source, and a literal cap would
+    # break I2; A6 declares the dummies as the DPS test only.
     total = sum(len(re.findall(r"add_hero_xp\(", _blank(p))) for p in HUB_LAYER)
-    assert total == 1, "practice XP applies through add_hero_xp once"
-    assert re.search(r"add_hero_xp\(", _blank(DUMMY_GD)), \
-        "the dummy range owns the XP leg (pinned row)"
+    assert total == 0, "the hub layer must not open an XP faucet (P3-11)"
+    assert not re.search(r"add_hero_xp\(", _blank(DUMMY_GD)), \
+        "dummy_range is a DPS instrument only (the faucet stays closed)"
+    # W14 P1-3: ascension points leave the account through exactly ONE
+    # crossing — the station's shipped spend_asc mutator call.
+    assert len(re.findall(r"state\.spend_asc\(", _blank(ASC_GD))) == 1, \
+        "the ascension station pays through exactly one spend_asc site"
+    for path in HUB_LAYER:
+        if path != ASC_GD:
+            assert not re.search(r"spend_asc\(", _blank(path)), \
+                "%s opens a second ascension spend door" % path.name
 
 
 def test_no_bank_writes_beside_the_mutators():
@@ -311,7 +361,9 @@ def test_dummy_is_unkillable_by_shape():
 # ---------- source truth: the shared item_row widget -------------------
 
 def test_item_row_widget_is_shared_not_duplicated():
-    for path in (GEAR_GD, SMITH_GD, TINK_GD):
+    # W14 (F2-12): the relic pickers render through the SAME widget —
+    # the defense_panel (mission layer) joins the hub's three users.
+    for path in (GEAR_GD, SMITH_GD, TINK_GD, SCRIPTS / "defense_panel.gd"):
         assert re.search(r'preload\("res://scenes/item_row\.tscn"\)',
                          read_text(path)), \
             "%s must render rows with the shared item_row scene" % path.name
@@ -320,7 +372,7 @@ def test_item_row_widget_is_shared_not_duplicated():
         defs += len(re.findall(r"^func show_item\(", read_text(gd), re.M))
     assert defs == 1, \
         "exactly ONE show_item exists repo-wide (gear, blacksmith, tinkerer " \
-        "all render through the single item_row widget)"
+        "and the relic picker all render through the single item_row widget)"
     assert not re.search(r"show_item|item_row", _blank(HUB_GD)), \
         "hub.gd composes panels only — no row rendering beside the widget"
 

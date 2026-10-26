@@ -56,7 +56,13 @@ static func equip(bank: Array, hero: String, item: Dictionary) -> Dictionary:
 			break
 	if index >= 0:
 		kept.remove_at(index)
-	return {"ok": true, "bank": kept}
+		return {"ok": true, "bank": kept}
+	# P2-10 (W14 leg 5, MC 11274.1.25): an uid the bank does not hold (or
+	# an unreferenced row) is REFUSED in the pinned {ok,bank} shape — ok
+	# only when a row actually left the bank. The old fall-through said
+	# ok:true for any weapon/armor/ring-shaped argument, which let a
+	# caller mark a phantom row worn while the bank kept everything.
+	return {"ok": false, "bank": kept}
 
 
 # Blacksmith Upgrade: gold ladder by the item's declared rarity + the flat

@@ -45,11 +45,15 @@
 #   later engagement wave will call, and the smoke harness uses it to
 #   set up C3's missing-ratio legs (the boot_probe drive-real-entry-points
 #   license).
-# - Relic bonus (C11): applied in a later wave on top of the tier row via
-#   SimInventory.relic_bonuses — mission.relic_pool already ships (W6).
+# - Relic bonus (C11): APPLIED HERE (W14 leg 2, MC 11274.1.25 / card
+#   11341) on top of the tier row via SimInventory.relic_bonuses — the
+#   ONE relic stat site (mission.assign_relic routes the row here; the
+#   relic bases' stats are exactly the tier-row keys items.json rolls:
+#   damage/hp/fire_rate/range — no stat is invented).
 
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 const SIM_COMBAT := preload("res://sim/sim_combat.gd")
+const SIM_INVENTORY := preload("res://sim/sim_inventory.gd")
 
 const MESH_TOWER := preload("res://assets/mesh_capsule.tres")
 const MESH_BLOCK := preload("res://assets/mesh_box.tres")
@@ -70,6 +74,36 @@ var fire_acc := 0.0         # trap charge meter (one drain per fire-second)
 var pos := Vector3.ZERO
 var node = null             # greybox MeshInstance3D (made here, added by mission)
 var fire_by_class: Dictionary = {}   # pinned class-dispatch dict
+var relic_uid := 0          # assigned relic pool uid (0 = none, C11)
+var relic_bonuses: Dictionary = {}   # stat -> add (SimInventory's, C11)
+
+
+# C11 (W14 leg 2): the mission's assign_relic/unassign_relic crossing
+# lands its bonus HERE (the pinned application site, header). The hp leg
+# re-derives hp_max through the tier application; current hp is clamped,
+# never healed, by a relic move (declared reading).
+func assign_relic(item: Dictionary) -> void:
+	relic_uid = int(item.get("uid", 0))
+	relic_bonuses = SIM_INVENTORY.relic_bonuses(item)
+	hp_max = float(bonus_row()["hp"])
+	hp = minf(hp, hp_max)
+
+
+func clear_relic() -> void:
+	relic_uid = 0
+	relic_bonuses = {}
+	hp_max = float(bonus_row()["hp"])
+	hp = minf(hp, hp_max)
+
+
+# The tier row with the relic's stat adds on top — the ONE read path for
+# a tier VALUE (dps, range, hp all ride it). No relic = the bare tier row.
+func bonus_row() -> Dictionary:
+	var row: Dictionary = tier_row().duplicate()
+	for stat: String in relic_bonuses:
+		if row.has(stat):
+			row[stat] = float(row[stat]) + float(relic_bonuses[stat])
+	return row
 
 
 # One-call parameterization (setup-by-injection, R3): T1 at build (the
@@ -96,7 +130,7 @@ func tier_row() -> Dictionary:
 
 
 func dps() -> float:
-	return SIM_COMBAT.tower_dps(tier_row())
+	return SIM_COMBAT.tower_dps(bonus_row())
 
 
 func missing_ratio() -> float:
@@ -120,7 +154,7 @@ func tick(delta: float) -> void:
 
 
 func _fire_tower(delta: float) -> void:
-	var target: Dictionary = _nearest(float(tier_row()["range"]))
+	var target: Dictionary = _nearest(float(bonus_row()["range"]))
 	if target.is_empty():
 		return
 	# THE tower_dps application site (slot 3, single I4 site):
@@ -134,7 +168,7 @@ func _fire_blockade(_delta: float) -> void:
 func _fire_trap(delta: float) -> void:
 	if charges <= 0:
 		return
-	var target: Dictionary = _nearest(float(tier_row()["range"]))
+	var target: Dictionary = _nearest(float(bonus_row()["range"]))
 	if target.is_empty():
 		return
 	m.get_node("EnemyRunner").damage(target, dps() * delta)
@@ -203,7 +237,7 @@ func sell() -> Dictionary:
 
 
 func _apply_tier() -> void:
-	hp_max = float(tier_row()["hp"])
+	hp_max = float(bonus_row()["hp"])
 	hp = hp_max
 
 
