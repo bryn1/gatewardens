@@ -4,8 +4,18 @@
 Rules (docs/ARCHITECTURE.md):
   ceiling   .gd/.py <= 400 lines HARD (250 soft -> informational note);
             files under tests/ <= 600; a first line "# hygiene: <reason>"
-            exempts the hard ceiling (header reason); data/config files
-            (every other extension) are exempt from ceilings entirely.
+            exempts the 400 ceiling but NEVER the absolute 600 (the fleet
+            hygiene law is 600 hard; a header buying past it is the abuse
+            W16/MC 11274.1.28 ended); data/config files (every other
+            extension) are exempt from ceilings entirely.
+  i2-literal  governed .gd scripts carry structural number literals only:
+            every plain number literal surviving blank_code is in
+            STRUCT_VALS (math constants, slot/arity indices, sentinels —
+            no cost or ratio value can survive it). Governed set = the
+            union the tests hand-held until W16 (ARCHITECTURE I2's five
+            + the twelve hub/defense files test_hub/test_hud/
+            test_mission_smoke scanned); STRUCT_VALS below is the ONE
+            home, tests import it from here — no copies.
   tripwire  I1 monetization TRIPWIRE over a named-token list (NOT a
             closure, F2-4) across godot/ server/ static/ tools/ tests/
             CODE (.gd .py .cfg .godot .html .htm .js .css) with comments
@@ -21,8 +31,9 @@ Rules (docs/ARCHITECTURE.md):
             I8 scope dirs godot/ server/ static/ (+ README.md if present).
             .audits/ and docs/ are prose and exempt (I8 names them).
 
-The I2 number-literal whitelist arrives with the governed scene scripts
-(W3+) and lands in this file then — no second gate beside this one.
+The I2 structural-literal rule landed HERE with W16 (MC 11274.1.28): the
+gate the tests used to hand-hold, now the gate itself — the tests keep
+their per-file scopes but import STRUCT_VALS from here.
 """
 
 import os
@@ -54,6 +65,30 @@ VS_NAMES = ("VS_STATE", "__vsSnapshot", "vsHost")
 IDENT_RE = re.compile(r"[A-Za-z][A-Za-z0-9_]*")
 BARE_RAND_RE = re.compile(r"(?<![.\w])(?:randf|randi)\s*\(")
 QUAL_RAND_RE = re.compile(r"\.\s*(?:randf|randi)\s*\(")
+
+# I2 structural number set — the ONE home (W16, MC 11274.1.28). Math
+# constants, slot/arity indices, sentinels: no cost or ratio value can
+# survive it. Tests (test_hub/test_hud/test_mission_smoke) import this;
+# the per-file scopes stay in the tests, the set does not get copies.
+STRUCT_VALS = {0.0, 1.0, 2.0, 3.0, 4.0, 0.5}
+LITERAL_RE = re.compile(r"\b\d+(?:\.\d+)?\b")
+
+# The governed scripts: ARCHITECTURE I2's five, joined by the twelve the
+# tests scanned by hand until W16 (hub layer 8 + hud + the defense three).
+GOVERNED_LITERALS = {os.path.join("godot", "scripts", n) for n in (
+    "hero_combat.gd", "enemy_runner.gd", "defense_obj.gd",
+    "phase_controller.gd", "hero_controller.gd", "hud.gd", "hub.gd",
+    "gear_panel_ui.gd", "item_row.gd", "war_table.gd", "blacksmith_ui.gd",
+    "tinkerer_ui.gd", "dummy_range.gd", "ascension_ui.gd",
+    "defense_placer.gd", "defense_panel.gd")}
+
+
+def literal_violations(text):
+    """The structural-literal rule, one home (gate + tests): comments and
+    strings blanked first (BN1 pre-pass), then every plain number literal
+    outside STRUCT_VALS, sorted."""
+    code = blank_code(text, "gd")
+    return sorted({float(n) for n in LITERAL_RE.findall(code)} - STRUCT_VALS)
 
 
 def blank_code(text, family):
@@ -164,7 +199,14 @@ def main():
                 in_tests = rel(path).split(os.sep)[0] == "tests"
                 ceiling = 600 if in_tests else 400
                 exempt = lines[0].startswith("# hygiene:") if lines else False
-                if len(lines) > ceiling and not exempt:
+                # W16 (MC 11274.1.28): a header exemption lifts the class
+                # ceiling, never the absolute 600 — the fleet law is 600
+                # hard and the "kept whole" headers bought past it.
+                if exempt and len(lines) > 600:
+                    errors.append("%s:1: [ceiling] %d lines > 600 — a header "
+                                  "exemption never reaches past the absolute "
+                                  "ceiling (W16)" % (rel(path), len(lines)))
+                elif len(lines) > ceiling and not exempt:
                     errors.append("%s:1: [ceiling] %d lines > %d" %
                                   (rel(path), len(lines), ceiling))
                 elif len(lines) > 250 and not in_tests:
@@ -182,6 +224,12 @@ def main():
                         notes.append("note: %s:%d sanctioned draw: %s(" %
                                      (rel(path), lineno,
                                       match.group(0).strip().lstrip(".")))
+                if rel(path) in GOVERNED_LITERALS:
+                    bad = literal_violations(read(path))
+                    if bad:
+                        errors.append("%s: [i2-literal] non-structural "
+                                      "number literals %r — costs/ratios "
+                                      "ride the data (I2)" % (rel(path), bad))
             text = blank_code(read(path), CODE_EXTS[os.path.splitext(path)[1].lower()])
             for lineno, line in enumerate(text.split("\n"), 1):
                 for ident in IDENT_RE.findall(line):

@@ -63,7 +63,7 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | CLEAN-CODE AUDIT | DONE — REVIEW.md, VERDICT FIX (4 P1 behavior gaps + refactor-safe set; MC 11274.1.23) |
 | BUILD W14 P1 behavior legs | DONE — commit 1067391, 190 pytest green, golden byte-unchanged, all 4 P1 + P2-10 + P3-11 closed (MC 11274.1.25) |
 | BUILD W15b pierce/splash consumers + hard golden | DONE — 192 pytest green; the dead towers.json effect strings + deadeye piercer row get their ONE consumer (SimCombat.extra_targets: pierce = lane-chain ∩ tier range, splash = range-radius across lanes; I4 single damage site; zero literals); normal golden DECLARED-REGEN (pierce moves kill timing from tick 11600: stream 8ea42737…→1cbf3f44…, header+in-rows byte-identical, per-row diff in evidence); hard fixture mission_gatefall_hard.jsonl committed — WIN, byte-stable A/B, tampered-red (closes REVIEW P2-9); 2 live planted-reds (consumer removed, radius off-by-one) + shipped matcher red (W15 BLOCKED evidence stands — this card supplied the missing mechanics) (MC 11274.1.26/.27) |
-| REFACTOR RUN (REVIEW.md refactor-safe set, zero behavior change) | pending W15 |
+| REFACTOR RUN (W16 clean-code refactor, MC 11274.1.28 / card 11384: exemption abuse closed + splits, i2-literal gate + STRUCT_VALS home, array-door + search-loop + list-build dedupe, stale-comment truth pass; golden anchors + smoke/hub/boot rows byte-identical, 192 green) | DONE W16 |
 | FULL browser journey pre-GA (boss/place/loot/equip/save-reload served) | pending W16 |
 | RELEASE DOCS + TAG (A10, MC 11277 rows) | pending W17 |
 

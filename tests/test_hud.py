@@ -36,8 +36,9 @@ HUD_TSCN = repo_path("godot", "scenes", "hud.tscn")
 MISSION_GD = repo_path("godot", "scripts", "mission.gd")
 GODOT = repo_path("godot")
 
-STRUCT_VALS = {0.0, 1.0, 2.0, 3.0, 4.0, 0.5}   # the I2 structural set
-NUM_RE = re.compile(r"\b\d+(?:\.\d+)?\b")
+# the I2 structural set — ONE home: tools/check_hygiene.py (W16)
+STRUCT_VALS = hyg.STRUCT_VALS
+NUM_RE = hyg.LITERAL_RE
 
 # The shipped mutator families named by the contract (game_state C13 +
 # the mission's green/placement sites). Bare-name scan with ONE plumbing

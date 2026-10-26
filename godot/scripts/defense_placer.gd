@@ -5,10 +5,8 @@
 # placement application site (cap check, can_afford gate and the single
 # green spend live there; no cost math is duplicated here, I2/I4).
 #
-# REFERENCE NOTE: the pinned Modules row names this file
-# scripts/defense_placer.gd; the W8 brief's "defense_placement.gd" is the
-# paraphrase and the table wins (precedent MC 11274.1.9-.14) — the W6
-# mission.gd hook comment already reads "W8 (defense_placer) fills this".
+# Name contract: the pinned Modules table names this file (the brief's
+# "defense_placement.gd" paraphrase never applies — table wins).
 #
 # Buildable slots (brief: "buildable slots from map data ... lanes
 # geometry"): the pinned C7 shape carries NO slot list, so slots are the
@@ -26,14 +24,14 @@
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 
 var m = null                    # mission root (injected, duck-typed)
-var tower_defs: Array = []      # towers.json rows (array door: raw read)
+var tower_defs: Array = []      # towers.json rows (GWTables.rows door)
 var slots: Array = []           # Vector3 candidates, stable map order
 var ghost := -1                 # armed slot index (-1 = no ghost)
 
 
 func setup(mission) -> void:
 	m = mission
-	tower_defs = _load_array("towers")
+	tower_defs = m.tables.rows("towers")
 	slots = _build_slots()
 
 
@@ -179,11 +177,3 @@ func _build_slots() -> Array:
 			seen[v] = true
 			out.append(v)
 	return out
-
-
-func _load_array(stem: String) -> Array:
-	# Array-shaped files have no GWTables dict door (the mission._load_array
-	# / main.gd boot raw-door precedent).
-	var text := FileAccess.get_file_as_string("res://data/" + stem + ".json")
-	var parsed: Variant = JSON.parse_string(text)
-	return parsed if parsed is Array else []

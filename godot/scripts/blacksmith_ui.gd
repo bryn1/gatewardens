@@ -24,7 +24,7 @@ extends Control
 # setup(tables, game_state, rng): the rng is main.gd's ONE runtime RNG
 # (F2-2), handed straight to svc_reroll as the sanctioned draw owner.
 
-const ITEM_ROW := preload("res://scenes/item_row.tscn")
+const BANK_LIST := preload("res://scripts/bank_list.gd")
 const SIM_INVENTORY := preload("res://sim/sim_inventory.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 
@@ -44,7 +44,7 @@ func setup(tables_in, game_state, rng_in) -> void:
 	rng = rng_in
 	ctx = {"blacksmith": tables.table("blacksmith"),
 		"rarity": tables.table("rarity"),
-		"items": _load_array("items"), "mods": _load_array("mods")}
+		"items": tables.rows("items"), "mods": tables.rows("mods")}
 	var box := VBoxContainer.new()
 	box.name = "Blacksmith"
 	add_child(box)
@@ -124,14 +124,8 @@ func refresh() -> void:
 			int(svc["upgrade"]["gold_by_rarity"].get(
 					String(_selected_row().get("rarity", "")), 0)),
 			int(svc["evolve"]["gold"]), int(svc["reroll"]["gold"])]
-	_clear(_list_box)
-	for row: Dictionary in state.bank:
-		var item = ITEM_ROW.instantiate()
-		item.name = "Row_%d" % int(row.get("uid", 0))
-		item.bind(tables)
-		item.show_item(row, int(row.get("uid", 0)) == selected_uid)
-		item.picked.connect(_on_picked)
-		_list_box.add_child(item)
+	BANK_LIST.fill(_list_box, tables, state.bank, selected_uid,
+			_on_picked)   # the ONE fill loop (bank_list, W16)
 	for action: String in buttons:
 		buttons[action].disabled = _selected_row().is_empty()
 
@@ -172,16 +166,3 @@ func _bank_row(uid: int) -> Variant:
 		if int(row.get("uid", 0)) == uid:
 			return row
 	return null
-
-
-func _clear(node: Node) -> void:
-	for child: Node in node.get_children():
-		child.free()
-
-
-func _load_array(stem: String) -> Array:
-	# Array-shaped data files have no GWTables dict door (the mission.gd
-	# _load_array precedent); svc_reroll reads the declared base pools.
-	var text := FileAccess.get_file_as_string("res://data/" + stem + ".json")
-	var parsed: Variant = JSON.parse_string(text)
-	return parsed if parsed is Array else []

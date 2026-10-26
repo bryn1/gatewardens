@@ -197,22 +197,16 @@ func _fire_trap(delta: float) -> void:
 		charges -= 1
 
 
-# Nearest live entity within r of pos ({} = none) — the hero_combat _nearest
-# idiom over the runner's records, 3D distance (F16 air y weighs naturally).
+# The search leg delegates to the runner that OWNS the records (W16
+# dedup: the ONE nearest loop lives in enemy_runner; F16 air y weighs
+# naturally there).
 func _nearest(r: float) -> Dictionary:
-	var best: Dictionary = {}
-	var best_d := r
-	for ent: Dictionary in m.get_node("EnemyRunner").entities:
-		var d: float = (ent["pos"] as Vector3).distance_to(pos)
-		if d <= best_d:
-			best_d = d
-			best = ent
-	return best
+	return m.get_node("EnemyRunner").nearest(pos, r)
 
 
 # ---- C3 lifecycle: cost from the static, ledger write once, effect once ----
 
-# Next ladder rung's price (-1 = already T5): the SAME static the upgrade
+# Next ladder rung's cost (-1 = already T5): the SAME static the upgrade
 # leg pays through, exposed for the panel's can_afford gate (UI reads,
 # never recomputes).
 func next_upgrade_cost() -> int:

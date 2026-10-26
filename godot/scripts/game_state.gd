@@ -29,9 +29,11 @@ extends RefCounted
 #   therefore reads ONLY xp.json + ascension.json (both objects) from the
 #   tables — heroes.json is an ARRAY file and never enters this class
 #   THROUGH THE TABLE DOOR. W13 amendment (MC 11274.1.22): the fresh-boot
-#   starter deck DOES read the roster through the raw array door (FileAccess
-#   + JSON, the mission.gd _load_array precedent) — seeding, not a table
-#   -door use; the sentence above holds verbatim for the door itself.
+#   starter deck DOES read the roster through its OWN raw array door
+#   (FileAccess + JSON) — W16 made GWTables.rows the ONE shared array
+#   door, and this seeding leg stays raw per this amendment: seeding,
+#   not a table-door use; the sentence above holds verbatim for the
+#   door itself.
 
 const SIM_PROGRESSION := preload("res://sim/sim_progression.gd")
 const SIM_INVENTORY := preload("res://sim/sim_inventory.gd")
@@ -287,7 +289,7 @@ func next_uid() -> int:
 	var top := 0
 	for row: Dictionary in bank:
 		top = maxi(top, int(row.get("uid", 0)))
-	# W9 (MC 11274.1.16, declared R-list finding): uid identity is a bank
+	# W9 (MC 11274.1.16, declared W9 finding): uid identity is a bank
 	# concern, but rows worn by heroes are OUT of the bank mid-session —
 	# scanning ONLY the bank lets the next bank_add stamp a uid a worn row
 	# still carries (the mission-end chest leg creates exactly this
@@ -316,8 +318,8 @@ func _seed_starter_meta() -> void:
 
 
 func _roster_ids() -> Array:
-	# Array-shaped heroes.json has no GWTables dict door (header) — the
-	# raw door, mission.gd._load_array precedent.
+	# Array-shaped heroes.json: this seeding leg keeps its OWN raw door
+	# (the W13 amendment in the header; GWTables.rows is the shared one).
 	var text := FileAccess.get_file_as_string("res://data/heroes.json")
 	var parsed: Variant = JSON.parse_string(text)
 	var out: Array = []

@@ -26,7 +26,7 @@ extends Control
 #   own scene wiring, now live (P1-1).
 
 const PLACER := preload("res://scripts/defense_placer.gd")
-const ITEM_ROW := preload("res://scenes/item_row.tscn")
+const BANK_LIST := preload("res://scripts/bank_list.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 
 const PRESS := {"KeyM": "place", "KeyE": "upgrade", "KeyN": "sell"}
@@ -171,15 +171,8 @@ func refresh() -> void:
 	sell_btn.disabled = obj == null
 	# Relic picker repaint (shared item_row rows over the C11 pool; the
 	# assigned row is BADGED selected, assignment itself is mission-side).
-	for child: Node in relic_rows.get_children():
-		child.free()
-	for pool_row: Dictionary in m.relic_pool:
-		var item = ITEM_ROW.instantiate()
-		item.name = "Row_%d" % int(pool_row.get("uid", 0))
-		item.bind(m.tables)
-		item.show_item(pool_row, int(pool_row.get("uid", 0)) == selected_relic)
-		item.picked.connect(_on_relic_picked)
-		relic_rows.add_child(item)
+	BANK_LIST.fill(relic_rows, m.tables, m.relic_pool, selected_relic,
+			_on_relic_picked)   # the ONE fill loop (bank_list, W16)
 	assign_btn.disabled = obj == null or selected_relic <= 0 \
 			or int(obj.relic_uid) != 0
 	unassign_btn.disabled = obj == null or int(obj.relic_uid) == 0

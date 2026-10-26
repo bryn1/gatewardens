@@ -30,10 +30,11 @@
 # GWCompose's (W4); mission-local noise emits no mutated, so save
 # commits stay meta-mutator + mission-end scoped.
 #
-# Readings recorded on the card trail: the brief's "GWTables.validate"
-# boot call cannot run — that static ships with the validate_probe row
-# (sim_tables.gd header) — so the fail-fast is the table-presence check
-# over STEMS below; the brief's "bridge.read_input()" paraphrase is the
+# Readings (declared): the brief's "GWTables.validate" boot call cannot
+# run — that static never shipped (W16 truth pass over sim_tables.gd);
+# deep per-row schema validation lives in the pytest schema layer
+# (tests/test_data_schemas.py), so the BOOT fail-fast is the
+# table-presence check over STEMS below; the brief's "bridge.read_input()" paraphrase is the
 # pinned forward-only relay: _unhandled_input maps events through
 # bridge.native_code/mouse_code into bridge.on_key (no read_input
 # method invented; bridge.gd untouched).
@@ -67,8 +68,8 @@ func _ready() -> void:
 	# deliberately drops array-shaped files (heroes/towers/enemies/
 	# items/mods are row ARRAYS — game_state.gd header), so a
 	# table(stem)-empty check would false-RED on healthy data. Missing
-	# or unparsable JSON = dead-on-arrival boot; the deep validator is
-	# the validate_probe row's static (reading recorded on the trail).
+	# or unparsable JSON = dead-on-arrival boot; the deep per-row
+	# validator is the pytest schema layer, never a boot call.
 	for stem: String in GW_TABLES.STEMS:
 		var text := FileAccess.get_file_as_string(DATA_DIR + "/" + stem \
 				+ ".json")

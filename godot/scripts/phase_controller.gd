@@ -9,7 +9,7 @@
 # lasts SimWave.build_seconds(waves[i], balance.build_seconds_default);
 # at combat start the ONE blue refill fires when
 # economy.blue.refill_on_phase_start (C4: one path). Wave clear (nothing
-# left to spawn + nothing alive on the lanes — reading on the trail: the
+# left to spawn + nothing alive on the lanes — declared reading: the
 # pinned "all spawned dead" cannot be the sole exit in W6 because no
 # damage source ships before W7, and a breaching entity is consumed the
 # same way a kill consumes one) awards economy green per_wave + xp
@@ -97,7 +97,7 @@ func _finish_wave() -> void:
 	_enter_build(wave + 1)
 
 
-# Wave 10's first group IS the sole boss (reading on the trail); the
+# Wave 10's first group IS the sole boss (declared reading); the
 # funnel routes its death here. Win-pending is only the FLAG — outcome
 # stays a step-(5) decision so F2-9's same-tick lose precedence holds.
 func boss_died() -> void:

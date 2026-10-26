@@ -61,10 +61,9 @@ HUB_LAYER = [HUB_GD, GEAR_GD, ROW_GD, WAR_GD, SMITH_GD, TINK_GD, DUMMY_GD,
              ASC_GD]
 STATIONS = [GEAR_GD, SMITH_GD, TINK_GD, DUMMY_GD, ASC_GD]
 
-# The I2 structural set (ARCHITECTURE.md; test_mission_smoke's reading):
-# math constants, slot/arity indices, sentinels — no cost value survives.
-STRUCT_VALS = {0.0, 1.0, 2.0, 3.0, 4.0, 0.5}
-NUM_RE = re.compile(r"\b\d+(?:\.\d+)?\b")
+# The I2 structural set + number regex — the ONE home is
+# tools/check_hygiene.py (W16, MC 11274.1.28): the gate's i2-literal rule
+# and this layer's guard read the SAME set, so they can never drift.
 
 
 def read_json(name):
@@ -245,8 +244,7 @@ def test_hub_probe_is_deterministic(tmp_path, class_cache):
 # ---------- source truth: I2 cost-literal ban over the hub layer -------
 
 def _literal_violations(text):
-    code = hyg.blank_code(text, "gd")
-    return sorted({float(n) for n in NUM_RE.findall(code)} - STRUCT_VALS)
+    return hyg.literal_violations(text)
 
 
 def test_hub_layer_carries_no_cost_literals():
@@ -363,17 +361,24 @@ def test_dummy_is_unkillable_by_shape():
 def test_item_row_widget_is_shared_not_duplicated():
     # W14 (F2-12): the relic pickers render through the SAME widget —
     # the defense_panel (mission layer) joins the hub's three users.
+    # W16 (MC 11274.1.28): the four users carried the SAME six-line fill
+    # loop; it lives ONCE in bank_list.gd, which preloads the shared
+    # scene — every user now routes through that ONE loop.
+    assert re.search(r'preload\("res://scenes/item_row\.tscn"\)',
+                     read_text(SCRIPTS / "bank_list.gd")), \
+        "bank_list renders rows with the shared item_row scene"
     for path in (GEAR_GD, SMITH_GD, TINK_GD, SCRIPTS / "defense_panel.gd"):
-        assert re.search(r'preload\("res://scenes/item_row\.tscn"\)',
+        assert re.search(r'preload\("res://scripts/bank_list\.gd"\)',
                          read_text(path)), \
-            "%s must render rows with the shared item_row scene" % path.name
+            "%s must render rows through the single bank_list fill loop" \
+            % path.name
     defs = 0
     for gd in SCRIPTS.glob("*.gd"):
         defs += len(re.findall(r"^func show_item\(", read_text(gd), re.M))
     assert defs == 1, \
         "exactly ONE show_item exists repo-wide (gear, blacksmith, tinkerer " \
         "and the relic picker all render through the single item_row widget)"
-    assert not re.search(r"show_item|item_row", _blank(HUB_GD)), \
+    assert not re.search(r"show_item|item_row|bank_list", _blank(HUB_GD)), \
         "hub.gd composes panels only — no row rendering beside the widget"
 
 

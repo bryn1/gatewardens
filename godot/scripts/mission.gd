@@ -1,5 +1,3 @@
-# hygiene: C12 funnel root + W7 hero hook lines + W8 place_defense
-# (MC 11274.1.14/.15) — hard ceiling exempt per header rule, file stays smallest-correct
 extends Node3D
 
 # mission — mission scene root (Modules row scripts/mission.gd,
@@ -29,13 +27,17 @@ extends Node3D
 # opens lanes on sub destruction, no retargeting); GWGameState ships no
 # commit() so the mission-end commit calls the ONE C13 listener
 # (state.commit_listener.commit()), once, AFTER step-(6) loot (F2-2 chest
-# rolls pre-commit); array-shaped data files (heroes/enemies/items/mods)
-# have no GWTables dict door — the raw FileAccess+JSON door (main.gd boot
-# precedent); deck = C6 deck_json, empty deck falls back to all heroes;
+# rolls pre-commit). W16 (MC 11274.1.28) split the build legs into
+# mission_world (lanes/cores), mission_heroes (hero table + C4 swap)
+# and mission_relics (C11 crossing) — bodies byte-identical, the public
+# crossings stay HERE; array-shaped data files ride the ONE GWTables
+# .rows door; deck = C6 deck_json, empty deck falls back to all heroes;
 # victory chest tier: normal->chest_tiers[0], hard->[1] (BN3; no v1 tier economy).
 
-const CORE_OBJ := preload("res://scripts/core_obj.gd")
 const DEF_OBJ := preload("res://scripts/defense_obj.gd")
+const MISSION_RELICS := preload("res://scripts/mission_relics.gd")
+const MISSION_HEROES := preload("res://scripts/mission_heroes.gd")
+const MISSION_WORLD := preload("res://scripts/mission_world.gd")
 const DEF_PANEL := preload("res://scripts/defense_panel.gd")
 const HERO_RIG := preload("res://scripts/hero_controller.gd")
 const HUD_SCENE := preload("res://scenes/hud.tscn")
@@ -43,9 +45,6 @@ const SIM_WAVE := preload("res://sim/sim_wave.gd")
 const SIM_COMBAT := preload("res://sim/sim_combat.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 const SIM_LOOT := preload("res://sim/sim_loot.gd")
-const SIM_PROGRESSION := preload("res://sim/sim_progression.gd")
-const MESH_CORE := preload("res://assets/mesh_core.tres")
-const MAT_CORE := preload("res://assets/mat_core.tres")
 
 # W14 (MC 11274.1.25 / card 11341, P1-4): the swap keys are F1-F3 ONLY
 # (C4, the HUD hints). The Digit1..3 swap aliases are REMOVED — Digit1..4
@@ -136,17 +135,17 @@ func setup(tables_in, state_in, save_store_in, bridge_in, map_id,
 	economy = tables.table("economy")
 	balance = tables.table("balance")
 	xp_table = tables.table("xp")
-	enemy_defs = _load_array("enemies")
+	enemy_defs = tables.rows("enemies")
 	sim_tables = {"rarity": tables.table("rarity"),
-		"items": _load_array("items"), "mods": _load_array("mods")}
+		"items": tables.rows("items"), "mods": tables.rows("mods")}
 	max_alive = int(balance.get("max_alive", 0))
 	wave_delay = float(balance.get("wave_delay", 0.0))
 	respawn_ratio = float(balance.get("respawn_core_ratio", 0.0))
 	defense_cap = int(map_def.get("defense_cap", 0))
 	green = int(map_def.get("start_green", 0))   # C7 sole source (F7)
-	_build_lanes()
-	_build_cores()
-	_build_heroes()
+	MISSION_WORLD.build_lanes(self)
+	MISSION_WORLD.build_cores(self)
+	MISSION_HEROES.build_heroes(self)
 	for row: Dictionary in state.bank:            # C11 relic pool copy
 		if String(row.get("slot", "")) == "relic":
 			relic_pool.append(row.duplicate(true))
@@ -159,7 +158,7 @@ func setup(tables_in, state_in, save_store_in, bridge_in, map_id,
 	rig.name = "HeroRig"
 	add_child(rig)
 	rig.setup(self)
-	_refresh_cores()    # C5 mirrors readable from the very first snapshot
+	MISSION_WORLD.refresh_cores(self)   # C5 mirrors readable from the very first snapshot
 	hero_hp = float(hero_state[hero_id]["hp"])
 	hero_hp_max = float(hero_state[hero_id]["hp_max"])
 	# W10 HUD hook (DECLARED, MC 11274.1.18 / card 11325): the read-only
@@ -243,7 +242,7 @@ func step_bookkeeping(_delta: float) -> void:
 	var presses: Array = bridge.drain_presses()   # one pump, routed (C12 (5))
 	for code: String in presses:                  # hot-swap = index change
 		if SWAP_KEYS.has(code):
-			_try_swap(SWAP_KEYS[code])
+			MISSION_HEROES.try_swap(self, SWAP_KEYS[code])
 	# W14 (P1-1): the build panel's codes (KeyM/KeyE/KeyN) route THROUGH
 	# the mounted panel (row: bridge input in, action out); poll() ignores
 	# every non-panel code, so the swap leg above is untouched (P1-4).
@@ -253,21 +252,21 @@ func step_bookkeeping(_delta: float) -> void:
 		if float(hs["hp"]) <= 0.0 and not bool(hs["downed"]):
 			hs["downed"] = true
 	if hero_id != "" and bool(hero_state[hero_id]["downed"]):  # F2-10
-		_auto_swap()
+		MISSION_HEROES.auto_swap(self)
 	alive = $EnemyRunner.alive_count()
 	wave_remaining = spawn_queue.size() + alive
 	defenses = defense_list.size()
-	relics_assigned = _relics_live()   # C5 mirror, one recompute site
+	relics_assigned = MISSION_RELICS.live_count(self)   # C5 mirror, one recompute site
 	loot_pending = loot.size()
 	hero_id = deck[active] if active < deck.size() else ""
 	hero_hp = float(hero_state[hero_id]["hp"]) if hero_id != "" else 0.0
 	hero_hp_max = float(hero_state[hero_id]["hp_max"]) if hero_id != "" else 0.0
 	boss_hp = float(boss["hp"]) if boss != null else null
-	_refresh_cores()
+	MISSION_WORLD.refresh_cores(self)
 	# F2-9 (binding): win FIRST; a same-tick lose condition OVERWRITES it.
 	if win_pending:
 		outcome = "win"
-	if bool(core_main.destroyed) or _all_down():
+	if bool(core_main.destroyed) or MISSION_HEROES.all_down(self):
 		outcome = "lose"
 
 func step_loot(_delta: float) -> void:
@@ -316,11 +315,8 @@ func start_wave(i: int) -> void:
 
 func revive_downed() -> void:
 	# C4: build-phase-start revival at full HP; downed stay unswappable.
-	for hid: String in hero_state:
-		var hs: Dictionary = hero_state[hid]
-		if bool(hs["downed"]):
-			hs["downed"] = false
-			hs["hp"] = float(hs["hp_max"])
+	# (W16: the body lives in mission_heroes.revive, byte-identical.)
+	MISSION_HEROES.revive(self)
 
 func place_defense(row: Dictionary, tier: int, at: Vector3) -> Dictionary:
 	# W8 (DECLARED hook, pinned mission row names place_defense): THE
@@ -352,92 +348,12 @@ func place_defense(row: Dictionary, tier: int, at: Vector3) -> Dictionary:
 # bonus application lives on defense_obj (the row), the stat math in
 # SimInventory.relic_bonuses (the ONE relic static, never reimplemented).
 func assign_relic(defense_uid: int, relic_uid: int) -> Dictionary:
-	if String(phase_kind) != "build":
-		return {"ok": false, "why": "phase"}
-	var obj = _defense_by_uid(defense_uid)
-	if obj == null:
-		return {"ok": false, "why": "uid"}
-	var relic := _pool_row(relic_uid)
-	if relic.is_empty():
-		return {"ok": false, "why": "relic"}
-	if int(obj.relic_uid) != 0 or _relic_owner(relic_uid) != 0:
-		return {"ok": false, "why": "taken"}
-	obj.assign_relic(relic)
-	relics_assigned = _relics_live()
-	return {"ok": true, "uid": defense_uid, "relic": relic_uid}
+	# (W16: the body lives in mission_relics.assign, byte-identical.)
+	return MISSION_RELICS.assign(self, defense_uid, relic_uid)
 
 func unassign_relic(defense_uid: int) -> Dictionary:
-	if String(phase_kind) != "build":
-		return {"ok": false, "why": "phase"}
-	var obj = _defense_by_uid(defense_uid)
-	if obj == null:
-		return {"ok": false, "why": "uid"}
-	if int(obj.relic_uid) == 0:
-		return {"ok": false, "why": "none"}
-	# Pool semantics (C11): the row never left relic_pool, so the return
-	# IS the clear — the defense drops its bonus leg, the pool is intact.
-	var relic_uid := int(obj.relic_uid)
-	obj.clear_relic()
-	relics_assigned = _relics_live()
-	return {"ok": true, "uid": defense_uid, "relic": relic_uid}
-
-func _defense_by_uid(uid: int):
-	for rec: Dictionary in defense_list:
-		if int(rec["uid"]) == uid:
-			return rec["obj"]
-	return null
-
-func _pool_row(uid: int) -> Dictionary:
-	for row: Dictionary in relic_pool:
-		if int(row.get("uid", 0)) == uid:
-			return row
-	return {}
-
-func _relic_owner(relic_uid: int) -> int:
-	for rec: Dictionary in defense_list:
-		if int((rec["obj"] as RefCounted).relic_uid) == relic_uid:
-			return int(rec["uid"])
-	return 0
-
-# The C5 relics_assigned mirror, ONE site: count of live assignments —
-# sell-safe (a sold defense's relic returns to the pool unassigned,
-# F2-7's ±1 reads after the crossing's own call).
-func _relics_live() -> int:
-	var n := 0
-	for rec: Dictionary in defense_list:
-		if int((rec["obj"] as RefCounted).relic_uid) != 0:
-			n += 1
-	return n
-
-func _try_swap(i: int) -> void:
-	if i < 0 or i >= deck.size() or i == active:
-		return
-	if bool(hero_state[deck[i]]["downed"]):
-		return    # downed heroes are unswappable until next build start
-	_select(i)
-
-func _auto_swap() -> void:
-	# F2-10: deck order from downed+1, wrapping at most once; none found
-	# -> the all-down lose path (step 5).
-	for off: int in range(1, deck.size()):
-		var j := (active + off) % deck.size()
-		if not bool(hero_state[deck[j]]["downed"]):
-			_select(j)
-			return
-
-func _select(i: int) -> void:
-	active = i
-	hero_id = String(deck[i])
-	blue_max = float(hero_defs[hero_id]["base"]["blue_max"])
-	blue = minf(blue, blue_max)   # C4 swap clamp
-
-func _all_down() -> bool:
-	if hero_state.is_empty():
-		return false
-	for hid: String in hero_state:
-		if not bool(hero_state[hid]["downed"]):
-			return false
-	return true
+	# (W16: the body lives in mission_relics.unassign, byte-identical.)
+	return MISSION_RELICS.unassign(self, defense_uid)
 
 func _on_death(ent: Dictionary) -> void:
 	var row: Dictionary = ent["def"]
@@ -478,86 +394,6 @@ func _end_mission() -> void:
 	loot_pending = 0
 	if state.commit_listener != null:
 		state.commit_listener.commit()   # C13 mission-end commit, ONCE
-
-func _build_lanes() -> void:
-	var closed := {}
-	for sub: Dictionary in map_def.get("cores", {}).get("subs", []):
-		for lid: Variant in sub.get("opens_lanes", []):
-			closed[String(lid)] = true
-	for lane: Dictionary in map_def.get("lanes", []):
-		var wps: Array[Vector3] = []
-		for wp: Variant in lane.get("waypoints", []):
-			wps.append(Vector3(float(wp[0]), float(wp[1]), float(wp[2])))
-		lanes[String(lane["id"])] = {"id": String(lane["id"]),
-			"kind": String(lane["kind"]), "wps": wps,
-			"target": String(lane["target"]),
-			"open": not closed.has(String(lane["id"]))}
-
-func _build_cores() -> void:
-	var cores_row: Dictionary = map_def.get("cores", {})
-	core_main = _make_core("main", "main", cores_row.get("main", {}), Vector3.ONE)
-	for sub: Dictionary in cores_row.get("subs", []):
-		core_subs[String(sub["id"])] = _make_core(
-				String(sub["id"]), "sub", sub, Vector3(0.5, 0.5, 0.5))
-
-func _make_core(id: String, kind: String, row: Dictionary, sc: Vector3):
-	var rec = CORE_OBJ.new()
-	rec.id = id
-	rec.kind = kind
-	rec.hp_max = float(row["hp"][difficulty])
-	rec.hp = rec.hp_max
-	var p: Array = row.get("pos", [0, 0, 0])
-	rec.pos = Vector3(float(p[0]), float(p[1]), float(p[2]))
-	rec.opens_lanes = row.get("opens_lanes", [])
-	var node := MeshInstance3D.new()
-	node.mesh = MESH_CORE.duplicate()
-	node.material_override = MAT_CORE.duplicate()
-	node.scale = sc
-	node.position = rec.pos   # mission-local space (root at origin)
-	add_child(node)
-	rec.node = node
-	return rec
-
-func _build_heroes() -> void:
-	for row: Dictionary in _load_array("heroes"):
-		hero_defs[String(row["id"])] = row
-	# W14 (MC 11274.1.25 / card 11341, P1-3): the ONE consumer site of
-	# asc_modifier — spent ascension points ride onto the mission-local
-	# hero rows (SimProgression's own aggregation, zero literals here).
-	# The rows are this mission's freshly-parsed _load_array copies, so
-	# the loaded table is never touched (C1 read-only). Every reader of
-	# base stats (hero_state hp, C4 blue_max/regen, hero_combat damage/
-	# crit/ability_power) picks the modifiers up THROUGH THIS ONE WRITE.
-	var mods: Dictionary = SIM_PROGRESSION.asc_modifier(
-			tables.table("ascension").get("tree", {}), state.asc_spent)
-	for stat: String in mods:
-		for hid: String in hero_defs:
-			var hero_base: Dictionary = hero_defs[hid]["base"]
-			if hero_base.has(stat):
-				hero_base[stat] = float(hero_base[stat]) + float(mods[stat])
-	deck = state.deck.duplicate() if not state.deck.is_empty() \
-			else hero_defs.keys()
-	for hid: Variant in deck:
-		var base: Dictionary = hero_defs[String(hid)]["base"]
-		hero_state[String(hid)] = {"hp": float(base["health"]),
-			"hp_max": float(base["health"]), "downed": false,
-			"cooldowns": [0.0, 0.0, 0.0, 0.0]}
-	_select(0)
-	blue = blue_max    # setup init (NOT the refill path — that is pc-only)
-
-func _refresh_cores() -> void:
-	var subs: Array = []
-	for sid: String in core_subs:
-		subs.append({"id": sid, "hp": float(core_subs[sid].hp),
-			"max": float(core_subs[sid].hp_max)})
-	cores = {"main": {"hp": float(core_main.hp), "max": float(core_main.hp_max)},
-		"subs": subs}
-
-func _load_array(stem: String) -> Array:
-	# Array-shaped files have no GWTables dict door (header) — raw door.
-	var text := FileAccess.get_file_as_string("res://data/" + stem + ".json")
-	var parsed: Variant = JSON.parse_string(text)
-	return parsed if parsed is Array else []
 
 static func _by_at(a: Dictionary, b: Dictionary) -> bool:
 	return float(a["at"]) < float(b["at"])

@@ -64,7 +64,7 @@ func setup(tables_in, game_state, rng_in) -> void:
 # never touched by this station).
 func strike(hero_id: String) -> Dictionary:
 	var hero: Dictionary = {}
-	for row: Dictionary in _load_array("heroes"):
+	for row: Dictionary in tables.rows("heroes"):
 		if String(row.get("id", "")) == hero_id:
 			hero = row
 	if hero.is_empty():
@@ -107,11 +107,3 @@ func refresh() -> void:
 			float(dummy["absorbed"]), dps(),
 			("crit x%s" % str(last["damage"])) if bool(last.get("crit", false))
 			else str(last.get("damage", 0.0))]
-
-
-func _load_array(stem: String) -> Array:
-	# Array-shaped data files have no GWTables dict door (the mission.gd
-	# _load_array precedent); the heroes row is the sole damage source.
-	var text := FileAccess.get_file_as_string("res://data/" + stem + ".json")
-	var parsed: Variant = JSON.parse_string(text)
-	return parsed if parsed is Array else []

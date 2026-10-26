@@ -19,7 +19,7 @@ extends Control
 # Source/target pickers are lists of the SHARED item_row scene (F2-12):
 # one list-build implementation beside the gear and blacksmith panels.
 
-const ITEM_ROW := preload("res://scenes/item_row.tscn")
+const BANK_LIST := preload("res://scripts/bank_list.gd")
 const SIM_INVENTORY := preload("res://sim/sim_inventory.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 
@@ -114,15 +114,10 @@ func _picker(box, label: String) -> VBoxContainer:
 
 
 func _fill(list_box: VBoxContainer, marked_uid: int) -> void:
-	for child: Node in list_box.get_children():
-		child.free()
-	for row: Dictionary in state.bank:
-		var item = ITEM_ROW.instantiate()
-		item.name = "Row_%d" % int(row.get("uid", 0))
-		item.bind(tables)
-		item.show_item(row, int(row.get("uid", 0)) == marked_uid)
-		item.picked.connect(_on_picked.bind(list_box.name))
-		list_box.add_child(item)
+	# The ONE fill loop (bank_list, W16); bind() appends the box name so
+	# _on_picked routes the pick back to the RIGHT list.
+	BANK_LIST.fill(list_box, tables, state.bank, marked_uid,
+			_on_picked.bind(list_box.name))
 
 
 func _on_picked(uid: int, box_name: String) -> void:

@@ -29,7 +29,7 @@ extends Control
 # - Greybox Control styling per the defense_panel precedent; full HUD
 #   styling is the named frontend row.
 
-const ITEM_ROW := preload("res://scenes/item_row.tscn")
+const BANK_LIST := preload("res://scripts/bank_list.gd")
 
 const SECTIONS := ["weapon", "armor", "ring", "relic"]   # pinned 4 slot-sections
 const HERO_SLOTS := ["weapon", "armor", "ring"]          # C5 equipped slots
@@ -95,18 +95,20 @@ func shown_rows() -> int:
 
 
 func refresh() -> void:
-	for section: String in SECTIONS:
-		_clear(_lists[section])
+	# Rows bucket by their declared slot FIRST (rows of other slots never
+	# enter a section); each section then rides the ONE fill loop
+	# (bank_list, W16) — which clears its box before filling, so a
+	# bucket that went empty this refresh shows nothing stale.
+	var bucket: Dictionary = {}
+	for s: String in SECTIONS:
+		bucket[s] = []
 	for row: Dictionary in state.bank:
 		var section := String(row.get("slot", ""))
-		if not _lists.has(section):
-			continue
-		var item = ITEM_ROW.instantiate()
-		item.name = "Row_%d" % int(row.get("uid", 0))
-		item.bind(tables)
-		item.show_item(row, int(row.get("uid", 0)) == selected_uid)
-		item.picked.connect(_on_picked)
-		_lists[section].add_child(item)
+		if bucket.has(section):
+			bucket[section].append(row)
+	for s: String in SECTIONS:
+		BANK_LIST.fill(_lists[s], tables, bucket[s], selected_uid,
+				_on_picked)
 	_rebuild_heroes()
 
 

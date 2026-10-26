@@ -1,8 +1,8 @@
 # Sim parse probe harness (W3a, MC 11274.1.9 / card 11299). Lives in sim/
-# per the architecture's harness placement (sim_headless/save_probe/
-# validate_probe — hollow_dawn's sim_headless precedent); a res:// load
-# cannot reach tests/, so the parse harness is a sim/ asset and the pytest
-# -s leg references THIS path (reading recorded on the card trail).
+# per the architecture's harness placement (sim_headless/save_probe —
+# hollow_dawn's sim_headless precedent); a res:// load cannot reach
+# tests/, so the parse harness is a sim/ asset and the pytest -s leg
+# references THIS path (declared reading; card trail).
 # Loads every sim_*.gd module in this directory for real (the harness file
 # itself is not a module and is skipped) and prints machine-readable rows:
 #   SIMPARSE-OK <name>     once per module that parses + loads cleanly

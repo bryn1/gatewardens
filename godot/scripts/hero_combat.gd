@@ -126,24 +126,11 @@ func _hit(ent: Variant, dmg: float, hero: Dictionary) -> void:
 	mission.get_node("EnemyRunner").damage(ent, float(hit["damage"]))
 
 
-# Nearest live entity within r of pos ({} = none). Air entities carry
-# their authored waypoint y (F16), which plain 3D distance weighs
-# naturally — the declared melee-reach reading, no fly-flag branch.
+# The search legs delegate to the runner that OWNS the records (W16
+# dedup: the ONE nearest/in_range loop lives in enemy_runner).
 func _nearest(pos: Vector3, r: float) -> Dictionary:
-	var best: Dictionary = {}
-	var best_d := r
-	for ent: Dictionary in mission.get_node("EnemyRunner").entities:
-		var d: float = (ent["pos"] as Vector3).distance_to(pos)
-		if d <= best_d:
-			best_d = d
-			best = ent
-	return best
+	return mission.get_node("EnemyRunner").nearest(pos, r)
 
 
-# Every live entity within r of pos (aoe application).
 func _in_range(pos: Vector3, r: float) -> Array:
-	var picked: Array = []
-	for ent: Dictionary in mission.get_node("EnemyRunner").entities:
-		if (ent["pos"] as Vector3).distance_to(pos) <= r:
-			picked.append(ent)
-	return picked
+	return mission.get_node("EnemyRunner").in_range(pos, r)

@@ -315,13 +315,17 @@ def read_text(path):
 
 DEFENSE_GD = (OBJ_GD, PLACER_GD, PANEL_GD)
 # The I2 structural set (ARCHITECTURE.md): math constants, slot/arity
-# indices, sentinels — NO cost or ratio values can survive it.
-STRUCT_VALS = {0.0, 1.0, 2.0, 3.0, 4.0, 0.5}
-NUM_RE = re.compile(r"\b\d+(?:\.\d+)?\b")
+# indices, sentinels — NO cost or ratio values can survive it. ONE home:
+# tools/check_hygiene.py (W16) — the gate's i2-literal rule and this
+# guard read the SAME set, so they cannot drift apart.
+STRUCT_VALS = hyg.STRUCT_VALS
+NUM_RE = hyg.LITERAL_RE
 
 
 def _literal_violations(code):
-    return sorted({float(n) for n in NUM_RE.findall(code)} - STRUCT_VALS)
+    # blank_code is idempotent; callers pass blanked OR raw text, the
+    # hygiene helper blanks first and the set/regex are the gate's own.
+    return hyg.literal_violations(code)
 
 
 def test_defense_files_carry_no_cost_or_ratio_literals():

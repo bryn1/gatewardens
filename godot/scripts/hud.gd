@@ -10,7 +10,7 @@ extends CanvasLayer
 # (I2 structural set only — wave total via SimWave.total_waves, blue
 # caps via the shipped C4 fields, every number a read).
 #
-# Readings (R-list, W10-evidence.md):
+# Readings (declared; evidence W10):
 # - The hero bar renders ONE SLOT PER DECK MEMBER in deck array order
 #   (the shipped C4 swap order); the F1..F3 hints sit on the first three
 #   slots because those are the shipped SWAP_KEYS — a fourth key would

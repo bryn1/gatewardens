@@ -72,6 +72,33 @@ func spawn(row: Dictionary, lane: Dictionary, tables, _rng) -> void:
 	})
 
 
+# Nearest live entity within r of pos ({} = none) — the ONE search loop
+# (W16 dedup: hero_combat._nearest and defense_obj._nearest were this
+# same loop over the runner's records; both now delegate HERE). Air
+# entities carry their authored waypoint y (F16), which plain 3D
+# distance weighs naturally — the declared melee-reach reading, no
+# fly-flag branch.
+func nearest(pos: Vector3, r: float) -> Dictionary:
+	var best: Dictionary = {}
+	var best_d := r
+	for ent: Dictionary in entities:
+		var d: float = (ent["pos"] as Vector3).distance_to(pos)
+		if d <= best_d:
+			best_d = d
+			best = ent
+	return best
+
+
+# Every live entity within r of pos (aoe application; W16 dedup of the
+# hero_combat copy, same records, same read).
+func in_range(pos: Vector3, r: float) -> Array:
+	var picked: Array = []
+	for ent: Dictionary in entities:
+		if (ent["pos"] as Vector3).distance_to(pos) <= r:
+			picked.append(ent)
+	return picked
+
+
 func alive_count() -> int:
 	return entities.size()
 
