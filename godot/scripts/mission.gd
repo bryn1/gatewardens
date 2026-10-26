@@ -37,6 +37,7 @@ extends Node3D
 const CORE_OBJ := preload("res://scripts/core_obj.gd")
 const DEF_OBJ := preload("res://scripts/defense_obj.gd")
 const HERO_RIG := preload("res://scripts/hero_controller.gd")
+const HUD_SCENE := preload("res://scenes/hud.tscn")
 const SIM_WAVE := preload("res://sim/sim_wave.gd")
 const SIM_COMBAT := preload("res://sim/sim_combat.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
@@ -151,6 +152,14 @@ func setup(tables_in, state_in, save_store_in, bridge_in, map_id,
 	_refresh_cores()    # C5 mirrors readable from the very first snapshot
 	hero_hp = float(hero_state[hero_id]["hp"])
 	hero_hp_max = float(hero_state[hero_id]["hp_max"])
+	# W10 HUD hook (DECLARED, MC 11274.1.18 / card 11325): the read-only
+	# overlay mounts as a CanvasLayer child of this root; it READS mission
+	# fields only and mutates NOTHING (I4 — test_hud.py source-truth gates
+	# zero mutator calls / zero state writes in hud.gd).
+	var hud := HUD_SCENE.instantiate()
+	hud.name = "HUD"
+	add_child(hud)
+	hud.setup(self)
 
 func step(delta: float) -> void:
 	if outcome != null:

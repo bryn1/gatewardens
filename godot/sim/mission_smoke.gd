@@ -57,6 +57,31 @@
 #   MISSION-SMOKE-W8KILL t=<frames> green=+<g> xp=+<x> (tower dps kills a
 #                          live enemy through funnel slot (3) + step-(4)
 #                          awards; hero holds nothing — attribution clean)
+#   (W10, MC 11274.1.18 / card 11325 — the read-only HUD mounted by the
+#   mission's DECLARED hook; refresh() is driven here exactly as the W8
+#   panel legs drive panel.refresh(), E5: no _process dispatch under -s):
+#   MISSION-SMOKE-HUD-BUILD wave=<i> secs=<s> text=<label> (build-phase
+#                          label rides SimWave build_seconds + the phase
+#                          controller's ONE timer — never a second timer)
+#   MISSION-SMOKE-HUD-WAVE wave=<i> text=<label>   (combat "Wave n / 11",
+#                          the total via SimWave.total_waves — no literal)
+#   MISSION-SMOKE-HUD-GREEN green=<g> cap=<c> text=<label> (green count
+#                          matches the state mirror; cap is economy.json's)
+#   MISSION-SMOKE-HUD-BLUE active=<hero> blue=<b> max=<m> ratio=<r> (the
+#                          ACTIVE slot's blue bar mirrors the one C4 pool
+#                          and its max; ratio checked against the state)
+#   MISSION-SMOKE-HUD-HL slot=<i> hero=<id> (x2: F2 then F1 — the ACTIVE
+#                          highlight READS BACK off the slot tint and
+#                          moves with the shipped swap, incl. the F2-10
+#                          down-swap already asserted above)
+#   MISSION-SMOKE-HUD-BOSS visible=1 wave=<i> hp=<h> max=<m> text=<label>
+#                          (boss bar appears exactly while C5 boss_hp is
+#                          non-null on the boss wave; the harness drives
+#                          the wave index + the real start_wave entry —
+#                          the boot_probe license, the funnel fills boss
+#                          + boss_hp unchanged)
+#   MISSION-SMOKE-HUD-BANNER outcome=<o> text=<t> (outcome banner row:
+#                          honest copy off the shipped outcome field)
 #   MISSION-SMOKE-OK
 # E3: quit() under -s does NOT abort the running frame — every failure
 # path early-returns; each quit() fires exactly once.
@@ -114,6 +139,27 @@ func _init() -> void:
 	# (check 4), the licensed stand-in for W7/W8 damage sources.
 	m.core_main.hp_max *= 5.0
 	m.core_main.hp = m.core_main.hp_max
+	# --- HUD (W10, MC 11274.1.18 / card 11325): the read-only overlay the
+	#        mission's DECLARED hook mounted. refresh() is driven here
+	#        exactly as the W8 panel legs drive panel.refresh() (E5: no
+	#        frame dispatch under -s); every label the pytest leg re-
+	#        derives rides shipped data (waves/economy/heroes/enemies),
+	#        never a test-side copy.
+	var hud = m.get_node("HUD")
+	if hud == null:
+		_fail("declared hook mounted no HUD node on the mission root")
+		return
+	var waves_total: int = m.waves_file.get("waves", []).size()
+	hud.refresh()
+	var build_secs := int(ceilf(float(m.waves_file["waves"][0].get(
+			"build_seconds", 0.0))))
+	if String(hud.wave_text()) != "Build: wave %d in %d s" % [
+			int(m.wave) + 1, build_secs] or String(hud.banner_text()) != "":
+		_fail("HUD build label: %s (banner %s)" % [
+				hud.wave_text(), hud.banner_text()])
+		return
+	print("MISSION-SMOKE-HUD-BUILD wave=%d secs=%d text=%s" % [
+			m.wave, build_secs, hud.wave_text()])
 	# --- W0) W8 defense legs (MC 11274.1.15 / card 11322), all in the
 	#        build phase; every price/refund is asserted against the data
 	#        files by the pytest leg, never decided from literals here.
@@ -248,6 +294,19 @@ func _init() -> void:
 		_fail("wave-0 spawn at combat start: alive=%d wave=%d" % [m.alive, m.wave])
 		return
 	print("MISSION-SMOKE-SPAWN t=%d wave=%d alive=%d" % [guard, m.wave, m.alive])
+	hud.refresh()
+	if String(hud.wave_text()) != "Wave %d / %d" % [int(m.wave) + 1,
+			waves_total]:
+		_fail("HUD combat wave label: %s" % hud.wave_text())
+		return
+	print("MISSION-SMOKE-HUD-WAVE wave=%d text=%s" % [m.wave, hud.wave_text()])
+	if String(hud.green_text()) != "Green %d / cap %d" % [int(m.green),
+			int(m.economy["green"]["cap"])]:
+		_fail("HUD green label %s != state green %d" % [
+				hud.green_text(), m.green])
+		return
+	print("MISSION-SMOKE-HUD-GREEN green=%d cap=%d text=%s" % [
+			m.green, int(m.economy["green"]["cap"]), hud.green_text()])
 	# --- 2) positions ADVANCE along the ground lane (lane_g1 -> main core)
 	var runner = m.get_node("EnemyRunner")
 	var ents: Array = runner.entities
@@ -398,6 +457,17 @@ func _init() -> void:
 	m.bridge.on_key("Digit4", false)
 	print("MISSION-SMOKE-ABILITY ability=%s cost=%s blue=%s gated=1" % [
 			String(w_abil["id"]), str(cost), str(m.blue)])
+	hud.refresh()
+	var blue_slot = hud.slot_node(int(m.active))
+	var bbar: ProgressBar = blue_slot.get_node("BlueBar")
+	if float(bbar.value) != float(m.blue) or float(bbar.max_value) \
+			!= float(m.blue_max):
+		_fail("HUD blue bar %s/%s != state %s/%s" % [
+				bbar.value, bbar.max_value, m.blue, m.blue_max])
+		return
+	print("MISSION-SMOKE-HUD-BLUE active=%s blue=%s max=%s bar=%s ratio=%s" % [
+			m.hero_id, m.blue, m.blue_max, bbar.value,
+			str(float(bbar.value) / float(bbar.max_value))])
 	# --- 6) hot-swap F3 (manual) + down-swap to next healthy (F2-10)
 	m.bridge.on_key("F3", true)
 	m.step(1.0 / 60.0)
@@ -410,6 +480,13 @@ func _init() -> void:
 		_fail("F2-10 down-swap: hero_id=%s" % m.hero_id)
 		return
 	print("MISSION-SMOKE-SWAP hero=%s" % m.hero_id)
+	hud.refresh()
+	if int(hud.highlight_index()) != 0 or String(hud.banner_text()) != "":
+		_fail("HUD highlight after F2-10 down-swap: hl=%s banner=%s" % [
+				hud.highlight_index(), hud.banner_text()])
+		return
+	print("MISSION-SMOKE-HUD-HL slot=%d hero=%s" % [
+			hud.highlight_index(), m.hero_id])
 	# --- 6b) (W7d) hot-swap changes the ACTIVE pawn visual and the C4 blue
 	#        clamp bites EXACTLY at the new hero's cap: a harness blue write
 	#        above every deck cap, then F2 (warden->deadeye, lower cap) —
@@ -428,6 +505,14 @@ func _init() -> void:
 		_fail("F2 swap/clamp: hero=%s blue=%s deadeye_vis=%s" % [
 				m.hero_id, m.blue, str(rig.pawns["deadeye"].visible)])
 		return
+	hud.refresh()
+	if int(hud.highlight_index()) != 1 or String(hud.hero_of_slot(1)) \
+			!= "deadeye":
+		_fail("HUD highlight after F2: hl=%s slot1=%s" % [
+				hud.highlight_index(), hud.hero_of_slot(1)])
+		return
+	print("MISSION-SMOKE-HUD-HL slot=%d hero=%s" % [
+			hud.highlight_index(), m.hero_id])
 	m.bridge.on_key("F1", true)
 	m.step(1.0 / 60.0)
 	m.step(1.0 / 60.0)
@@ -438,9 +523,42 @@ func _init() -> void:
 		_fail("F1 swap/clamp: hero=%s blue=%s warden_vis=%s" % [
 				m.hero_id, m.blue, str(rig.pawns["warden"].visible)])
 		return
+	hud.refresh()
+	if int(hud.highlight_index()) != 0 or String(hud.hero_of_slot(0)) \
+			!= "warden":
+		_fail("HUD highlight after F1: hl=%s slot0=%s" % [
+				hud.highlight_index(), hud.hero_of_slot(0)])
+		return
+	print("MISSION-SMOKE-HUD-HL slot=%d hero=%s" % [
+			hud.highlight_index(), m.hero_id])
 	print("MISSION-SMOKE-F1SWAP hero=%s swap_blue=%s deadeye_max=%s" % [
 			m.hero_id, str(swap_blue),
 			str(m.hero_defs["deadeye"]["base"]["blue_max"])])
+	# --- 6c) (W10) boss bar on the boss wave: the harness writes the wave
+	#        index and calls the REAL start_wave entry (boot_probe drive-
+	#        real-entry-points license — nothing in v1 clears waves 0..9 to
+	#        reach index 10 inside a smoke); the boss spawn + the boss_hp
+	#        mirror are filled by the shipped funnel step-(4)/(5) paths, and
+	#        the HUD bar renders C5's non-null truth (F13) with no literals.
+	var pc = m.get_node("PhaseController")
+	pc.wave = waves_total - 1
+	m.wave = waves_total - 1
+	m.start_wave(waves_total - 1)
+	guard = 0
+	while guard < 600 and m.boss == null:
+		m.step(1.0 / 60.0)
+		guard += 1
+	if m.boss == null:
+		_fail("boss never spawned on the boss wave")
+		return
+	hud.refresh()
+	if not bool(hud.boss_visible()) or String(hud.wave_text()) \
+			!= "Wave %d / %d" % [waves_total, waves_total]:
+		_fail("HUD boss bar: visible=%s text=%s" % [
+				hud.boss_visible(), hud.wave_text()])
+		return
+	print("MISSION-SMOKE-HUD-BOSS visible=1 wave=%d hp=%s max=%s text=%s" % [
+			m.wave, m.boss_hp, m.boss["hp_max"], hud.boss_text()])
 	# --- 7) F2-9: all-down SAME TICK as a recorded win -> LOSE wins; the
 	#        mission-end commit fired once through the C13 wiring.
 	m.win_pending = true
@@ -470,6 +588,13 @@ func _init() -> void:
 				rig.pawns.size(), shown])
 		return
 	print("MISSION-SMOKE-DOWN pawns=%d visible=%d" % [rig.pawns.size(), shown])
+	hud.refresh()
+	if String(hud.banner_text()) != "DEFEAT" or not bool(hud.banner_shown()):
+		_fail("HUD banner: text=%s shown=%s outcome=%s" % [
+				hud.banner_text(), hud.banner_shown(), m.outcome])
+		return
+	print("MISSION-SMOKE-HUD-BANNER outcome=%s text=%s" % [
+			m.outcome, hud.banner_text()])
 	print("MISSION-SMOKE-LOSE outcome=%s ack=%d seq=%d" % [
 			m.outcome, state.saved_ack, save.write_seq])
 	print("MISSION-SMOKE-OK")
