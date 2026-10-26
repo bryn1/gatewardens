@@ -276,6 +276,16 @@ func next_uid() -> int:
 	var top := 0
 	for row: Dictionary in bank:
 		top = maxi(top, int(row.get("uid", 0)))
+	# W9 (MC 11274.1.16, declared R-list finding): uid identity is a bank
+	# concern, but rows worn by heroes are OUT of the bank mid-session —
+	# scanning ONLY the bank lets the next bank_add stamp a uid a worn row
+	# still carries (the mission-end chest leg creates exactly this
+	# state). Panels key the pinned picked(uid) signal, so the stamp must
+	# anchor on in-flight rows too. Save schema untouched (C6 carries no
+	# equipped key; a fresh boot's bank-only sequence stamps identically).
+	for slots: Dictionary in equipped.values():
+		for row: Dictionary in slots.values():
+			top = maxi(top, int(row.get("uid", 0)))
 	return top + 1
 
 

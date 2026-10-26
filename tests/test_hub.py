@@ -1,0 +1,376 @@
+"""W9 hub gate (MC 11274.1.16 / card 11323) — hub, gear panel, item_row,
+war table, blacksmith, tinkerer, dummy range + the hub_probe harness.
+
+Two tiers, one idiom per repo (test_mission_smoke precedent):
+- ENGINE: run godot/sim/hub_probe.gd through conftest.run_probe_script
+  (headless `-s`, XDG_DATA_HOME isolated — BN4) and re-derive EVERY
+  machine-row number from the shipped data files (blacksmith.json /
+  rarity.json / xp.json / items.json), never from a test-side copy of a
+  cost. EMPTY stderr is asserted (W4 ruling: stderr noise = parse noise).
+  Byte-stable reruns are asserted (pinned seed 11274).
+- SOURCE TRUTH: the I4/I2 gates pytest can settle without the engine —
+  the cost-literal ban over the new hub layer, single application sites
+  (one equip crossing, one payment site per service panel, one xp site),
+  and the item_row widget reuse (exactly ONE row renderer, shared).
+
+Readings recorded (R-list, card trail):
+- The brief paraphrases "rarity.json colors" and SimInventory
+  salvage_yield/unequip — neither exists in the shipped data/statics;
+  rarity.json carries NO colors key (item_row shows the rarity NAME
+  tinted via a data-side optional `colors` map when one ever lands) and
+  salvage/unequip are NOT implemented (no second write mechanism beside
+  the shipped C13 mutators). The shipped equip refusal (slot mismatch ->
+  ok:false, bank untouched) is the relic behavior, asserted in the probe.
+- hub_probe.gd carries `# hygiene:` like mission_smoke: machine-row
+  headers hold digit-bearing doc text, so the file is exempt from the
+  cost-literal gate (test assets encode the expected numbers; the gate
+  scopes the SHIPPED hub layer: hub.gd + the 6 station scripts).
+- game_state.gd next_uid() now also anchors rows worn mid-session (the
+  mission-end chest leg bank_adds while gear is equipped; a bank-only
+  max could stamp a uid a worn row still carries and the pinned
+  picked(uid) crossing would key the wrong row). Declared; save schema
+  untouched.
+"""
+
+import json
+import re
+import sys
+from pathlib import Path
+
+import conftest
+
+sys.path.insert(0, conftest.repo_path("tools"))
+import check_hygiene as hyg  # noqa: E402  (reuse: blank_code for code greps)
+
+GODOT = Path(conftest.repo_path("godot"))
+PROBE = "res://sim/hub_probe.gd"
+SCRIPTS = GODOT / "scripts"
+
+HUB_GD = SCRIPTS / "hub.gd"
+GEAR_GD = SCRIPTS / "gear_panel_ui.gd"
+ROW_GD = SCRIPTS / "item_row.gd"
+WAR_GD = SCRIPTS / "war_table.gd"
+SMITH_GD = SCRIPTS / "blacksmith_ui.gd"
+TINK_GD = SCRIPTS / "tinkerer_ui.gd"
+DUMMY_GD = SCRIPTS / "dummy_range.gd"
+GS_GD = SCRIPTS / "game_state.gd"
+# The shipped hub layer W9 authors: the cost-literal gate's scope.
+HUB_LAYER = [HUB_GD, GEAR_GD, ROW_GD, WAR_GD, SMITH_GD, TINK_GD, DUMMY_GD]
+STATIONS = [GEAR_GD, SMITH_GD, TINK_GD, DUMMY_GD]
+
+# The I2 structural set (ARCHITECTURE.md; test_mission_smoke's reading):
+# math constants, slot/arity indices, sentinels — no cost value survives.
+STRUCT_VALS = {0.0, 1.0, 2.0, 3.0, 4.0, 0.5}
+NUM_RE = re.compile(r"\b\d+(?:\.\d+)?\b")
+
+
+def read_json(name):
+    with open(GODOT / "data" / ("%s.json" % name), encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def read_text(path):
+    with open(path, encoding="utf-8") as fh:
+        return fh.read()
+
+
+BLACKSMITH = read_json("blacksmith")
+RARITY = read_json("rarity")
+XP = read_json("xp")
+ITEMS = read_json("items")
+
+
+# ---------- engine tier: run the probe, parse rows, re-derive numbers ---
+
+def _rows(out, tag):
+    hits = [line for line in out.splitlines() if line.startswith(tag + " ")]
+    assert len(hits) == 1, "%s row count=%d\n%s" % (tag, len(hits), out)
+    return dict(kv.split("=", 1) for kv in hits[0].split(" ")[1:])
+
+
+def _mats(text):
+    """'torn_hide:2,iron_bar:1,' -> {id: n} (probe mats-row format)."""
+    out = {}
+    for pair in text.rstrip(",").split(","):
+        if pair:
+            key, val = pair.split(":")
+            out[key] = int(val)
+    return out
+
+
+def _service_gold():
+    return (int(BLACKSMITH["upgrade"]["gold_by_rarity"]["worn"])
+            + int(BLACKSMITH["evolve"]["gold"])
+            + int(BLACKSMITH["reroll"]["gold"])
+            + int(BLACKSMITH["tinkering"]["gold"]))
+
+
+def _want_mats():
+    want = {}
+    for key in ("upgrade", "evolve", "tinkering"):
+        for mid, n in BLACKSMITH[key]["materials"].items():
+            want[mid] = want.get(mid, 0) + int(n)
+    return want
+
+
+def test_hub_probe_engine_leg(tmp_path, class_cache):
+    proc = conftest.run_probe_script(PROBE, (), tmp_path)
+    assert proc.returncode == 0, \
+        "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                         proc.stderr)
+    assert proc.stderr == "", \
+        "-s probe stderr must be EMPTY (true parse signal):\n%s" % proc.stderr
+    assert "HUB-PROBE FAIL" not in proc.stdout, proc.stdout
+    out = proc.stdout
+
+    boot = _rows(out, "HUB-PROBE-BOOT")
+    assert int(boot["gold"]) == _service_gold() + 1, boot
+    assert _mats(boot["mats"]) == _want_mats(), boot
+    assert int(boot["bank"]) == 2, boot
+
+    eq = _rows(out, "HUB-PROBE-EQUIP")
+    # F2-11: each equip shrinks the bank to the one row left; the swap's
+    # replaced row rides back INTO the bank (returned=uid of item A).
+    assert eq["bank_after_first"] == "1" and eq["bank_after_swap"] == "1", eq
+    assert int(eq["returned"]) > 0, eq
+    twin = next(r for r in ITEMS if r["id"] == "twin_fang")
+    assert eq["equipped"] == twin["id"], eq
+    assert eq["relic_refused"] == "1", eq
+    assert int(eq["bank_after_relic"]) == 2, eq  # A back + the relic row
+
+    up = _rows(out, "HUB-PROBE-UPGRADE")
+    cost = int(BLACKSMITH["upgrade"]["gold_by_rarity"]["worn"])
+    assert int(up["cost"]) == cost, up
+    assert _mats(up["mats_dropped"]) == BLACKSMITH["upgrade"]["materials"], up
+    assert up["upgraded"] == "1" and up["rarity"] == "worn", up
+    assert int(up["gold_left"]) == int(boot["gold"]) - cost, up
+
+    ev = _rows(out, "HUB-PROBE-EVOLVE")
+    ladder = RARITY["ladder"]
+    assert ev["from"] == "worn" and ev["to"] == ladder[1], ev
+    evo_cost = int(BLACKSMITH["evolve"]["gold"])
+    assert int(ev["cost"]) == evo_cost and ev["refused"] == "1", ev
+    assert int(ev["gold_left"]) == int(up["gold_left"]) - evo_cost, ev
+
+    rr = _rows(out, "HUB-PROBE-REROLL")
+    reroll_cost = int(BLACKSMITH["reroll"]["gold"])
+    assert int(rr["cost"]) == reroll_cost and rr["stats_changed"] == "1", rr
+    assert rr["mods_kept"] == "1" and rr["rarity"] == "powerful", rr
+    assert int(rr["gold_left"]) == int(ev["gold_left"]) - reroll_cost, rr
+
+    cap = _rows(out, "HUB-PROBE-TINKERCAP")
+    assert cap["refused"] == "1" and cap["gold_unchanged"] == "1", cap
+    assert cap["mods_unchanged"] == "1", cap
+
+    tk = _rows(out, "HUB-PROBE-TINKER")
+    tink_cost = int(BLACKSMITH["tinkering"]["gold"])
+    assert int(tk["cost"]) == tink_cost and tk["moved"] == "1", tk
+    assert _mats(tk["mats_dropped"]) == BLACKSMITH["tinkering"]["materials"], tk
+    assert tk["source_mods"] == "0" and tk["target_mods"] == "1", tk
+    # Whole-chain exactness: every service charged its data price once.
+    assert int(tk["gold_left"]) == int(boot["gold"]) - _service_gold(), tk
+
+    dm = _rows(out, "HUB-PROBE-DUMMY")
+    xp_one = int(XP["enemy_xp_base"]["normal"])
+    assert int(dm["xp"]) == xp_one, dm
+    # level from the shipped cumulative curve: 1 + thresholds <= xp.
+    assert int(dm["level"]) == 1 + sum(
+        1 for need in XP["hero_curve"] if xp_one >= need), dm
+    assert dm["invulnerable"] == "1", dm
+    assert abs(float(dm["dps"]) - float(dm["absorbed"])) < 1e-6, dm
+
+    war = _rows(out, "HUB-PROBE-WAR")
+    assert "normal" in war["maps"] and "hard" in war["maps"], war
+    assert war["start"] == "gatefall" and war["difficulty"] == "hard", war
+
+    panels = _rows(out, "HUB-PROBE-PANELS")
+    assert panels["open"] == "blacksmith", panels
+
+    chest = _rows(out, "HUB-PROBE-CHEST")
+    assert int(chest["bank_after"]) == int(chest["bank_before"]) + 1, chest
+    assert chest["rarity"] == RARITY["chest_tiers"][0], chest
+    assert chest["gold_untouched"] == "1", chest
+    assert int(chest["shown"]) == int(chest["bank_after"]), chest
+
+    ok_hits = [ln for ln in out.splitlines() if ln.strip() == "HUB-PROBE-OK"]
+    assert len(ok_hits) == 1 and out.rstrip().endswith("HUB-PROBE-OK"), out
+
+
+def test_hub_probe_is_deterministic(tmp_path, class_cache):
+    first = conftest.run_probe_script(PROBE, (), tmp_path / "a")
+    second = conftest.run_probe_script(PROBE, (), tmp_path / "b")
+    assert first.returncode == 0 and second.returncode == 0
+    assert first.stdout == second.stdout, \
+        "probe output must be byte-stable under the pinned seed"
+
+
+# ---------- source truth: I2 cost-literal ban over the hub layer -------
+
+def _literal_violations(text):
+    code = hyg.blank_code(text, "gd")
+    return sorted({float(n) for n in NUM_RE.findall(code)} - STRUCT_VALS)
+
+
+def test_hub_layer_carries_no_cost_literals():
+    for path in HUB_LAYER:
+        bad = _literal_violations(read_text(path))
+        assert not bad, "%s carries non-structural number literals %r " \
+            "(I2/I4: costs ride the data via the shipped statics)" % (path, bad)
+
+
+def test_hub_planted_red_cost_literal_goes_red():
+    # Fixture trick (nothing written): the evolve price as a code literal
+    # must trip the SAME gate — an unbroken number gate is no gate.
+    planted = read_text(GEAR_GD).replace(
+        "func refresh() -> void:",
+        "func _planted() -> int:\n\treturn 600\n\nfunc refresh() -> void:", 1)
+    assert _literal_violations(planted) == [600.0], \
+        "planted-red: 600 slipped through the hub literal gate"
+
+
+# ---------- source truth: single application sites (C13/I4) ------------
+
+def _blank(path):
+    return hyg.blank_code(read_text(path), "gd")
+
+
+def test_equip_crossing_is_the_single_one():
+    gear = _blank(GEAR_GD)
+    assert len(re.findall(r"state\.equip\(", gear)) == 1, \
+        "gear_panel_ui crosses into meta ONLY through GameState.equip"
+    for path in STATIONS:
+        if path == GEAR_GD:
+            continue
+        assert not re.search(r"\.equip\(", _blank(path)), \
+            "%s must not open a second equip door (F2-11/C13)" % path.name
+    # equip is never called under another name in the hub layer.
+    for path in HUB_LAYER:
+        assert not re.search(r"SIM_INVENTORY\.equip\(", _blank(path)), \
+            "%s bypasses GameState.equip into the raw static" % path.name
+
+
+def test_service_statics_have_their_single_station():
+    calls = {"svc_upgrade": (SMITH_GD, "upgrade"), "svc_evolve": (SMITH_GD,
+           "evolve"), "svc_reroll": (SMITH_GD, "reroll"),
+           "tinkering": (TINK_GD, "tinkering")}
+    for static, (home, name) in calls.items():
+        total = sum(len(re.findall(r"SIM_INVENTORY\.%s\(" % static,
+                                   _blank(path))) for path in HUB_LAYER)
+        assert total == 1, "%s must apply at exactly one hub site (I4)" % static
+        assert re.search(r"SIM_INVENTORY\.%s\(" % static, _blank(home)), \
+            "%s must be applied by %s (pinned %s leg)" % (static,
+                                                          home.name, name)
+
+
+def test_payment_and_xp_sites_are_named_and_scoped():
+    # BN2: every service payment rides the named gold mutator; each
+    # charging panel owns ONE call site; the free legs never touch gold.
+    assert len(re.findall(r"state\.spend_gold\(", _blank(SMITH_GD))) == 1, \
+        "blacksmith pays through exactly one spend_gold site"
+    assert len(re.findall(r"state\.spend_gold\(", _blank(TINK_GD))) == 1, \
+        "tinkerer pays through exactly one spend_gold site"
+    for path in (GEAR_GD, WAR_GD, DUMMY_GD):
+        assert not re.search(r"spend_gold|consume_material", _blank(path)), \
+            "%s is a free leg: no meta spend allowed" % path.name
+    total = sum(len(re.findall(r"add_hero_xp\(", _blank(p))) for p in HUB_LAYER)
+    assert total == 1, "practice XP applies through add_hero_xp once"
+    assert re.search(r"add_hero_xp\(", _blank(DUMMY_GD)), \
+        "the dummy range owns the XP leg (pinned row)"
+
+
+def test_no_bank_writes_beside_the_mutators():
+    for path in HUB_LAYER:
+        code = _blank(path)
+        assert not re.search(r"bank\.append\(|bank_add\(", code), \
+            "%s writes the bank beside the C13 bank_add mutator" % path.name
+        assert not re.search(r"mutated\.emit\(", code), \
+            "%s must not emit the save signal itself — meta changes flow " \
+            "through the shipped mutators (C13); listening is fine" % path.name
+
+
+def test_no_progression_or_loot_math_in_hub_layer():
+    for path in HUB_LAYER:
+        code = _blank(path)
+        assert not re.search(r"level_from_xp|SIM_PROGRESSION|hero_curve", code), \
+            "%s re-implements level/xp math (SimProgression owns it)" \
+            % path.name
+        assert not re.search(r"roll_item|roll_victory_chest|victory_chest\(",
+                             code), \
+            "%s duplicates loot rolling — the victory chest rides the " \
+            "shipped mission step (6) commit only" % path.name
+
+
+def test_dummy_is_unkillable_by_shape():
+    # Raw text: the keys are string literals (blank_code blanks those).
+    code = read_text(DUMMY_GD)
+    assert re.search(r'"absorbed"', code) and not re.search(r'"hp"', code), \
+        "the dummy record carries absorbed/elapsed and NO hp key — " \
+        "invulnerability is the row shape, not a guard (declared reading)"
+
+
+# ---------- source truth: the shared item_row widget -------------------
+
+def test_item_row_widget_is_shared_not_duplicated():
+    for path in (GEAR_GD, SMITH_GD, TINK_GD):
+        assert re.search(r'preload\("res://scenes/item_row\.tscn"\)',
+                         read_text(path)), \
+            "%s must render rows with the shared item_row scene" % path.name
+    defs = 0
+    for gd in SCRIPTS.glob("*.gd"):
+        defs += len(re.findall(r"^func show_item\(", read_text(gd), re.M))
+    assert defs == 1, \
+        "exactly ONE show_item exists repo-wide (gear, blacksmith, tinkerer " \
+        "all render through the single item_row widget)"
+    assert not re.search(r"show_item|item_row", _blank(HUB_GD)), \
+        "hub.gd composes panels only — no row rendering beside the widget"
+
+
+def test_item_row_planted_red_duplicate_renderer_goes_red():
+    # Fixture trick: a second row renderer in the gear panel must trip the
+    # single-widget gate.
+    planted = read_text(GEAR_GD) + "\nfunc show_item(item, selected) -> void:\n\tpass\n"
+    defs = 0
+    for gd in SCRIPTS.glob("*.gd"):
+        text = planted if gd == GEAR_GD else read_text(gd)
+        defs += len(re.findall(r"^func show_item\(", text, re.M))
+    assert defs == 2, "planted-red: duplicate show_item slipped through"
+
+
+# ---------- source truth: pinned crossings ------------------------------
+
+def test_war_table_hands_start_mission_to_the_router():
+    war = _blank(WAR_GD)
+    assert re.search(r"router\.start_mission\(", war), \
+        "war_table.start crosses main's pinned start_mission (C13 hub->mission)"
+    assert re.search(r'func setup\(router_in, tables', read_text(WAR_GD)), \
+        "war_table.setup takes the router the hub injects (its parent)"
+
+
+def test_hub_routes_stations_off_the_bridge_input_model():
+    hub = _blank(HUB_GD)
+    assert re.search(r"bridge\.drain_presses\(\)", hub), \
+        "hub consumes discrete presses through the shipped bridge model " \
+        "(no second input path)"
+    for code in ['"Digit1"', '"Digit2"', '"Digit3"', '"Digit4"', '"KeyE"',
+                 '"Escape"']:
+        assert code in read_text(HUB_GD), "station map misses %s" % code
+    assert re.search(r"\nfunc _open\(", read_text(HUB_GD)), \
+        "one station-open crossing drives visibility"
+
+
+def test_next_uid_anchors_worn_rows():
+    # W9 declared finding, pinned as source truth: bank_add stamps uid
+    # from max(bank, worn) — the pinned picked(uid) keys stay unique while
+    # heroes wear gear and the mission-end chest bank_adds.
+    gs = _blank(GS_GD)
+    body = gs[gs.index("func next_uid"):]
+    assert "for slots: Dictionary in equipped.values()" in body, \
+        "next_uid must anchor on equipped rows too (R-list)"
+
+
+def test_hub_layer_avoids_monetization_vocabulary():
+    for path in HUB_LAYER:
+        text = read_text(path).lower()
+        for token in ("shop", "price", "cash", "gem", "wallet", "iap"):
+            assert token not in text, \
+                "%s carries monetization vocabulary %r (I1)" % (path.name, token)
