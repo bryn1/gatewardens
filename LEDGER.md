@@ -57,7 +57,8 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | BUILD W10 HUD + hot-swap UI | DONE — commit d9214a2, 167 pytest green, read-only gate live (MC 11274.1.18) |
 | BUILD W11 golden sim | DONE — commit 338720e, 172 pytest green, golden full-mission WINS byte-stable (MC 11274.1.19) |
 | BUILD W11b P2 fix | DONE — commit 3a8c8b3, 175 pytest green, P2 closed (MC 11274.1.20) |
-| BUILD W12 web export x2 + served contract (server.py, F2-3 served asserts) | spawning |
+| BUILD W12 web export x2 + served contract | DONE — commit da64196, 180 pytest green, repro VERIFIED (9 files byte-identical A/B), doc-sync static/ (MC 11274.1.21) |
+| A9 journey (orchestrator, clickable browser, served build) | running |
 
 ## Gate rounds log
 
