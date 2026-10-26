@@ -55,7 +55,8 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | BUILD W8 defenses | DONE — commit 26575a1, 139 pytest green, win path live (tower kills via slot-3 single site) (MC 11274.1.17; card 11322 cancelled — brief-probe paraphrased the pinned file name, re-filed 11324, trail on both cards) |
 | BUILD W9 hub full | DONE — commit f2c4e79, 155 pytest green, 11-leg hub probe incl next_uid fix (MC 11274.1.16) |
 | BUILD W10 HUD + hot-swap UI | DONE — commit d9214a2, 167 pytest green, read-only gate live (MC 11274.1.18) |
-| BUILD W11 golden sim (sim_headless + fixtures + byte-equal replay) + loot_pickup event source | spawning |
+| BUILD W11 golden sim | DONE — commit 338720e, 172 pytest green, golden full-mission WINS byte-stable (MC 11274.1.19) |
+| BUILD W11b P2 fix: defense_placer unknown-uid upgrade/repair negative legs | spawning |
 
 ## Gate rounds log
 
@@ -93,6 +94,10 @@ E1 a signal connection does NOT keep a RefCounted method-listener alive — anch
 ## Release gate (owner doctrine MC 11277 + MC 11318)
 
 v1 GA requires IN ORDER: full suite + A9 journey green -> CLEAN-CODE AUDIT (findings-only) -> REFACTOR run (zero behavior change, suite green) -> release-notes artifact + README current + doc-sync sweep -> tag/release. No GA on a dirty base.
+
+## Findings open (pre-GA)
+
+P2 defense_placer.gd upgrade()/repair() crash under -s on unknown uids (not-found sentinel non-empty -> rec["obj"] SCRIPT ERROR; sell() pattern is the correct shape) — fix + negative legs in W11b, before W12 serve.
 
 ## Open questions
 
