@@ -155,17 +155,22 @@ def main():
     errors, notes = [], []
     for top in I1_DIRS:
         for path in walk(os.path.join(REPO, top), CODE_EXTS):
-            lines = read(path).split("\n")
-            in_tests = rel(path).split(os.sep)[0] == "tests"
-            ceiling = 600 if in_tests else 400
-            exempt = lines[0].startswith("# hygiene:") if lines else False
-            if len(lines) > ceiling and not exempt:
-                errors.append("%s:1: [ceiling] %d lines > %d" %
-                              (rel(path), len(lines), ceiling))
-            elif len(lines) > 250 and not in_tests:
-                notes.append("note: %s %d lines > soft 250%s" %
-                             (rel(path), len(lines),
-                              " (exempt)" if exempt else ""))
+            # Ceiling class per the header + ARCHITECTURE row: .gd/.py only
+            # ("every other extension exempt"); W12 hit the divergence when
+            # the gitignored BUILD static/index.js (910 lines) tripped a
+            # ceiling meant for source files.
+            if os.path.splitext(path)[1].lower() in (".gd", ".py"):
+                lines = read(path).split("\n")
+                in_tests = rel(path).split(os.sep)[0] == "tests"
+                ceiling = 600 if in_tests else 400
+                exempt = lines[0].startswith("# hygiene:") if lines else False
+                if len(lines) > ceiling and not exempt:
+                    errors.append("%s:1: [ceiling] %d lines > %d" %
+                                  (rel(path), len(lines), ceiling))
+                elif len(lines) > 250 and not in_tests:
+                    notes.append("note: %s %d lines > soft 250%s" %
+                                 (rel(path), len(lines),
+                                  " (exempt)" if exempt else ""))
             if path.endswith(".gd"):
                 stripped = blank_code(read(path), "gd")
                 for lineno, line in enumerate(stripped.split("\n"), 1):

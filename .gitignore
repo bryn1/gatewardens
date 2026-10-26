@@ -1,3 +1,8 @@
 /.tmp/
 godot/.godot/
 __pycache__/
+# W12 (MC 11274.1.21): web-export build artifacts are evidence-side, never
+# committed (trail doctrine); reproduce with tools/export_web.sh. static/
+# stays discoverable through the committed .gitkeep marker.
+static/*
+!static/.gitkeep
