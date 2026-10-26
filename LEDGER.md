@@ -60,7 +60,12 @@ MC 11274.1). Stack: Godot 4.7.2 web export (pipeline reused from hollow_dawn_3d)
 | BUILD W12 web export x2 + served contract | DONE — commit da64196, 180 pytest green, repro VERIFIED (9 files byte-identical A/B), doc-sync static/ (MC 11274.1.21) |
 | A9 journey | PARTIAL — boot/hub/mission-live/lose/reload + F-1/F-2/F-3/starter fixes VERIFIED served (A9-journey.md, W13 evidence); wave-10+boss/place/upgrade/loot/equip/save+reload browser legs NOT yet run — golden proves them headless only. Full-browser journey leg REQUIRED before GA tag (per MC 11274.1.24 doc-sweep) |
 | BUILD W13 journey-fix (hub layout+signal lifecycle+world visibility+starter data) | DONE — commit 865b668, 190 pytest green, A9 re-journey PASS (0 console errors, visible world, data starter live) (MC 11274.1.22) |
-| CLEAN-CODE AUDIT (pre-GA, owner doctrine MC 11318) | spawning |
+| CLEAN-CODE AUDIT | DONE — REVIEW.md, VERDICT FIX (4 P1 behavior gaps + refactor-safe set; MC 11274.1.23) |
+| BUILD W14 P1 behavior legs (placement reachable served, relic equip, ascension station, digit-collision, P2-10, P3-11) | spawning |
+| BUILD W15 hard-difficulty golden fixture | pending W14 |
+| REFACTOR RUN (REVIEW.md refactor-safe set, zero behavior change) | pending W15 |
+| FULL browser journey pre-GA (boss/place/loot/equip/save-reload served) | pending W16 |
+| RELEASE DOCS + TAG (A10, MC 11277 rows) | pending W17 |
 
 ## Gate rounds log
 
