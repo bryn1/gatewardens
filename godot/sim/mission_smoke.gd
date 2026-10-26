@@ -1,3 +1,5 @@
+# hygiene: W8 legs carry this smoke asset past 400 lines (test asset,
+# kept whole; MC 11274.1.15) — hard ceiling exempt per header rule.
 # mission_smoke — headless mission-flow smoke (W6, MC 11274.1.13 /
 # card 11308). Test asset in sim/ (harness idiom: no sim_ prefix, the
 # parse-probe scan skips it; boot_probe/save_probe are the precedent).
@@ -35,6 +37,26 @@
 #   MISSION-SMOKE-DOWN pawns=<n> visible=<v> (all-down F2-9 with pawns live)
 #   MISSION-SMOKE-LOSE outcome=<o> ack=<a> seq=<s> (F2-9 same-tick LOSE
 #                          wins + the single C13 mission-end commit)
+#   (W8, MC 11274.1.15 / card 11322 — defenses; legs run in the build
+#   phase except the tower-kill, which rides the REAL wave-1 combat):
+#   MISSION-SMOKE-W8PLACE class=tower cost=<c> green=<g> tier=1 (green
+#                          drops EXACTLY the towers.json base_cost)
+#   MISSION-SMOKE-W8UPGRADE cost=<c> dps=<d> green=<g> (T1->T2 ladder
+#                          price + the dps rise, both from data)
+#   MISSION-SMOKE-W8REPAIR missing=0.5 cost=<c> green=<g> hp=<h>
+#   MISSION-SMOKE-W8REPAIR1 cost=<c> green=<g> (floor-1 leg: missing=1/hp_max)
+#   MISSION-SMOKE-W8PLACE2 class=blockade cost=<c> green=<g>
+#   MISSION-SMOKE-W8CAP why=cap green=<g> count=<n> (cap+1 refused, green
+#                          unchanged — harness cap write, boot_probe license)
+#   MISSION-SMOKE-W8SELL refund=<r> green=<g> count=<n> (damaged defense:
+#                          total_spent x sell_ratio x missing, R1 pinned)
+#   MISSION-SMOKE-W8FREESLOT class=trap cost=<c> green=<g> charges=<t>
+#   MISSION-SMOKE-W8PANEL classes=<a|b|c> gate=<n-affordable at trap cost>
+#   MISSION-SMOKE-W8PANEL-ACT refund=<r> cost=<c> green=<g> (panel routes
+#                          through placer/obj APIs — bridge-code presses)
+#   MISSION-SMOKE-W8KILL t=<frames> green=+<g> xp=+<x> (tower dps kills a
+#                          live enemy through funnel slot (3) + step-(4)
+#                          awards; hero holds nothing — attribution clean)
 #   MISSION-SMOKE-OK
 # E3: quit() under -s does NOT abort the running frame — every failure
 # path early-returns; each quit() fires exactly once.
@@ -42,6 +64,8 @@ extends SceneTree
 
 const GW_TABLES := preload("res://sim/sim_tables.gd")
 const GW_COMPOSE := preload("res://sim/gw_compose.gd")
+const DEF_PLACER := preload("res://scripts/defense_placer.gd")
+const DEF_PANEL := preload("res://scripts/defense_panel.gd")
 
 const MISSION_SCENE := "res://scenes/mission.tscn"
 const SAVE_PATH := "user://gatewardens.cfg"
@@ -90,6 +114,124 @@ func _init() -> void:
 	# (check 4), the licensed stand-in for W7/W8 damage sources.
 	m.core_main.hp_max *= 5.0
 	m.core_main.hp = m.core_main.hp_max
+	# --- W0) W8 defense legs (MC 11274.1.15 / card 11322), all in the
+	#        build phase; every price/refund is asserted against the data
+	#        files by the pytest leg, never decided from literals here.
+	var placer = DEF_PLACER.new()
+	placer.setup(m)
+	var blockade_row: Dictionary = placer.row_for("blockade")
+	var trap_row: Dictionary = placer.row_for("trap")
+	if blockade_row.is_empty() or trap_row.is_empty() \
+			or placer.row_for("tower").is_empty():
+		_fail("towers.json class rows missing")
+		return
+	var slot_t := placer.slot_at(m.lanes["lane_g3"]["wps"][0])
+	var slot_b := placer.slot_at(m.lanes["lane_g2"]["wps"][2])
+	var slot_a := placer.slot_at(m.lanes["lane_g1"]["wps"][0])
+	if slot_t < 0 or slot_b < 0 or slot_a < 0 or slot_a == slot_b:
+		_fail("lane-geometry buildable slots missing")
+		return
+	var pres := placer.place("tower", 1, slot_t)
+	if not bool(pres["ok"]) or int(m.green) != start_green - int(pres["cost"]):
+		_fail("W8 place: ok=%s green=%d" % [str(pres["ok"]), m.green])
+		return
+	print("MISSION-SMOKE-W8PLACE class=tower cost=%d green=%d tier=1" % [
+			int(pres["cost"]), m.green])
+	var tower_uid := int(pres["uid"])
+	var tower_obj = _w8obj(m, tower_uid)
+	var dps1: float = tower_obj.dps()
+	var ures := placer.upgrade(tower_uid)
+	var dps2: float = tower_obj.dps()
+	if not bool(ures["ok"]) or int(m.green) != start_green \
+			- int(pres["cost"]) - int(ures["cost"]) or dps2 <= dps1:
+		_fail("W8 upgrade: %s dps %s->%s green=%d" % [
+				str(ures), str(dps1), str(dps2), m.green])
+		return
+	print("MISSION-SMOKE-W8UPGRADE cost=%d dps=%.2f green=%d" % [
+			int(ures["cost"]), dps2, m.green])
+	tower_obj.take_damage(tower_obj.hp_max * 0.5)   # harness half-missing leg
+	var rres := placer.repair(tower_uid)
+	if not bool(rres["ok"]) or float(tower_obj.hp) != float(tower_obj.hp_max):
+		_fail("W8 repair: %s hp=%s" % [str(rres), str(tower_obj.hp)])
+		return
+	print("MISSION-SMOKE-W8REPAIR missing=0.5 cost=%d green=%d hp=%s" % [
+			int(rres["cost"]), m.green, str(tower_obj.hp)])
+	tower_obj.take_damage(1.0)                      # floor-1 leg (<1 rounds to 0)
+	var fres := placer.repair(tower_uid)
+	if not bool(fres["ok"]) or int(fres["cost"]) != 1:
+		_fail("W8 repair floor-1: %s" % str(fres))
+		return
+	print("MISSION-SMOKE-W8REPAIR1 cost=%d green=%d" % [int(fres["cost"]), m.green])
+	var bres := placer.place("blockade", 1, slot_b)
+	if not bool(bres["ok"]):
+		_fail("W8 blockade place: %s" % str(bres))
+		return
+	print("MISSION-SMOKE-W8PLACE2 class=blockade cost=%d green=%d" % [
+			int(bres["cost"]), m.green])
+	# Cap boundary: harness writes the cap DOWN to the live count (the
+	# boot_probe drive-real-entry-points license) so the NEXT place is the
+	# pinned cap+1 refusal; green must not move.
+	m.defense_cap = m.defense_list.size()
+	var g_before := int(m.green)
+	var cres := placer.place("blockade", 1, slot_a)
+	if String(cres["why"]) != "cap" or int(m.green) != g_before \
+			or m.defense_list.size() != m.defense_cap:
+		_fail("W8 cap+1: %s green=%d count=%d" % [
+				str(cres), m.green, m.defense_list.size()])
+		return
+	print("MISSION-SMOKE-W8CAP why=cap green=%d count=%d" % [
+			m.green, m.defense_list.size()])
+	var block_obj = _w8obj(m, int(bres["uid"]))
+	block_obj.take_damage(block_obj.hp_max * 0.5)   # damaged -> refund > 0
+	var g_pre_sell := int(m.green)
+	var sres := placer.sell(int(bres["uid"]))
+	if not bool(sres["ok"]) or m.defense_list.size() != 1 \
+			or int(m.green) != g_pre_sell + int(sres["refund"]):
+		_fail("W8 sell: %s green=%d count=%d" % [
+				str(sres), m.green, m.defense_list.size()])
+		return
+	print("MISSION-SMOKE-W8SELL refund=%d green=%d count=%d" % [
+			int(sres["refund"]), m.green, m.defense_list.size()])
+	var tres := placer.place("trap", 1, slot_b)     # the freed slot, exact-cost
+	if not bool(tres["ok"]) or int(m.green) != g_pre_sell + int(sres["refund"]) \
+			- int(tres["cost"]):
+		_fail("W8 sell frees no cap slot: %s green=%d" % [str(tres), m.green])
+		return
+	var trap_obj = _w8obj(m, int(tres["uid"]))       # affordability edge
+	print("MISSION-SMOKE-W8FREESLOT class=trap cost=%d green=%d charges=%d" % [
+			int(tres["cost"]), m.green, int(trap_obj.charges)])
+	# Panel leg: functional greybox Control — lists v1 classes, gates by
+	# can_afford, and its actions route THROUGH the placer/obj APIs. The
+	# gate count rides a harness green write at exactly the trap price
+	# (the two data-cheap classes affordable, the tower class not).
+	var panel = DEF_PANEL.new()
+	root.add_child(panel)
+	panel.setup(m, placer)
+	m.green = int(trap_row["base_cost"])
+	panel.refresh()
+	var ids: Array = []
+	for crow: Dictionary in panel.class_rows:
+		ids.append(String(crow["class"]))
+	var enabled := 0
+	for cid: String in panel.class_buttons:
+		if not bool(panel.class_buttons[cid].disabled):
+			enabled += 1
+	print("MISSION-SMOKE-W8PANEL classes=%s gate=%d" % ["|".join(ids), enabled])
+	var ps0 := int(m.green)
+	panel.select_defense(int(tres["uid"]))
+	panel.handle_press("KeyN")        # sell the full-HP trap: pinned refund 0
+	var p_refund := int(m.green) - ps0
+	panel.select_class(1)             # data order: tower, blockade, trap
+	panel.handle_press("KeyM")        # place blockade, first free slot
+	var p_cost := ps0 - int(m.green)
+	if p_refund != 0 or p_cost != int(blockade_row["base_cost"]) \
+			or m.defense_list.size() != int(m.defense_cap):
+		_fail("W8 panel actions: refund=%d cost=%d count=%d" % [
+				p_refund, p_cost, m.defense_list.size()])
+		return
+	print("MISSION-SMOKE-W8PANEL-ACT refund=%d cost=%d green=%d" % [
+			p_refund, p_cost, m.green])
+	var w8_left := int(m.green)       # the wave-award formula's green base
 	# --- 1) build phase lasts build_seconds(waves[0]) = 25.0s, and the
 	#        wave-0 delay-0 group spawns at combat-local t = 0 (tick 1)
 	var guard := 0
@@ -179,7 +321,7 @@ func _init() -> void:
 		_fail("wave 0 never completed")
 		return
 	if kills < 1 or int(m.wave) != 1 \
-			or int(m.green) != start_green \
+			or int(m.green) != w8_left \
 				+ (kills + hero_kills) * int(skit["green"]) + per_wave \
 			or int(m.xp_earned) != wave_xp \
 				+ (kills + hero_kills) * int(skit["xp"]) \
@@ -203,6 +345,30 @@ func _init() -> void:
 		_fail("no full blue refill at combat start: %s/%s" % [m.blue, m.blue_max])
 		return
 	print("MISSION-SMOKE-REFILL blue=%s max=%s" % [m.blue, m.blue_max])
+	# --- 5a) (W8) the placed+upgraded TOWER KILLS a live enemy through
+	#        the pinned funnel: the harness spawns one skitterling on the
+	#        far sub-lane (real C2 runner.spawn entry, closed lane = no
+	#        mission spawns there), the tower's step-(3) dps tick drains
+	#        it and the step-(4) death funnel awards green+xp unchanged.
+	#        Nothing else holds input or deals damage in this window
+	#        (the trap was sold in the panel leg) — attribution is clean.
+	var srow := {"enemy_id": "skitterling", "count": 1, "lane": "lane_g3",
+		"delay": 0.0}
+	runner.spawn(srow, m.lanes["lane_g3"], m.enemy_defs, rng)
+	var gk := int(m.green)
+	var xk := int(m.xp_earned)
+	guard = 0
+	while guard < 600 and int(m.green) == gk:
+		m.step(1.0 / 60.0)
+		guard += 1
+	if int(m.green) != gk + int(skit["green"]) \
+			or int(m.xp_earned) != xk + int(skit["xp"]) \
+			or String(m.phase_kind) != "combat":
+		_fail("W8 tower kill: green=%d xp=%d phase=%s" % [
+				m.green, m.xp_earned, m.phase_kind])
+		return
+	print("MISSION-SMOKE-W8KILL t=%d green=+%d xp=+%d" % [
+			guard, int(m.green) - gk, int(m.xp_earned) - xk])
 	# --- 5b) (W7b) ability dispatch, ACTIVE hero (warden) with blue full:
 	#        Digit4 (the W4 code added for abilities, no swap alias) casts
 	#        the 4th ability — blue spends EXACTLY its mana_cost (tick-then-
@@ -314,3 +480,10 @@ func _init() -> void:
 func _fail(why: String) -> void:
 	print("MISSION-SMOKE FAIL " + why)
 	quit(1)
+
+
+func _w8obj(m, uid: int):
+	for rec: Dictionary in m.defense_list:
+		if int(rec["uid"]) == uid:
+			return rec["obj"]
+	return null

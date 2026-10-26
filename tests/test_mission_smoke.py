@@ -1,5 +1,6 @@
-"""W6 mission-scene smoke + funnel source-truth gate, W7 hero extension
-(MC 11274.1.13 / card 11308; MC 11274.1.14 / card 11321).
+"""W6 mission-scene smoke + funnel source-truth gate, W7 hero extension,
+W8 defense extension (MC 11274.1.13 / card 11308; MC 11274.1.14 / card
+11321; MC 11274.1.15 / card 11322).
 
 (a) ENGINE SMOKE: godot/sim/mission_smoke.gd under `-s` over a temp
     user:// (XDG_DATA_HOME, the save_probe idiom) whose 3-hero deck is
@@ -24,6 +25,7 @@
 """
 
 import json
+import math
 import re
 import sys
 
@@ -37,7 +39,14 @@ SMOKE = "res://sim/mission_smoke.gd"
 MISSION_GD = conftest.repo_path("godot", "scripts", "mission.gd")
 COMBAT_GD = conftest.repo_path("godot", "scripts", "hero_combat.gd")
 CTRL_GD = conftest.repo_path("godot", "scripts", "hero_controller.gd")
+OBJ_GD = conftest.repo_path("godot", "scripts", "defense_obj.gd")
+PLACER_GD = conftest.repo_path("godot", "scripts", "defense_placer.gd")
+PANEL_GD = conftest.repo_path("godot", "scripts", "defense_panel.gd")
 HEROES_JSON = conftest.repo_path("godot", "data", "heroes.json")
+TOWERS_JSON = conftest.repo_path("godot", "data", "towers.json")
+ECONOMY_JSON = conftest.repo_path("godot", "data", "economy.json")
+ENEMIES_JSON = conftest.repo_path("godot", "data", "enemies.json")
+GATEFALL_JSON = conftest.repo_path("godot", "data", "maps", "gatefall.json")
 
 # The six pinned C12 calls (1)..(6), verbatim call forms, in order.
 FUNNEL = [
@@ -111,6 +120,7 @@ def test_mission_smoke_engine_leg(tmp_path, class_cache):
     assert proc.stderr == "", \
         "-s smoke stderr must be EMPTY (true parse signal):\n%s" % proc.stderr
     _w7_rows(proc.stdout)
+    _w8_rows(proc.stdout)
 
 
 def _hero_row(hero_id):
@@ -158,9 +168,164 @@ def _w7_rows(out):
 
 # ---------- (c) W7 crossings, source truth, no engine ----------
 
+def _json(path):
+    with open(path, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def _half_away(x):
+    """Godot's roundi semantics: round half AWAY from zero."""
+    return math.floor(abs(x) + 0.5) * (1 if x >= 0 else -1)
+
+
+def _w8_rows(out):
+    """W8 machine rows, every number re-derived from the shipped data
+    files (towers.json / economy.json / enemies.json / gatefall.json)."""
+    towers = {row["id"]: row for row in _json(TOWERS_JSON)}
+    eco = _json(ECONOMY_JSON)
+    skit = [e for e in _json(ENEMIES_JSON) if e["id"] == "skitterling"][0]
+    start_green = _json(GATEFALL_JSON)["start_green"]
+    # class placement costs = the FIRST towers.json row of each class
+    # (the placer.classes() idiom, mirrored here from file order).
+    first = {}
+    for row in _json(TOWERS_JSON):
+        first.setdefault(row["class"], row)
+    tower, block, trap = first["tower"], first["blockade"], first["trap"]
+    ratios = eco["upgrade_ratios"]
+
+    place = _row(out, "MISSION-SMOKE-W8PLACE")
+    assert place["class"] == "tower" and place["tier"] == "1", place
+    assert int(place["cost"]) == tower["base_cost"], place
+    assert int(place["green"]) == start_green - tower["base_cost"], \
+        "green must drop EXACTLY the data cost: %s" % place
+
+    up = _row(out, "MISSION-SMOKE-W8UPGRADE")
+    assert int(up["cost"]) == int(tower["base_cost"] * ratios[0]), \
+        "T1->T2 ladder price: %s" % up
+    t1, t2 = tower["tiers"][0], tower["tiers"][1]
+    assert abs(float(up["dps"]) - t2["damage"] * t2["fire_rate"]) < 1e-6, up
+    assert float(up["dps"]) > t1["damage"] * t1["fire_rate"], \
+        "the dps must RISE with the tier (from data): %s" % up
+    assert int(up["green"]) == start_green - tower["base_cost"] - int(up["cost"])
+
+    rep = _row(out, "MISSION-SMOKE-W8REPAIR")
+    want = max(1, _half_away(tower["base_cost"] * eco["repair_ratio"] * 0.5))
+    assert int(rep["cost"]) == want, "repair = base x ratio x missing: %s" % rep
+    assert float(rep["hp"]) == float(t2["hp"]), "repair tops to full hp: %s" % rep
+
+    rep1 = _row(out, "MISSION-SMOKE-W8REPAIR1")
+    want1 = max(1, _half_away(tower["base_cost"] * eco["repair_ratio"]
+                              * (1.0 / t2["hp"])))
+    assert int(rep1["cost"]) == want1 == 1, "floor-1 leg: %s" % rep1
+
+    place2 = _row(out, "MISSION-SMOKE-W8PLACE2")
+    assert int(place2["cost"]) == block["base_cost"], place2
+
+    cap = _row(out, "MISSION-SMOKE-W8CAP")
+    assert cap["why"] == "cap", cap
+    assert int(cap["green"]) == int(place2["green"]), \
+        "cap+1 refusal must leave green UNCHANGED: %s vs %s" % (cap, place2)
+    assert int(cap["count"]) >= 1, cap
+
+    sell = _row(out, "MISSION-SMOKE-W8SELL")
+    refund = _half_away(block["base_cost"] * eco["sell_ratio"] * 0.5)
+    assert int(sell["refund"]) == refund, "sell = total_spent x ratio x missing: %s" % sell
+    assert int(sell["green"]) == int(cap["green"]) + refund, sell
+
+    free = _row(out, "MISSION-SMOKE-W8FREESLOT")
+    assert int(free["cost"]) == trap["base_cost"], free
+    assert int(free["charges"]) == trap["trap_charges"], free
+    assert int(free["green"]) == int(sell["green"]) - trap["base_cost"], free
+
+    pan = _row(out, "MISSION-SMOKE-W8PANEL")
+    assert pan["classes"].split("|") == ["tower", "blockade", "trap"], pan
+    gate_at = trap["base_cost"]
+    assert int(pan["gate"]) == sum(1 for row in first.values()
+                                   if row["base_cost"] <= gate_at), pan
+
+    act = _row(out, "MISSION-SMOKE-W8PANEL-ACT")
+    assert int(act["refund"]) == 0, "full-HP sell = ratio x 0 = 0 (pinned R1): %s" % act
+    assert int(act["cost"]) == block["base_cost"], act
+    assert int(act["green"]) == gate_at - block["base_cost"], act
+
+    kill = _row(out, "MISSION-SMOKE-W8KILL")
+    assert int(kill["green"].lstrip("+")) == skit["green"], \
+        "tower dps kill awards exactly one skitterling green: %s" % kill
+    assert int(kill["xp"].lstrip("+")) == skit["xp"], kill
+    assert int(kill["t"]) > 0, kill
+
+
 def read_text(path):
     with open(path, encoding="utf-8") as fh:
         return fh.read()
+
+
+# ---------- W8 source truth (I2/I4): costs only from data, single sites ---
+
+DEFENSE_GD = (OBJ_GD, PLACER_GD, PANEL_GD)
+# The I2 structural set (ARCHITECTURE.md): math constants, slot/arity
+# indices, sentinels — NO cost or ratio values can survive it.
+STRUCT_VALS = {0.0, 1.0, 2.0, 3.0, 4.0, 0.5}
+NUM_RE = re.compile(r"\b\d+(?:\.\d+)?\b")
+
+
+def _literal_violations(code):
+    return sorted({float(n) for n in NUM_RE.findall(code)} - STRUCT_VALS)
+
+
+def test_defense_files_carry_no_cost_or_ratio_literals():
+    for path in DEFENSE_GD:
+        code = hyg.blank_code(read_text(path), "gd")
+        bad = _literal_violations(code)
+        assert not bad, "%s carries non-structural number literals %r " \
+            "(I2: costs/ratios come from data via SimEconomy)" % (path, bad)
+
+
+def test_defense_planted_red_ratio_literal_goes_red():
+    # Fixture trick (nothing written to disk): inject the 0.75 ratio as a
+    # code literal — the SAME gate must flag it (an unbroken number gate
+    # is no gate at all).
+    text = read_text(OBJ_GD)
+    planted = text.replace(
+        "func missing_ratio() -> float:",
+        "func _planted(x: float) -> float:\n\treturn x * 0.75\n\n"
+        "func missing_ratio() -> float:", 1)
+    assert _literal_violations(hyg.blank_code(planted, "gd")) == [0.75], \
+        "planted-red: 0.75 slipped through the defense literal gate"
+
+
+def test_cost_formulas_have_single_application_sites():
+    obj = hyg.blank_code(read_text(OBJ_GD), "gd")
+    for call in ["SIM_ECONOMY\\.upgrade_cost\\(", "SIM_ECONOMY\\.repair_cost\\(",
+                 "SIM_ECONOMY\\.sell_value\\(", "SIM_COMBAT\\.tower_dps\\("]:
+        assert len(re.findall(call, obj)) == 1, \
+            "defense_obj must call %s at exactly one site (C3/I4)" % call
+    panel = hyg.blank_code(read_text(PANEL_GD), "gd")
+    assert not re.search(r"SIM_ECONOMY\.(upgrade_cost|repair_cost|sell_value)"
+                         r"\(|SIM_COMBAT\.tower_dps\(", panel), \
+        "defense_panel is pure UI: no cost/fire STATIC may be called (row; " \
+        "the next_upgrade_cost() obj READ of the priced rung is state)"
+    assert re.search(r"SIM_ECONOMY\.can_afford\(", panel), \
+        "the panel's tier gate is the shipped can_afford static"
+    mis = hyg.blank_code(read_text(MISSION_GD), "gd")
+    assert not re.search(r"tower_dps|upgrade_cost|repair_cost|sell_value", mis), \
+        "mission.gd holds no defense cost math (the obj/placer own their legs)"
+    assert len(re.findall(r"green -= cost", mis)) == 1, \
+        "place is the mission's ONE green write (I4 single site)"
+
+
+def test_mission_place_defense_pins_cap_afford_spend_order():
+    tail = read_text(MISSION_GD)
+    assert re.search(r"func place_defense\(row: Dictionary, tier: int, "
+                     r"at: Vector3\) -> Dictionary:", tail), \
+        "mission.gd must expose place_defense (pinned row)"
+    for pat in [r"defense_list\.size\(\) >= defense_cap",
+                r"SIM_ECONOMY\.can_afford\(green, cost\)",
+                r"green -= cost",
+                r"defense_list\.append\(\{\"uid\""]:
+        hit = re.search(pat, tail)
+        assert hit is not None, "place_defense crossing missing: %s" % pat
+        tail = tail[hit.end():]
 
 
 def combat_gate_ok(text):

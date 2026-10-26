@@ -1,4 +1,5 @@
-# hygiene: C12 funnel root + W7 hero hook lines (MC 11274.1.14) — hard ceiling exempt per header rule, file stays smallest-correct
+# hygiene: C12 funnel root + W7 hero hook lines + W8 place_defense
+# (MC 11274.1.14/.15) — hard ceiling exempt per header rule, file stays smallest-correct
 extends Node3D
 
 # mission — mission scene root (Modules row scripts/mission.gd,
@@ -34,6 +35,7 @@ extends Node3D
 # victory chest tier: normal->chest_tiers[0], hard->[1] (BN3; no v1 tier economy).
 
 const CORE_OBJ := preload("res://scripts/core_obj.gd")
+const DEF_OBJ := preload("res://scripts/defense_obj.gd")
 const HERO_RIG := preload("res://scripts/hero_controller.gd")
 const SIM_WAVE := preload("res://sim/sim_wave.gd")
 const SIM_COMBAT := preload("res://sim/sim_combat.gd")
@@ -92,6 +94,7 @@ var deck: Array = []
 var active := 0
 var relic_pool: Array = []       # C11 copy; the bank is NOT consumed
 var defense_list: Array = []     # W8 (defense_placer) fills this
+var defense_uid := 0             # W8: mission-local defense uid counter
 var xp_earned := 0
 var loot: Array = []             # mission-local pending tray
 var spawn_queue: Array = []
@@ -268,6 +271,29 @@ func revive_downed() -> void:
 		if bool(hs["downed"]):
 			hs["downed"] = false
 			hs["hp"] = float(hs["hp_max"])
+
+func place_defense(row: Dictionary, tier: int, at: Vector3) -> Dictionary:
+	# W8 (DECLARED hook, pinned mission row names place_defense): THE
+	# placement application site — C7 defense_cap + SimEconomy can_afford
+	# guards, the ONE `green -= cost` write for the place leg (upgrade/
+	# repair/sell writes live in defense_obj, one per leg), T1-only build
+	# (DD2 flat-tier: higher tiers ride the C3 upgrade ladder), then the
+	# defense_obj record enters defense_list carrying its tick — funnel
+	# slot (3) fires it unchanged (C12 word-for-word intact).
+	if tier != 1:
+		return {"ok": false, "why": "tier"}
+	if defense_list.size() >= defense_cap:
+		return {"ok": false, "why": "cap"}
+	var cost := int(row.get("base_cost", 0))
+	if not SIM_ECONOMY.can_afford(green, cost):
+		return {"ok": false, "why": "green", "cost": cost}
+	green -= cost
+	defense_uid += 1
+	var obj = DEF_OBJ.new()
+	obj.init_defense(self, row, at, defense_uid)
+	add_child(obj.node)
+	defense_list.append({"uid": defense_uid, "obj": obj, "tick": obj.tick})
+	return {"ok": true, "uid": defense_uid, "cost": cost}
 
 func _try_swap(i: int) -> void:
 	if i < 0 or i >= deck.size() or i == active:
