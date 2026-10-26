@@ -24,6 +24,11 @@ extends Control
 #   the W4 relay already ships; the real keymap is the HUD row's, and the
 #   W14 mission.setup mount ("mission adds this Control") is the row's
 #   own scene wiring, now live (P1-1).
+# - SELECT path (W17c, MC 11274.1.30 / card 11387): placed defenses are
+#   listed as selectable rows (uid/class/tier/hp, selected marked "»"),
+#   rebuilt inside refresh() off m.defense_list. Before this card
+#   select_defense was harness-only — a real player could never reach
+#   Upgrade/Repair/Sell (W17b's false-green class, one layer deeper).
 
 const PLACER := preload("res://scripts/defense_placer.gd")
 const BANK_LIST := preload("res://scripts/bank_list.gd")
@@ -44,6 +49,7 @@ var sell_btn = null
 var assign_btn = null
 var unassign_btn = null
 var relic_rows = null                # shared item_row list over the pool
+var defense_rows = null              # W17c: selectable rows (defense list)
 var info_label = null
 
 
@@ -71,6 +77,22 @@ func setup(mission, placer_in = null) -> void:
 	upgrade_btn = _action(box, "Upgrade", _on_upgrade)
 	repair_btn = _action(box, "Repair", _on_repair)
 	sell_btn = _action(box, "Sell", _on_sell)
+	# W17c (MC 11274.1.30 / card 11387): placed defenses get SELECTABLE
+	# rows — until now select_defense() was only ever called by the smoke
+	# harness, so in a real game selected_uid stayed 0 and Upgrade/Repair/
+	# Sell were player-unreachable (the W17b false-green class, one layer
+	# deeper). Data = the EXISTING defense-list API (m.defense_list, the
+	# same list _selected_obj and the placer read). Plain greybox Buttons,
+	# NOT item_row: that widget is the pinned ITEM-pool renderer (F2-12 —
+	# a placed defense is not an inventory item); the clear+rebuild loop
+	# keeps the shipped bank_list.fill shape (W16 dedupe idiom).
+	var def_head := Label.new()
+	def_head.name = "Head_defenses"
+	def_head.text = "DEFENSES"
+	box.add_child(def_head)
+	defense_rows = VBoxContainer.new()
+	defense_rows.name = "Rows_defenses"
+	box.add_child(defense_rows)
 	# W14 leg 2 (pinned defense_panel row): relic slot -> relic picker =
 	# item_row instances over mission.relic_pool (F2-12 shared widget).
 	# Pick a pool row, then Assign/Unassign routes through the pinned
@@ -95,6 +117,38 @@ func select_class(i: int) -> void:
 
 func select_defense(uid: int) -> void:
 	selected_uid = uid
+	refresh()                      # W17c: the row mark + URS re-gate the
+	                               # player path must be VISIBLE at once
+
+
+# W17c (MC 11274.1.30 / card 11387): the clear+rebuild over the EXISTING
+# m.defense_list API (no new mechanism); uid + class + tier + hp per row,
+# the selected row marked by its "»" text prefix (greybox-visible, no
+# theme). Text is data-only (I2: no formulas); clicks call the shipped
+# select_defense — the harness's old entry point becomes the player's too.
+func _rebuild_defense_rows() -> void:
+	# Detach NOW (no flicker) + queue_free: a row Button can be the very
+	# object emitting `pressed` when refresh() rebuilds (row click ->
+	# select_defense -> refresh), and free() on a locked (mid-emit)
+	# object is an engine ERROR (VERIFIED this card) — queue_free is the
+	# safe idiom, deferred to frame end after the emit unwinds.
+	for child: Node in defense_rows.get_children():
+		defense_rows.remove_child(child)
+		child.queue_free()
+	for rec: Dictionary in m.defense_list:
+		var obj = rec["obj"]
+		var b := Button.new()
+		b.name = "Row_%d" % int(rec["uid"])
+		b.text = "%suid %d %s T%d hp %d/%d" % [
+				"» " if int(rec["uid"]) == selected_uid else "",
+				int(rec["uid"]), String(obj.class_id), int(obj.tier) + 1,
+				int(obj.hp), int(obj.hp_max)]
+		b.pressed.connect(_on_defense_row.bind(int(rec["uid"])))
+		defense_rows.add_child(b)
+
+
+func _on_defense_row(uid: int) -> void:
+	select_defense(uid)
 
 
 func selected_tier() -> int:
@@ -176,6 +230,7 @@ func refresh() -> void:
 	assign_btn.disabled = obj == null or selected_relic <= 0 \
 			or int(obj.relic_uid) != 0
 	unassign_btn.disabled = obj == null or int(obj.relic_uid) == 0
+	_rebuild_defense_rows()        # W17c: rows track the list every action
 
 
 func _on_place_pressed(class_id: String) -> void:

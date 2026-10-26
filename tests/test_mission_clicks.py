@@ -1,52 +1,39 @@
-"""W17b mission-clicks gate (MC 11274.1.29 / card 11386).
+"""W17b+W17c mission-clicks gate (MC 11274.1.29/.30 / cards 11386-11387).
 
-Journey-found P1: the served build's panel was UNCLICKABLE (grid probe x
-0-160 x y 74-134, dozens of synthetic MouseEvents, green/defenses never
-moved, mission lost at t=36) while the smoke harness drove it fine — the
-KeyM bridge never touches the mouse, so click reachability was never
-tested. Mechanism (VERIFIED headless this card, evidence W17b):
-the overlay is a CanvasLayer ABOVE the panel, and its CODE-BUILT display
-controls keep the engine defaults — hero-slot VBoxContainers PASS, their
-ProgressBars STOP (a Control on the top layer that answers a click
-swallows everything beneath it). The hud.tscn containers were already
-IGNORE since W10, which is why the $Root-default-STOP suspect needed
-engine verification before fixing.
+Journey-found P1s, one false-green class: the harness had powers the
+player did not. W17b: the served panel was UNCLICKABLE — the CODE-BUILT
+display controls on the top CanvasLayer kept engine defaults (hero-slot
+VBox=PASS, ProgressBars=STOP: a Control that ANSWERS a click swallows
+what is beneath it; the hud.tscn rows were IGNORE since W10). W17c:
+select_defense was harness-only — Upgrade/Repair/Sell were player-
+unreachable. Full transcripts: evidence W17b/W17c. The probe SOURCE
+LIVES HERE (test_hub_layout.py idiom; a clean checkout runs the same).
 
-Gates (test_hub_layout.py idiom — probe SOURCE LIVES HERE, a clean
-checkout runs identically):
-
-- ENGINE TIER: boot the REAL mission scene under -s, force the served
-  logical size (VERIFIED: root.size = Vector2i(1280,720) takes effect
-  under -s; the dummy display starts the window at 64x64), then read the
-  REAL tree back:
-    (a) FILTER — every Control under HUD reports mouse_filter IGNORE and
-        the read-only HUD owns ZERO Buttons (the pinned row proves no
-        interactive HUD control exists, so IGNORE cannot swallow one);
-    (b) GEOMETRY — every panel Button rect lies fully on-screen and is
-        disjoint from every HUD Control rect at 1280x720;
-    (c) PICK — at each panel Button center the Control that RECEIVES the
-        input IS that Button. Picking mechanism (declared): the engine's
-        OWN Viewport GUI picking — root.push_input(motion, press,
-        release) is the same pipeline a browser mouse event enters on
-        the web build (Window::push_input -> Viewport hit-test by
-        global rect + mouse_filter, top CanvasLayer first); a Button
-        that receives a complete press emits `pressed`. Enabled buttons
-        assert exactly-one-receiver (themselves); disabled buttons
-        assert the click lands NOWHERE (disabled controls do not answer);
-        the first enabled Class_* clicks must PLANT defenses (state
-        change one bookkeeping frame later — the served-bug signature
-        is zero). EMPTY stderr (W4 ruling).
-- PLANTED-RED (engine tier): arg "stop_root" puts HUD/Root back to STOP
-  after setup — the legs MUST go RED (an unbroken gate is no gate).
-- SOURCE TRUTH (stdlib): hud.gd setup() ends with the one
-  _ignore_mouse pass; mission.gd's mount positions the panel (right
-  column, x past every HUD rect); every tscn ext_resource uid attribute
-  equals its .uid sidecar (the export-sidecar truth the served console
-  errored on: mission.tscn's stale uids uid://dki88udyr8g1w /
-  uid://n3w0umenqbws were embedded in the exported mission.scn — the
-  byte-proof lives in the evidence file, the string-truth lives here).
+ENGINE TIER (EMPTY stderr, W4 ruling): boot the REAL mission under -s,
+force the served size (root.size=Vector2i(1280,720) takes effect under
+-s, VERIFIED; the dummy display starts 64x64), read the REAL tree back:
+  (a) FILTER — every HUD Control IGNORE; the read-only HUD owns ZERO
+      Buttons (IGNORE then cannot swallow an interactive control);
+  (b) GEOMETRY — panel Buttons on-screen + disjoint from the HUD rects
+      at 1280x720 ($Root, the full-viewport background container, is
+      excluded — declared in-probe; panel controls sit inside it);
+  (c) PICK — each Button center clicked through the engine's OWN
+      Viewport GUI picking (root.push_input = the pipeline browser
+      input enters on web; the Button emitting `pressed` IS the
+      receiver): enabled pick THEMSELVES, disabled receive NOTHING,
+      Class_* clicks PLANT defenses (state one bookkeeping step later);
+  (d) SELECT (W17c) — placed defenses get ROWS; a ROW click sets
+      selected_uid and marks it "»"; Upgrade tiers +1 with an EXACT
+      green drop; Sell clears the selection and removes the row.
+PLANTED-RED (engine tier): "stop_root" (Root back to STOP) and
+"no_row_refresh" (rows detached) — the SAME legs MUST go RED.
+SOURCE TRUTH (stdlib): the _ignore_mouse pass; the mount positions the
+panel (x=904 clears TopLeft 520 / BossBar 900); every ext_resource uid
+== its .uid sidecar (the stale uid://dki88udyr8g1w / uid://n3w0umenqbws
+pair poisoned the EXPORTED mission.scn — byte-proofs in evidence).
 """
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -71,22 +58,15 @@ def read_text(path):
     return Path(path).read_text(encoding="utf-8")
 
 
-def _rect_disjoint(a, b):
-    """Strict-interior disjointness (edge-touching rects are legal)."""
-    ax, ay, aw, ah = a
-    bx, by, bw, bh = b
-    return not (ax < bx + bw and bx < ax + aw and ay < by + bh
-                and by < ay + ah)
-
-
 # ---------- engine tier: real mission, real picking, real frames --------
 
 PROBE_SRC = '''
 extends SceneTree
-# gw mission-clicks probe (W17b). Machine rows: GWMICE-FILTER / -GEOM /
-# -PICK / -OK; any failed check prints GWMICE-FAIL <detail> + rc1.
-# Arg "stop_root": PLANTED-RED — HUD/Root back to STOP after setup (the
-# W17b regression shape); the SAME legs must go RED.
+# gw mission-clicks probe (W17b + W17c). Machine rows: GWMICE-FILTER /
+# -GEOM / -PICK / -SEL / -UPL / -UPL2 / -SEL2 / -OK; any failed check
+# prints GWMICE-FAIL <detail> + rc1. PLANTED-RED args: "stop_root" (HUD
+# Root back to STOP — the W17b shape) and "no_row_refresh" (rows surface
+# detached — the W17c shape); the SAME legs must go RED.
 const GW_TABLES := preload("res://sim/sim_tables.gd")
 const GW_COMPOSE := preload("res://sim/gw_compose.gd")
 const MISSION_SCENE := "res://scenes/mission.tscn"
@@ -101,6 +81,10 @@ class Monitor:
 	var fired := {}
 	var clicked := 0
 	var class_clicks := 0
+	var sel_uid := 0
+	var pre_tier := 0
+	var pre_green := 0
+	var up_cost := 0
 
 	func _ping(k: String) -> void:
 		fired[k] = int(fired.get(k, 0)) + 1
@@ -116,9 +100,8 @@ class Monitor:
 			_controls(c, out)
 
 	func _click(at: Vector2) -> void:
-		# The Viewport's OWN GUI picking — the same pipeline a browser
-		# mouse event enters on the web build; which Button emits
-		# `pressed` IS the receiver answer (the docstring's mechanism).
+		# The Viewport's OWN GUI picking (the browser-input pipeline); the
+		# Button that receives this complete press emits `pressed`.
 		var vp := get_tree().root
 		var mm := InputEventMouseMotion.new()
 		mm.position = at
@@ -143,12 +126,23 @@ class Monitor:
 		if frames == 4 and planted == "stop_root":
 			(m.get_node("HUD/Root") as Control).mouse_filter = \
 					Control.MOUSE_FILTER_STOP
+		if frames == 4 and planted == "no_row_refresh":
+			# PLANT: detach the rows surface (the W17c regression).
+			var bx = m.get_node("DefensePanel/Rows")
+			bx.remove_child(m.get_node("DefensePanel/Rows/Rows_defenses"))
 		if frames == 6:
 			_legs_filter()
 			_legs_geom()
 			_legs_pick()
 		if frames == 7:
 			_check_placed()
+			_sel_rows()
+		if frames == 8:
+			_sel_select()
+		if frames == 9:
+			_sel_upgrade()
+		if frames == 10:
+			_sel_sell()
 
 	# (a) FILTER ----------------------------------------------------------
 	func _legs_filter() -> void:
@@ -179,24 +173,19 @@ class Monitor:
 		_controls(m.get_node("HUD"), hud_ctrls)
 		for c: Variant in hud_ctrls:
 			var hc := c as Control
-			# $Root is the full-viewport (1280x720) IGNORE background
-			# CONTAINER, not a HUD text/control rect — every panel control
-			# sits inside it by construction. The disjointness contract is
-			# against the HUD's laid-out display controls (its children),
-			# so the one background container is skipped (declared).
+			# $Root is the full-viewport IGNORE background CONTAINER, not
+			# a HUD text/control rect (every panel control sits inside it
+			# by construction) — the disjointness contract is against the
+			# laid-out display controls, so it is skipped (declared).
 			if String(hc.get_path()).ends_with("/HUD/Root"):
 				continue
 			var hr0: Rect2 = hc.get_global_rect()
 			hud_rects.append(hr0)
-			print("GWMICE-GEOM h=%s,%s,%s,%s,%s" % [
-					String(hc.get_path()), str(hr0.position.x),
-					str(hr0.position.y), str(hr0.size.x), str(hr0.size.y)])
+			print("GWMICE-GEOM h=%s,%s,%s,%s,%s" % [String(hc.get_path()), str(hr0.position.x), str(hr0.position.y), str(hr0.size.x), str(hr0.size.y)])
 		for b: Variant in _panel_buttons():
 			var btn := b as Button
 			var r: Rect2 = btn.get_global_rect()
-			print("GWMICE-GEOM b=%s,%s,%s,%s,%s" % [
-					String(btn.get_path()), str(r.position.x), str(r.position.y),
-					str(r.size.x), str(r.size.y)])
+			print("GWMICE-GEOM b=%s,%s,%s,%s,%s" % [String(btn.get_path()), str(r.position.x), str(r.position.y), str(r.size.x), str(r.size.y)])
 			if r.size.x <= 10.0 or r.size.y <= 10.0:
 				_fail("panel button %s never laid out %s" \
 						% [String(btn.name), str(r)])
@@ -239,10 +228,8 @@ class Monitor:
 		for b: Variant in btns:
 			var btn := b as Button
 			var before := fired.duplicate()
-			# Capture enabled/disabled BEFORE the click: an enabled
-			# Class_* click places + refresh() re-gates affordability, so
-			# reading btn.disabled after would misread a real receiver as
-			# "disabled still received" (declared reading of the gate).
+			# Read enabled/disabled BEFORE the click: an enabled Class_*
+			# click places + refresh() re-gates affordability (declared).
 			var was_disabled := btn.disabled
 			_click((btn as Control).get_global_rect().get_center())
 			clicked += 1
@@ -268,16 +255,80 @@ class Monitor:
 				return
 
 	func _check_placed() -> void:
-		# Class buttons place through placer.place; step (5) bookkeeping
-		# mirrors defense_list into m.defenses ONE step after the click
-		# (mission.gd:258, VERIFIED). The served bug's signature: the
-		# clicks land nowhere -> zero defenses -> RED here.
+		# step (5) mirrors defense_list into m.defenses ONE step after the
+		# click (mission.gd:258, VERIFIED). Served bug: zero defenses.
 		var placed := int(m.defenses)
 		print("GWMICE-PICK clicked=%d class_clicks=%d placed=%d" \
 				% [clicked, class_clicks, placed])
 		if class_clicks > 0 and placed < class_clicks:
 			_fail("clicks never reached the placer: class_clicks=%d " \
 					% class_clicks + "defenses=%d" % placed)
+			return
+
+	# (d) W17c SELECT (frames 7-10): ROW click SELECTS -> Upgrade -> Sell.
+	func _sel_rows() -> void:
+		var box = m.get_node_or_null("DefensePanel/Rows/Rows_defenses")
+		if box == null:
+			_fail("defense rows surface missing (no player select path)")
+			return
+		var rows: Array = box.get_children()
+		sel_uid = int(m.defense_list[0]["uid"])
+		print("GWMICE-SEL rows=%d list=%d want_uid=%d" \
+				% [rows.size(), m.defense_list.size(), sel_uid])
+		if rows.is_empty() or int(m.defense_list.size()) == 0:
+			_fail("no defense ROWS after place (refresh not rebuilding)")
+			return
+		var row = box.get_node_or_null("Row_%d" % sel_uid)
+		if row == null:
+			_fail("no Row_%d in the DEFENSES list" % sel_uid)
+			return
+		_click((row as Control).get_global_rect().get_center())
+
+	func _sel_select() -> void:
+		var p = m.get_node("DefensePanel")
+		if int(p.selected_uid) != sel_uid:
+			_fail("row click set selected_uid=%d not %d" \
+					% [int(p.selected_uid), sel_uid])
+			return
+		var box = m.get_node("DefensePanel/Rows/Rows_defenses")
+		var row = box.get_node("Row_%d" % sel_uid)
+		if not String(row.text).begins_with("»"):
+			_fail("selected row not visibly marked: %s" % String(row.text))
+			return
+		var obj = m.defense_list[0]["obj"]
+		up_cost = int(obj.next_upgrade_cost())
+		pre_tier = int(obj.tier)
+		pre_green = int(m.green)
+		print("GWMICE-UPL cost=%d green=%d tier=%d" % [up_cost,
+				pre_green, pre_tier])
+		if p.upgrade_btn.disabled:
+			_fail("Upgrade still disabled while a defense is selected")
+			return
+		_click((p.upgrade_btn as Control).get_global_rect().get_center())
+
+	func _sel_upgrade() -> void:
+		var obj = m.defense_list[0]["obj"]
+		var drop := pre_green - int(m.green)
+		print("GWMICE-UPL2 tier=%d green_drop=%d" % [int(obj.tier), drop])
+		if int(obj.tier) != pre_tier + 1 or drop != up_cost or up_cost <= 0:
+			_fail("Upgrade button did not tier+1/exact-cost (tier %d, " \
+					% int(obj.tier) + "drop %d, cost %d)" % [drop, up_cost])
+			return
+		var p = m.get_node("DefensePanel")
+		if p.sell_btn.disabled:
+			_fail("Sell disabled while a defense is selected")
+			return
+		_click((p.sell_btn as Control).get_global_rect().get_center())
+
+	func _sel_sell() -> void:
+		var p = m.get_node("DefensePanel")
+		var box = m.get_node("DefensePanel/Rows/Rows_defenses")
+		print("GWMICE-SEL2 selected=%d rows=%d list=%d" \
+				% [int(p.selected_uid), box.get_children().size(), \
+				int(m.defense_list.size())])
+		if int(p.selected_uid) != 0 \
+				or box.get_node_or_null("Row_%d" % sel_uid) != null:
+			_fail("Sell did not clear selection + its row")
 			return
 		print("GWMICE-OK")
 		get_tree().quit(0)
@@ -302,8 +353,9 @@ func _init() -> void:
 			"gatefall", "normal", rng)
 	var mon := Monitor.new()
 	mon.m = m
-	mon.planted = "stop_root" if OS.get_cmdline_user_args().has(
-			"stop_root") else ""
+	var args: Array = OS.get_cmdline_user_args()
+	mon.planted = "stop_root" if args.has("stop_root") else (
+			"no_row_refresh" if args.has("no_row_refresh") else "")
 	root.add_child(mon)
 '''
 
@@ -317,6 +369,25 @@ def _run_probe(extra_args, tmp_path):
 
 def _rows(out, tag):
     return [ln for ln in out.splitlines() if ln.startswith(tag + " ")]
+
+
+def _kv(line):
+    return dict(x.split("=", 1) for x in line.split(" ")[1:])
+
+
+def _only(out, tag):
+    r = _rows(out, tag)
+    assert len(r) == 1, out
+    return r[0]
+
+
+def _upgrade_cost_t1():
+    """T1->T2 = base_cost * upgrade_ratios[0] (C3), mirrored FROM DATA."""
+    towers = json.loads(read_text(GODOT / "data/towers.json"))
+    rows = towers["towers"] if isinstance(towers, dict) else towers
+    base = next(r["base_cost"] for r in rows if r["class"] == "tower")
+    eco = json.loads(read_text(GODOT / "data/economy.json"))
+    return int(base * eco["upgrade_ratios"][0])
 
 
 def _geom(out, kind):
@@ -349,29 +420,51 @@ def test_mission_clicks_engine_leg(tmp_path, class_cache):
     assert int(kv["controls"]) > 0 and int(kv["ignore"]) == int(kv["controls"])
     assert int(kv["buttons"]) == 0, "HUD grew an interactive control: %s" % kv
 
-    # (b) geometry: every panel button on-screen and disjoint from every
-    #     HUD rect at 1280x720 (probe asserts too; re-derive here).
+    # (b) geometry: every panel button on-screen at 1280x720; the
+    #     disjointness check runs IN-PROBE (guard: no GWMICE-FAIL).
     btn_rects = _geom(out, "b")
-    hud_rects = _geom(out, "h")
-    assert len(btn_rects) >= 6 and len(hud_rects) > 0, \
+    assert len(btn_rects) >= 6 and len(_geom(out, "h")) > 0, \
         "expected the 6 pinned panel buttons (3 class + URS + assign pair)"
     for bn, br in btn_rects.items():
         assert 0.0 <= br[0] and 0.0 <= br[1] \
             and br[0] + br[2] <= VIEW[0] and br[1] + br[3] <= VIEW[1], \
             "panel button %s off the served viewport: %s" % (bn, br)
-        for hn, hr in hud_rects.items():
-            assert _rect_disjoint(br, hr), \
-                "panel button %s %s overlaps HUD control %s %s (W17b)" % (
-                    bn, br, hn, hr)
 
-    # (c) pick: each button center clicked; the first enabled Class_*
-    #     clicks PLANTED defenses (state, not just the signal).
+    # (c) pick: the enabled Class_* clicks PLANTED defenses (state).
     picks = _rows(out, "GWMICE-PICK")
     assert len(picks) == 1, out
     pkv = dict(x.split("=", 1) for x in picks[0].split(" ")[1:])
     assert int(pkv["class_clicks"]) >= 1, pkv
     assert int(pkv["placed"]) >= int(pkv["class_clicks"]), \
         "clicks reached buttons but the placer planted nothing: %s" % pkv
+
+    # (d) W17c SELECT: place -> ROW; the row click SELECTS (its "»" mark
+    #     asserted in-probe); Upgrade tiers up with the EXACT data cost;
+    #     Sell clears the selection and removes exactly the sold row.
+    skv = _kv(_only(out, "GWMICE-SEL"))
+    assert int(skv["rows"]) == int(skv["list"]) >= 1, skv
+    u = _kv(_only(out, "GWMICE-UPL"))
+    u2 = _kv(_only(out, "GWMICE-UPL2"))
+    s2 = _kv(_only(out, "GWMICE-SEL2"))
+    assert int(u["cost"]) == _upgrade_cost_t1(), \
+        "upgrade cost off the shipped formula: %s != %d" % (
+            u["cost"], _upgrade_cost_t1())
+    assert int(u2["tier"]) == int(u["tier"]) + 1, (u, u2)
+    assert int(u2["green_drop"]) == int(u["cost"]), (u, u2)
+    assert int(s2["selected"]) == 0, s2
+    assert int(s2["rows"]) == int(s2["list"]) == int(skv["rows"]) - 1, \
+        "sell did not remove exactly the sold row: %s" % s2
+
+
+def test_mission_clicks_planted_red_no_row_refresh_goes_red(tmp_path,
+                                                            class_cache):
+    # The W17c regression shape (the rows surface detached — the player
+    # select path gone): the SELECT leg MUST go RED.
+    proc = _run_probe(["no_row_refresh"], tmp_path)
+    assert proc.returncode == 1, \
+        "planted-red: detached rows slipped the engine gate\n%s" % proc.stdout
+    assert "GWMICE-FAIL" in proc.stdout and "GWMICE-OK" not in \
+        proc.stdout, proc.stdout
 
 
 def test_mission_clicks_planted_red_stop_root_goes_red(tmp_path,

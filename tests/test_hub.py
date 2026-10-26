@@ -382,6 +382,80 @@ def test_item_row_widget_is_shared_not_duplicated():
         "hub.gd composes panels only — no row rendering beside the widget"
 
 
+# ---------- W17c (MC 11274.1.30): the shared fill loop is EMIT-SAFE ------
+# Engine fact E9 (VERIFIED this card): free() on a Button while it emits
+# `picked` is an engine ERROR ("Object is locked", object.cpp:787) — the
+# MOUSE press path reaches every panel's pick handler mid-emit, so the
+# shared clear must detach NOW + queue_free. The keyboard-path harnesses
+# never emitted mid-emit: the false-green class again, at the shared-
+# mechanism layer. Red-before/green-after transcripts: evidence W17c.
+
+FILL_PROBE_SRC = """
+extends SceneTree
+# gw fill-chain probe: row.picked refills the shared loop mid-emit (the
+# mouse press path). rc0 + EMPTY stderr + one live row after the refill.
+const BANK_LIST := preload("res://scripts/bank_list.gd")
+
+
+class Box:
+	extends Node
+	var frames := 0
+	var filled := 0
+
+	func _process(_d: float) -> void:
+		frames += 1
+		var item := {"uid": 1, "base_id": "x", "rarity": "", "slot": "relic"}
+		if frames == 1:
+			BANK_LIST.fill(self, null, [item], 0, _picked)
+		elif frames == 2:
+			(get_child(0) as Button).picked.emit(1)   # press == emit
+		elif frames == 3:
+			print("WFILL rows=%d filled=%d" % [get_child_count(), filled])
+			get_tree().quit(0)
+
+	func _picked(_uid: int) -> void:
+		var item := {"uid": 2, "base_id": "y", "rarity": "", "slot": "relic"}
+		BANK_LIST.fill(self, null, [item], 2, _picked)
+		filled += 1
+
+
+func _init() -> void:
+	root.add_child(Box.new())
+"""
+
+
+def test_shared_fill_loop_engine_leg(tmp_path, class_cache):
+    probe = Path(tmp_path) / "gw_fill_probe.gd"
+    probe.write_text(FILL_PROBE_SRC, encoding="utf-8")
+    proc = conftest.run_probe_script(str(probe), [], tmp_path / "user_home")
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert proc.stderr == "", \
+        "-s probe stderr must be EMPTY (W4 ruling):\n%s" % proc.stderr
+    assert "WFILL rows=1 filled=1" in proc.stdout, proc.stdout
+
+
+def _emit_safe_violations(code):
+    bad = []
+    if "queue_free()" not in code:
+        bad.append("shared fill loop never queue_frees (E9 mid-emit lock)")
+    if re.search(r"\.free\(\)", code):
+        bad.append("shared fill loop frees a row directly")
+    return bad
+
+
+def test_shared_fill_loop_is_emit_safe():
+    code = _blank(SCRIPTS / "bank_list.gd")
+    bad = _emit_safe_violations(code)
+    assert not bad, "bank_list.gd lost the emit-safe clear: %r" % bad
+
+
+def test_shared_fill_loop_planted_red_direct_free_goes_red():
+    code = _blank(SCRIPTS / "bank_list.gd").replace(
+        "child.queue_free()", "child.free()")
+    bad = _emit_safe_violations(code)
+    assert bad, "planted-red: a direct free() slipped the emit-safe gate"
+
+
 def test_item_row_planted_red_duplicate_renderer_goes_red():
     # Fixture trick: a second row renderer in the gear panel must trip the
     # single-widget gate.
