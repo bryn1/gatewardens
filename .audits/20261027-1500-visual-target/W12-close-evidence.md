@@ -1,4 +1,4 @@
-PROBE: sha256sum /home/claudecode/Games/gatewardens/godot/scripts/sprite_bank.gd => ^eae89add941647e6a132be4fa3790ba5766e4cd91b8159d035042674ca9ea5bb$
+PROBE: sha256sum /home/claudecode/Games/gatewardens/godot/scripts/sprite_bank.gd => ^eae89add941647e6a132be4fa3790ba5766e4cd91b8159d035042674ca9ea5bb
 PROBE: grep -c 'SPRITEBANK-OK' /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/probe-orchestrator-w12.log => ^1$
 PROBE: grep -c 'TIER ballista=T2 hailspire=T3' /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/probe-orchestrator-w12.log => ^1$
 PROBE: sha256sum /home/claudecode/Games/gatewardens/tests/fixtures/mission_gatefall_normal.jsonl => ^eafe3932f7d30898
