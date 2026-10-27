@@ -3,6 +3,12 @@
 Date 2026-10-27 (UTC). Sole writer, shared checkout /home/claudecode/Games/gatewardens.
 Binary: /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 (4.7.2).
 
+COMMIT=c64a169
+BASE=50d59e2
+PROBE: cd /home/claudecode/Games/gatewardens && timeout 120 /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot -s res://sim/v6_tween_probe.gd 2>&1 | grep -cE "^V6-(PROBE-BOOT|TWEEN-START|ATREST-START|TWEEN-MID|REST-RECT|REST|HOVER|PRESS|OK)" => ^9$
+PROBE: cd /home/claudecode/Games/gatewardens && timeout 120 /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot -s res://sim/v6_tween_probe.gd 2>&1 | grep -E "V6-TWEEN-MID|V6-OK" | grep -c "min_alpha\|V6-OK" => ^2$
+PROBE: cd /home/claudecode/Games/gatewardens && python3 tools/check_hygiene.py | tail -1 => 0 hit
+
 ## What shipped (the ONE shared mechanism)
 
 - NEW godot/scripts/ui_tween.gd — the single tween helper. `enter(content, dir)`
