@@ -64,6 +64,8 @@ const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 const SIM_COMBAT := preload("res://sim/sim_combat.gd")
 const SIM_INVENTORY := preload("res://sim/sim_inventory.gd")
 
+const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
+
 const MESH_TOWER := preload("res://assets/mesh_capsule.tres")
 const MESH_BLOCK := preload("res://assets/mesh_box.tres")
 const MAT_TOWER := preload("res://assets/mat_defense_tower.tres")
@@ -254,9 +256,18 @@ func _apply_tier() -> void:
 	hp = hp_max
 
 
-# Greybox visual per idiom (W6/W7: primitives + .tres tints, zero
-# per-entity .tscn): tower capsule, blockade cube, trap flat plate.
+# Visual per idiom (W6/W8 primitives + .tres tints, zero per-entity
+# .tscn): tower capsule, blockade cube, trap flat plate. V1.1-a (MC
+# 11466): the bank-first question IS the visual decision — a committed
+# batch-1 tower sheet replaces the capsule at the same footprint;
+# gate_blockade and barbed_snare have no sheet and keep the greybox
+# (replace-not-add, one path, no fake art).
 func _make_visual():
+	var sprite := SPRITE_BANK.make_sprite(String(trow["id"]),
+			SPRITE_BANK.WORLD_H_TOWER)
+	if sprite != null:
+		sprite.position = pos
+		return sprite
 	var vis := MeshInstance3D.new()
 	match class_id:
 		"tower":

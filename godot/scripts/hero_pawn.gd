@@ -13,6 +13,8 @@ extends Node3D
 # (reading recorded in W7-evidence.md, pinned-table precedent MC
 # 11274.1.9-.13 applied to the visual-only row).
 
+const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
+
 const MATS := {
 	"warden": preload("res://assets/mat_hero_warden.tres"),
 	"deadeye": preload("res://assets/mat_hero_deadeye.tres"),
@@ -23,8 +25,17 @@ var hero_id := ""
 
 
 # One-call parameterization (setup-by-injection doctrine, R3): id picks
-# the tint; unknown ids fall back to the first deck hero's material —
+# the visual. V1.1-a (MC 11466): a committed batch-1 sheet replaces the
+# tinted capsule — the greybox $Visual is hidden, never freed (the W6
+# destroyed-core visibility idiom), and the right-facing sheet ships
+# unflipped (V2 facing). Unknown ids fall back to the greybox tint —
 # a greybox default, never a crash.
 func setup_pawn(id: String) -> void:
 	hero_id = id
+	var sprite := SPRITE_BANK.make_sprite(id, SPRITE_BANK.WORLD_H_UNIT)
+	if sprite != null:
+		sprite.name = "Sprite"
+		$Visual.visible = false
+		add_child(sprite)
+		return
 	$Visual.material_override = MATS.get(id, MATS["warden"]).duplicate()

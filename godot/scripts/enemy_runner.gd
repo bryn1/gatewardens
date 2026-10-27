@@ -19,12 +19,15 @@
 # by mission at schedule build (C8 ships no mods field in v1 — identity
 # then); applied here as (1 + hp_mult).
 #
-# Greybox visuals: primitive meshes from assets/ per entity, moving with
-# the record's pos; visuals are throwaway (3090 pipeline later).
+# Sprite visuals (V1.1-a, MC 11466): the bank answers first; the
+# committed sheet moves with the record's pos like the mesh did. No
+# committed sheet (warden_breaker, future ids) keeps the primitive —
+# the same add/move/free lifecycle either way, one path.
 
 extends Node3D
 
 const LANE_PATH := preload("res://scripts/lane_path.gd")
+const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
 
 const MESH_GROUND := preload("res://assets/mesh_capsule.tres")
 const MESH_AIR := preload("res://assets/mesh_box.tres")
@@ -50,15 +53,24 @@ func spawn(row: Dictionary, lane: Dictionary, tables, _rng) -> void:
 			def = e
 			break
 	var hp := float(def["hp"][difficulty]) * (1.0 + float(row.get("hp_mult", 0.0)))
-	var node := MeshInstance3D.new()
-	if bool(def.get("fly", false)):
-		node.mesh = MESH_AIR.duplicate()
-		node.material_override = MAT_AIR.duplicate()
-	else:
-		node.mesh = MESH_GROUND.duplicate()
-		node.material_override = MAT_GROUND.duplicate()
+	var node: Node3D = SPRITE_BANK.make_sprite(String(row["enemy_id"]),
+			SPRITE_BANK.WORLD_H_UNIT)
+	if node == null:
+		node = MeshInstance3D.new()
+		if bool(def.get("fly", false)):
+			node.mesh = MESH_AIR.duplicate()
+			node.material_override = MAT_AIR.duplicate()
+		else:
+			node.mesh = MESH_GROUND.duplicate()
+			node.material_override = MAT_GROUND.duplicate()
 	add_child(node)
 	node.position = lane["wps"][0]
+	# Facing at spawn: the sheet reads the FIRST lane step (V2: a
+	# left-facing sheet mirrors only when the walk heads screen-right).
+	var wps: Array = lane["wps"]
+	if wps.size() > 1:
+		SPRITE_BANK.face(node, float((wps[1] as Vector3).x)
+				- float((wps[0] as Vector3).x))
 	entities.append({
 		"id": String(row["enemy_id"]),
 		"def": def,
@@ -116,11 +128,15 @@ func step(delta: float) -> Dictionary:
 			dead.append(ent)
 			ent["node"].queue_free()
 			continue
+		var old_pos: Vector3 = ent["pos"]
 		var mv: Dictionary = LANE_PATH.advance(
 				ent["pos"], ent["lane"]["wps"], float(ent["speed"]), delta)
 		ent["pos"] = mv["pos"]
 		ent["wp_index"] = int(mv["wp_index"])
 		ent["node"].position = mv["pos"]   # mission-local space (root identity)
+		# The ONE shared facing mechanism (V2): a step toward screen-right
+		# flips the left-facing enemy sheet; a no-op on greybox nodes.
+		SPRITE_BANK.face(ent["node"], (mv["pos"] as Vector3).x - old_pos.x)
 		if bool(mv["arrived"]):
 			reached.append(ent)
 			ent["node"].queue_free()
