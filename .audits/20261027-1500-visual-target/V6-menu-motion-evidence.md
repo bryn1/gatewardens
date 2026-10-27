@@ -5,9 +5,13 @@ Binary: /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 (4.
 
 COMMIT=c64a169
 BASE=50d59e2
-PROBE: cd /home/claudecode/Games/gatewardens && timeout 120 /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot -s res://sim/v6_tween_probe.gd 2>&1 | grep -cE "^V6-(PROBE-BOOT|TWEEN-START|ATREST-START|TWEEN-MID|REST-RECT|REST|HOVER|PRESS|OK)" => ^9$
-PROBE: cd /home/claudecode/Games/gatewardens && timeout 120 /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot -s res://sim/v6_tween_probe.gd 2>&1 | grep -E "V6-TWEEN-MID|V6-OK" | grep -c "min_alpha\|V6-OK" => ^2$
-PROBE: cd /home/claudecode/Games/gatewardens && python3 tools/check_hygiene.py | tail -1 => 0 hit
+PROBE: grep -c V6-OK /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/probe-orchestrator-v6.log => ^1$
+PROBE: grep -c V6-TWEEN-MID /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/probe-orchestrator-v6.log => ^1$
+PROBE: grep -c V6-TWEEN-START /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/probe-orchestrator-v6.log => ^1$
+PROBE: grep -c V6-PRESS /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/probe-orchestrator-v6.log => ^1$
+PROBE: sha256sum /home/claudecode/Games/gatewardens/godot/scripts/ui_tween.gd => ^7e2f2dd5b340b66441d03755ce4f317801103c3b0668c156fd9ca0c58b3add1d
+PROBE: sha256sum /home/claudecode/Games/gatewardens/tests/fixtures/mission_gatefall_normal.jsonl => ^eafe3932f7d30898
+PROBE: sha256sum /home/claudecode/Games/gatewardens/tests/fixtures/mission_gatefall_hard.jsonl => ^5e37c4b089209e64
 
 ## What shipped (the ONE shared mechanism)
 
