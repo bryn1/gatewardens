@@ -3,8 +3,7 @@
 Date 2026-10-27 (UTC). Sole writer, shared checkout /home/claudecode/Games/gatewardens.
 Binary: /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 (4.7.2).
 
-COMMIT=c64a169
-BASE=50d59e2
+Commit c64a169 (repo tip pushed; gatewardens is not projects.yaml-registered, so knut's route is the PROBE read-backs below — same as cards 11466/11520/11517). Base 50d59e2.
 PROBE: grep -c V6-OK /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/probe-orchestrator-v6.log => ^1$
 PROBE: grep -c V6-TWEEN-MID /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/probe-orchestrator-v6.log => ^1$
 PROBE: grep -c V6-TWEEN-START /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/probe-orchestrator-v6.log => ^1$
