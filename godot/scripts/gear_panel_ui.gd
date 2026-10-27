@@ -155,5 +155,15 @@ func _bank_row(uid: int) -> Variant:
 
 
 func _clear(node: Node) -> void:
+	# E9 (the shipped defense_panel/bank_list idiom, MC 11274.1.30/.32):
+	# a hero slot Button can be the very object emitting `pressed` when
+	# the equip crossing repaints (slot press -> _on_slot ->
+	# equip_selected -> state.equip -> refresh -> _clear), and free() on
+	# a locked (mid-emit) object is an engine ERROR (VERIFIED this card,
+	# served pck 244392 — the console "Object ... was freed or
+	# unreferenced while a signal is being emitted"): the abort kills
+	# the refresh. Detach NOW (no flicker) + queue_free — the free lands
+	# at frame end, after the emit has unwound.
 	for child: Node in node.get_children():
-		child.free()
+		node.remove_child(child)
+		child.queue_free()

@@ -26,6 +26,13 @@ Tiers (test_hub_layout precedent):
   to the limit (clamp-safe) and asserts the hero weapon-slot button's
   GLOBAL rect INTERSECTS the ScrollContainer's visible rect — the
   wheel-reachable end state. EMPTY stderr (W4 ruling).
+- EQUIP CLICK LEG (arg "click", round 3): the browser click pipeline
+  (root sized to the served window + hover-a-frame-before press, the
+  W17e VERIFIED idiom) picks bank row Row_5 and presses the warden
+  weapon slot: F2-11 contract asserted (bank shrinks by the picked row,
+  hero slot holds its base_id, the uid leaves the bank) and STDERR
+  EMPTY — the served E9 ERROR (freed-while-emitting on the raw free())
+  is the regression signal.
 - PLANTED-RED (permanent): arg "prefix" runs the SAME reachability
   predicate against the PRE-FIX container shape (plain VBox PanelSlot, no
   ScrollContainer — the W17f tree the A9 journey walked): RED there, the
@@ -74,10 +81,47 @@ class Monitor:
 	extends Node
 	var main_ref
 	var prefix := false
+	var click := false
 	var frames := 0
 	var hero = null
 	var scroll = null
 	var sv_before := 0
+	var bank_pre := 0
+	var hov := Vector2.ZERO
+
+	# The served MOUSE pipeline (W17e VERIFIED idiom, test_mission_stale):
+	# hover motion a frame BEFORE the press (a Button fires pressed only
+	# from its hover state), press+release at measured global coords.
+	func _hover(at: Vector2) -> void:
+		var vp = get_tree().root
+		var mm := InputEventMouseMotion.new()
+		mm.position = at
+		mm.global_position = at
+		vp.push_input(mm, true)
+
+	func _press(at: Vector2) -> void:
+		var vp = get_tree().root
+		var dn := InputEventMouseButton.new()
+		dn.button_index = MOUSE_BUTTON_LEFT
+		dn.position = at
+		dn.global_position = at
+		dn.pressed = true
+		dn.button_mask = MOUSE_BUTTON_MASK_LEFT
+		vp.push_input(dn, true)
+		var up := dn.duplicate() as InputEventMouseButton
+		up.pressed = false
+		up.button_mask = 0
+		vp.push_input(up, true)
+
+	func _center(n: Node) -> Vector2:
+		var r: Rect2 = n.get_global_rect()
+		return r.position + r.size * 0.5
+
+	func _bank_has(uid: int) -> bool:
+		for row: Dictionary in main_ref._routed.state.bank:
+			if int(row.get("uid", 0)) == uid:
+				return true
+		return false
 
 	func _process(_d: float) -> void:
 		frames += 1
@@ -92,9 +136,12 @@ class Monitor:
 				_check_prefix()
 			return
 		if frames == 2:
-			# The served canvas mirror: the headless `-s` window is a fixed
-			# 64x64 and refuses resize (VERIFIED) — sizing the hub root is
-			# EXACTLY what the 1280x720 browser viewport does for it.
+			# The served canvas mirror, BOTH halves (VERIFIED this card):
+			# the Viewport GUI PICKING works in WINDOW bounds — a click at
+			# a served coordinate outside the unsized 64x64 headless window
+			# never hits a control (pressed stays silent) — W17e's working
+			# recipe sizes root AND hub (the 1280x720 served canvas).
+			get_tree().root.size = Vector2i(1280, 720)
 			main_ref._routed.size = SERVED
 		elif frames == 4:
 			var hub = main_ref._routed
@@ -103,15 +150,38 @@ class Monitor:
 				hub.state.bank_add({"base_id": "oaken_cleaver",
 					"rarity": "worn", "ilvl": 5, "slot": "weapon"})
 			hub.handle_press("Digit2")   # the shipped gear-station route
+		elif frames == 5 and click:
+			var row5 = main_ref._routed.gear.find_child("Row_5", true, false)
+			if row5 == null:
+				_fail("bank row Row_5 not rendered for the click leg")
+				return
+			hov = _center(row5)
+			_hover(hov)
+		elif frames == 6 and click:
+			var hub = main_ref._routed
+			bank_pre = hub.state.bank.size()
+			print("GWEQUIP-PRE bank=" + str(bank_pre) + " uid=5")
+			_press(hov)
+		elif frames == 8 and click:
+			var sc = main_ref._routed.get_node("Layout/PanelScroll")
+			sc.scroll_vertical = int(sc.get_v_scroll_bar().max_value)
+		elif frames == 9 and click:
+			var slot = main_ref._routed.gear.find_child(SLOT, true, false)
+			hov = _center(slot)
+			_hover(hov)
+		elif frames == 11 and click:
+			_press(hov)
+		elif frames == 14 and click:
+			_check_equip()
 		elif frames == 8:                # >= TWO process frames after open
 			_precheck()
-		elif frames == 10:
+		elif frames == 10 and not click:
 			_wheel()
-		elif frames == 12:
+		elif frames == 12 and not click:
 			_moved()
-		elif frames == 13:
+		elif frames == 13 and not click:
 			_bottom()
-		elif frames == 16:
+		elif frames == 16 and not click:
 			_check_reach()
 
 	# The ONE reachability predicate both legs share: does the button's
@@ -215,6 +285,38 @@ class Monitor:
 		print("GWSCROLL-OK")
 		get_tree().quit(0)
 
+	func _check_equip() -> void:
+		# The SERVED equip crossing end-to-end through the browser click
+		# pipeline: pick a bank row, press the hero weapon slot — the
+		# shipped F2-11 contract: the picked row LEAVES the bank (slot was
+		# empty, nothing returns) and the hero slot fills with its base_id.
+		# The E9 class (served console ERROR x2, pck 244392): the slot
+		# Button frees DURING its own pressed -> equip -> mutated ->
+		# refresh -> _clear chain = engine ERROR to STDERR — this probe's
+		# stderr-EMPTY assert (W4 ruling) is the leg's teeth; the raw
+		# free() version prints it (transcript W17g3-red-click_stderr.log).
+		var hub = main_ref._routed
+		var eqw: Variant = hub.state.equipped.get("warden", {}).get("weapon")
+		var base := "none"
+		if eqw != null:
+			base = String((eqw as Dictionary).get("base_id", ""))
+		var gone := not _bank_has(5)
+		print("GWEQUIP-POST bank=" + str(hub.state.bank.size()) \
+				+ " eq_base=" + base + " uid5_gone=" + str(gone))
+		if eqw == null or base != "oaken_cleaver":
+			_fail("equip click path left hero weapon at " + base \
+					+ " — expected oaken_cleaver")
+			return
+		if hub.state.bank.size() != bank_pre - 1:
+			_fail("bank " + str(hub.state.bank.size()) + " — expected " \
+					+ str(bank_pre - 1) + " (F2-11: picked row leaves)")
+			return
+		if not gone:
+			_fail("the equipped row (uid 5) is still in the bank")
+			return
+		print("GWEQUIP-OK")
+		get_tree().quit(0)
+
 	# The pre-fix shape VERBATIM (W17f hub.gd): full-rect root VBox,
 	# plain VBox PanelSlot, station panel = plain Control holding one
 	# tall VBox. NO ScrollContainer; NO min-size sync.
@@ -278,6 +380,7 @@ func _init() -> void:
 	var mon := Monitor.new()
 	mon.main_ref = main
 	mon.prefix = "prefix" in OS.get_cmdline_user_args()
+	mon.click = "click" in OS.get_cmdline_user_args()
 	root.add_child(mon)
 '''
 
@@ -338,6 +441,36 @@ def test_scroll_reaches_hero_slots_engine_leg(tmp_path, class_cache):
     # so the bottom is pinned by the rects above — here only that the
     # scroll genuinely moved.
     assert int(scrolled["clamped"]) > 0, scrolled
+
+
+def test_equip_click_path_engine_leg(tmp_path, class_cache):
+    # THE served equip crossing (round 3, MC 11408): the A9 E9 class one
+    # layer deeper — the served console "Object ... was freed or
+    # unreferenced while a signal is being emitted" x2 on the slot press:
+    # slot Button -> _on_slot -> equip_selected -> GameState.equip ->
+    # mutated.emit -> refresh -> _rebuild_heroes -> _clear freed the
+    # EMITTING Button with free(). gear_panel_ui._clear now runs the
+    # shipped E9 idiom (detach NOW + queue_free, defense_panel/bank_list
+    # precedent). TEETH: engine ERRORs print to STDERR — the raw-free
+    # version prints the served line verbatim (backtrace _clear <-
+    # _rebuild_heroes <- refresh <- equip <- equip_selected <- _on_slot,
+    # transcript W17g3-red-click_stderr.log) while the fixed tree is
+    # stderr-empty AND the F2-11 contract lands.
+    proc = _run_scroll_probe(["click"], tmp_path)
+    assert proc.stderr == "", \
+        "-s probe stderr must be EMPTY — the served E9 ERROR is the " \
+        "regression signal:\n%s" % proc.stderr
+    assert proc.returncode == 0, \
+        "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                         proc.stderr)
+    out = proc.stdout
+    assert "GWSCROLL-FAIL" not in out, out
+    assert out.rstrip().endswith("GWEQUIP-OK"), out
+    pre = _kv(out, "GWEQUIP-PRE")
+    post = _kv(out, "GWEQUIP-POST")
+    assert post["eq_base"] == "oaken_cleaver", (pre, post)
+    assert int(post["bank"]) == int(pre["bank"]) - 1, (pre, post)
+    assert post["uid5_gone"] == "true", post
 
 
 def test_scroll_planted_red_prefix_shape_goes_red(tmp_path, class_cache):
