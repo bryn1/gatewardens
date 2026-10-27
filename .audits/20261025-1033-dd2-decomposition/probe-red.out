@@ -1,0 +1,8 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+HUB-PROBE-BOOT bank=2 gold=911 mats=torn_hide:3,iron_bar:3,ember_core:2,
+HUB-PROBE-EQUIP bank_after_first=1 bank_after_swap=1 returned=1 equipped=twin_fang relic_refused=1 bank_after_relic=2
+HUB-PROBE-UPGRADE cost=40 mats_dropped=torn_hide:2,iron_bar:1, upgraded=1 rarity=worn gold_left=871
+HUB-PROBE-EVOLVE from=worn to=sturdy cost=600 refused=1 gold_left=271
+HUB-PROBE-REROLL cost=120 stats_changed=1 mods_kept=1 rarity=powerful gold_left=151
+HUB-PROBE FAIL tinkercap passed (cap bypassed): { "ok": true, "cost": { "gold": 150, "materials": { "torn_hide": 1.0, "ember_core": 1.0 } } } gold=1

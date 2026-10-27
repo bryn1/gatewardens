@@ -1,0 +1,6 @@
+rc=1
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+GWSAVE-ACK ack=5 bank_pre=1
+GWSAVE-EQUIP eq_ok=false base=none bank_post=1 a_count=1
+GWSAVE-FAIL equipped did not survive save->load: file=<missing>

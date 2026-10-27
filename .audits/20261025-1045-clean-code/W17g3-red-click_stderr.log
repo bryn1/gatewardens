@@ -1,0 +1,20 @@
+rc=0
+== stdout:
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+GWEQUIP-PRE bank=150 uid=5
+GWEQUIP-POST bank=149 eq_base=oaken_cleaver uid5_gone=true
+GWEQUIP-OK
+
+== stderr:
+ERROR: Object '<Object#11590640338490>' was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.
+   at: ~Object (core/object/object.cpp:2324)
+   GDScript backtrace (most recent call first):
+       [0] _clear (res://scripts/gear_panel_ui.gd:159)
+       [1] _rebuild_heroes (res://scripts/gear_panel_ui.gd:120)
+       [2] refresh (res://scripts/gear_panel_ui.gd:112)
+       [3] equip (res://scripts/game_state.gd:130)
+       [4] equip_selected (res://scripts/gear_panel_ui.gd:84)
+       [5] _on_slot (res://scripts/gear_panel_ui.gd:145)
+       [6] _press (/tmp/tmpd2z9xuvj/gw_scroll_probe.gd:50)
+       [7] _process (/tmp/tmpd2z9xuvj/gw_scroll_probe.gd:109)

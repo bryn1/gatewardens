@@ -1,0 +1,4 @@
+config_version=5
+config/features=PackedStringArray("4.7", "GL Compatibility")
+[physics]
+3d/default_gravity=9.8

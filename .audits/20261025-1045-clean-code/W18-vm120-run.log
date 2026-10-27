@@ -1,0 +1,6 @@
+VM120 (Win11 Home 26300, RTX 2060) REAL-WINDOWS runtime, 2026-10-27 10:39-10:44Z, via QEMU GA + session-1 scheduled task:
+- exe transferred over private LAN HTTP, in-guest Get-FileHash A979C386A4B29B7DF79EEDB33DCCBE82DD2DD68268E842FD0A290B8FF1EF37A3 == artifact sha (byte-identical)
+- verbose boot: "Godot Engine v4.7.2.stable.official" + "Native OpenGL API detected: 3.3: NVIDIA - NVIDIA GeForce RTX 2060" + Main.tscn/hub.tscn loads; --quit-after 600 clean exit
+- persistent run: PID=12272 RESP=True; session-1 screenshot shows window titled "Gatewardens" rendering "GATEWARDENS — HUB | gold 100 | bank 0 | deck 3" (fresh save, %APPDATA%)
+- screenshot sha256 (local copy gw120-native.png): 259d5fbaf472db683170d3a8d06ec287c87012a33a12b202b51c37b3f82e840e
+- cleanup verified: process stopped, gwtest dir + gwrun/gwshot files removed, both tasks deleted => CLEAN

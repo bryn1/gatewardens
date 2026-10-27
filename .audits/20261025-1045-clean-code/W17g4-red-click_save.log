@@ -1,0 +1,7 @@
+rc=1
+== stdout (tail):
+GWEQUIP-PRE bank=150 uid=5
+GWEQUIP-POST bank=149 eq_base=oaken_cleaver uid5_gone=true
+GWEQUIP-SAVE survived=false fresh_base=?
+GWSCROLL-FAIL click-equipped gear lost on the save round-trip
+== stderr:

@@ -1,0 +1,64 @@
+F.FF.                                                                    [100%]
+=================================== FAILURES ===================================
+___________________________ test_stale_poll_sync_leg ___________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-294/test_stale_poll_sync_leg0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_stale_poll_sync_leg(tmp_path, class_cache):
+        proc = _run_probe([], tmp_path)
+>       assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+E       AssertionError: probe rc=1
+E         OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         GWSYNC-ARM green=150 class_disabled=true list=3
+E         GWSYNC-REGAIN placed=3 green=150 class_disabled=true
+E         GWMICE-FAIL place starved while affordable (placed=3 green=150)
+E         
+E         ERR:
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',... placed=3 green=150 class_disabled=true\nGWMICE-FAIL place starved while affordable (placed=3 green=150)\n', stderr='').returncode
+
+tests/test_mission_stale.py:230: AssertionError
+__________________ test_stale_planted_red_rows_churn_goes_red __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-294/test_stale_planted_red_rows_ch0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_stale_planted_red_rows_churn_goes_red(tmp_path, class_cache):
+        # The W17e regression shape (rows rebuilt on every refresh — the
+        # REPRO-A churn losing a player click): the SELLS leg MUST go RED.
+        proc = _run_probe(["rows_churn"], tmp_path)
+        assert proc.returncode == 1, \
+            "planted-red: row churn slipped the dirty-check gate\n%s" \
+            % proc.stdout
+        assert "GWMICE-FAIL" in proc.stdout and "GWMICE-OK" not in \
+            proc.stdout, proc.stdout
+>       assert "browser-style row click lost" in proc.stdout, proc.stdout
+E       AssertionError: Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         GWSYNC-ARM green=150 class_disabled=true list=3
+E         GWSYNC-REGAIN placed=3 green=150 class_disabled=true
+E         GWMICE-FAIL place starved while affordable (placed=3 green=150)
+E         
+E       assert 'browser-style row click lost' in 'Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nGWSYNC-ARM green=150 class_disabled=true l...WSYNC-REGAIN placed=3 green=150 class_disabled=true\nGWMICE-FAIL place starved while affordable (placed=3 green=150)\n'
+E        +  where 'Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nGWSYNC-ARM green=150 class_disabled=true l...WSYNC-REGAIN placed=3 green=150 class_disabled=true\nGWMICE-FAIL place starved while affordable (placed=3 green=150)\n' = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',... placed=3 green=150 class_disabled=true\nGWMICE-FAIL place starved while affordable (placed=3 green=150)\n', stderr='').stdout
+
+tests/test_mission_stale.py:281: AssertionError
+______________________ test_panel_poll_declares_the_sync _______________________
+
+    def test_panel_poll_declares_the_sync():
+        bad = _sync_violations(hyg.blank_code(
+            PANEL_GD.read_text(encoding="utf-8"), "gd"))
+>       assert not bad, "defense_panel.gd lost the W17e poll sync: %r" % bad
+E       AssertionError: defense_panel.gd lost the W17e poll sync: ['no sync() — the poll-path state sync is gone', 'poll() never calls sync() (W17e stale buttons)', 'refresh() rebuild is not dirty-guarded (W17e churn)']
+E       assert not ['no sync() — the poll-path state sync is gone', 'poll() never calls sync() (W17e stale buttons)', 'refresh() rebuild is not dirty-guarded (W17e churn)']
+
+tests/test_mission_stale.py:308: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_mission_stale.py::test_stale_poll_sync_leg - AssertionError...
+FAILED tests/test_mission_stale.py::test_stale_planted_red_rows_churn_goes_red
+FAILED tests/test_mission_stale.py::test_panel_poll_declares_the_sync - Asser...
+3 failed, 2 passed in 1.88s

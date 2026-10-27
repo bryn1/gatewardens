@@ -1,0 +1,4 @@
+config_version=5
+config/features=PackedStringArray("4.7", "GL Compatibility")
+[autoload]
+Data="*res://data_autoload.gd"

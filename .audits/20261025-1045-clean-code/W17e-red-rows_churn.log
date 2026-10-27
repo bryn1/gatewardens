@@ -1,0 +1,6 @@
+# planted-red: probe rows_churn  rc=1
+
+GWSYNC-ARM green=150 class_disabled=true list=3
+GWSYNC-REGAIN placed=4 green=50 class_disabled=true
+GWSYNC-SEL want=2 selected=1
+GWMICE-FAIL browser-style row click lost (selected=1)

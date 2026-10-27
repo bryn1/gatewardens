@@ -1,0 +1,8 @@
+PROBE: stat -c %s /home/claudecode/Games/gatewardens/.audits/20261025-1045-clean-code/W17e-evidence.md => ^[1-9][0-9]{2,}$
+=== W17e close evidence (orchestrator re-ran this session) ===
+stat W17e-evidence.md => 7754
+orchestrator re-run: pytest exit 0 (211); check_hygiene 0 hits; commit 2685bed author frontend (11397); golden fixtures sha256 head unchanged (normal 8 chars eafe..., hard 5e37...)
+ROOT CAUSE (child, headless replay at 940ecc6): btn.disabled written ONLY inside refresh(); refresh ran ONLY on action events (defense_panel.gd@940ecc6:216-217,177-179; mission.gd:249 no panel refresh drive) => green regaining between actions left buttons stale-disabled and disabled Buttons swallow clicks silently (REPRO-B); refresh() rebuilt ALL rows unconditionally (@233) => rebuilt Buttons unsized until frame-end sort (Row_2 y=311->276) => stale-coord row click missed and hit nothing, sell stayed stale-disabled (REPRO-A). Fix: poll() now sync()s enabled flags + selected-marks from CURRENT sim state every poll; row rebuild behind _rows_dirty() (count/uids); E9 detach+queue_free kept.
+BOTH legs RED against pre-fix HEAD BY CONSTRUCTION (W17e-prefix-red.log, W17e-native-churn-prefix.log) + planted reds both exit 1 (W17e-red-stale_buttons.log 'place starved while affordable', W17e-red-rows_churn.log 'browser-style row click lost') + source-gate planted-red; GREEN: REGAIN (150->50, defenses 3->4 with NO other action) + SELLS (one Sell click refunds into green AND removes row 4->3 in ONE attempt).
+NOTE: served static/ must be re-exported from 2685bed before the browser journey re-verifies REPRO-A/B live (orchestrator leg, now pending).
+VERIFY_EXIT=0

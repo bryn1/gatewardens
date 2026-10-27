@@ -1,0 +1,29 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_______________________ test_first_free_round_robin_leg ________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-302/test_first_free_round_robin_le0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_first_free_round_robin_leg(tmp_path, class_cache):
+        proc = _run_probe([], tmp_path)
+>       assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+E       AssertionError: probe rc=1
+E         OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         GWRR-PLACE n=1 lane=lane_g1 pos=(-40.0, 0.0, 0.0)
+E         GWRR-PLACE n=2 lane=lane_g1 pos=(-28.0, 0.0, 4.0)
+E         GWRR-PLACE n=3 lane=lane_g1 pos=(-14.0, 0.0, 6.0)
+E         GWRR-PLACE n=4 lane=lane_g1 pos=(-6.0, 0.0, 3.0)
+E         GWRR-FAIL first three places share a lane: ["lane_g1", "lane_g1", "lane_g1", "lane_g1"]
+E         
+E         ERR:
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...-6.0, 0.0, 3.0)\nGWRR-FAIL first three places share a lane: ["lane_g1", "lane_g1", "lane_g1", "lane_g1"]\n', stderr='').returncode
+
+tests/test_lane_order.py:152: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_lane_order.py::test_first_free_round_robin_leg - AssertionE...
+1 failed, 1 passed in 1.38s

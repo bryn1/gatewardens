@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+[sub_resource type="BoxShape3D" id="b1"]
+extents = Vector3(0.4, 0.9, 0.4)
+[sub_resource type="BoxMesh" id="m1"]
+[node name="Hero" type="CharacterBody3D"]
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("b1")
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("m1")

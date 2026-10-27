@@ -1,0 +1,5 @@
+# planted-red: probe stale_buttons  rc=1
+
+GWSYNC-ARM green=150 class_disabled=true list=2
+GWSYNC-REGAIN placed=2 green=150 class_disabled=true
+GWMICE-FAIL place starved while affordable (placed=2 green=150)

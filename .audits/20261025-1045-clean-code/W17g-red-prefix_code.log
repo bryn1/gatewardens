@@ -1,0 +1,30 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________ test_scroll_reaches_hero_slots_engine_leg ___________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-334/test_scroll_reaches_hero_slots0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_scroll_reaches_hero_slots_engine_leg(tmp_path, class_cache):
+        proc = _run_scroll_probe([], tmp_path)
+>       assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+E       AssertionError: probe rc=1
+E         OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         GWSCROLL-FAIL PanelScroll missing or not a ScrollContainer
+E         
+E         ERR:ERROR: Node not found: "Layout/PanelScroll" (relative to "/root/Main/Hub").
+E            at: get_node (scene/main/node.cpp:1975)
+E            GDScript backtrace (most recent call first):
+E                [0] _check_real (/tmp/pytest-of-claudecode/pytest-334/test_scroll_reaches_hero_slots0/gw_scroll_probe.gd:66)
+E                [1] _process (/tmp/pytest-of-claudecode/pytest-334/test_scroll_reaches_hero_slots0/gw_scroll_probe.gd:47)
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...)\n       [1] _process (/tmp/pytest-of-claudecode/pytest-334/test_scroll_reaches_hero_slots0/gw_scroll_probe.gd:47)\n').returncode
+
+tests/test_hub_scroll.py:241: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_hub_scroll.py::test_scroll_reaches_hero_slots_engine_leg - ...
+1 failed in 50.85s

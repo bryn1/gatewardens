@@ -1,0 +1,78 @@
+# v11_shot — runtime PIXEL proof for V1.1-a (MC 11466 close, orchestrator).
+# Boots the REAL Main.tscn through the shipped router, places the 3
+# sprite towers, lets a real wave march, renders N frames under a GL
+# display (xvfb) and saves viewport screenshots. Same boot idiom as
+# v11_sprite_probe (license declared there: sturdy core + funded green).
+# Machine rows: SHOT-OK <path> ... ; run: xvfb-run godot -s sim/v11_shot.gd
+extends SceneTree
+
+const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
+const MAIN_SCENE := "res://Main.tscn"
+const SHOTS := ["res://../.audits/20261027-1500-visual-target/gen/shot_f60.png",
+	"res://../.audits/20261027-1500-visual-target/gen/shot_f240.png"]
+const FRAMES := [60, 240]
+
+var _main
+var _mission
+var _frame := 0
+var _shot_i := 0
+var _guard := 0
+
+
+func _init() -> void:
+	root.size = Vector2i(1280, 720)
+	var packed = ResourceLoader.load(MAIN_SCENE)
+	_main = packed.instantiate()
+	root.add_child(_main)
+	_main._ready()
+	_main.start_mission("gatefall", "normal")
+	_mission = _main.mission
+	if _mission == null:
+		print("SHOT-FAIL no mission")
+		quit(1)
+		return
+	_mission.core_main.hp_max *= 5.0
+	_mission.core_main.hp = _mission.core_main.hp_max
+	_mission.green = 100000
+	var trows := {}
+	for row: Dictionary in _mission.tables.rows("towers"):
+		trows[String(row["id"])] = row
+	var i := 0
+	for tid: String in ["ballista", "bombard", "hailspire_tower"]:
+		_mission.place_defense(trows[tid], 1, Vector3(i * 2, 0.0, 0.0))
+		i += 1
+
+
+func process(_delta: float) -> bool:
+	_guard += 1
+	if _guard > 3000:
+		print("SHOT-FAIL boot never settled")
+		return true
+	# real frames through the engine loop: mission.step is driven by the
+	# running game's own ticker once Main._process is live under a display.
+	if _frame == 5:
+		var m = _main.mission
+		if m != null and String(m.phase_kind) == "combat":
+			var runner = m.get_node("EnemyRunner")
+			if int(runner.entities.size()) == 0:
+				var lane: Dictionary = m.lanes["lane_g1"]
+				for eid: String in ["skitterling", "husk_brute", "ash_bandit",
+						"bone_lobber", "cinder_wisp", "gale_harpy"]:
+					runner.spawn({"enemy_id": eid, "count": 1}, lane,
+							m.enemy_defs, m.rng)
+	if _shot_i < SHOTS.size() and _frame >= FRAMES[_shot_i]:
+		var img := root.get_texture().get_image()
+		if img == null:
+			print("SHOT-FAIL no viewport texture")
+			return true
+		var p: String = String(SHOTS[_shot_i]).replace("res://../",
+				"/home/claudecode/Games/gatewardens/")
+		img.save_png(p)
+		print("SHOT-OK " + p + " f=%d px=%dx%d" % [_frame, img.get_width(),
+				img.get_height()])
+		_shot_i += 1
+	_frame += 1
+	if _shot_i >= SHOTS.size():
+		print("SHOT-DONE")
+		return true
+	return false
