@@ -10,8 +10,8 @@
 #
 # Buildable slots (brief: "buildable slots from map data ... lanes
 # geometry"): the pinned C7 shape carries NO slot list, so slots are the
-# GROUND lane waypoints of the map (file order, deduplicated, minus core
-# positions). Overlap validity is therefore one defense per slot; air
+# GROUND lane waypoints of the map (deduplicated, minus core positions;
+# the LIST is emitted round-robin across the ground lanes — W17f). Overlap validity is therefore one defense per slot; air
 # lanes are not buildable in v1 (declared reading — building inside the
 # flight corridor is undeclared mechanics). Free placement (DD2 §4, pads
 # rejected) rides this data-derived set; a finer grid is map data, not
@@ -159,21 +159,40 @@ func _rec(uid: int) -> Dictionary:
 
 
 # Slots from the C7 lanes the mission already parsed (lanes dict, map
-# file order preserved): ground waypoints only, dedup, cores excluded.
+# file order preserved): ground waypoints only, dedup, cores excluded —
+# EMITTED ROUND-ROBIN ACROSS THE GROUND LANES (W17f, MC 11274.1.33 /
+# card 11403): g1a, g2a, g3a, g1b, g2b, ... The old lane-file-BLOCKED
+# order made every first-free place pile into the first ground lane
+# until it was full, so consecutive panel places defended ONE lane only
+# (browser journey wave-4/5 wall). Content rules UNCHANGED (ground-only,
+# dedup-by-position, cores excluded); only the emission order rotates —
+# explicit-slot callers resolve positions via slot_at and are unaffected.
 func _build_slots() -> Array:
 	var blocked := {m.core_main.pos: true}
 	for sid: String in m.core_subs:
 		blocked[m.core_subs[sid].pos] = true
-	var out: Array = []
-	var seen: Dictionary = {}
+	var per_lane: Array = []         # one slot list per ground lane,
+	var seen: Dictionary = {}         #   lane file order preserved
 	for lane_id: String in m.lanes:
 		var lane: Dictionary = m.lanes[lane_id]
 		if String(lane["kind"]) != "ground":
 			continue
+		var lane_slots: Array = []
 		for wp: Variant in lane["wps"]:
 			var v: Vector3 = wp
 			if blocked.has(v) or seen.has(v):
 				continue
 			seen[v] = true
-			out.append(v)
+			lane_slots.append(v)
+		per_lane.append(lane_slots)
+	var out: Array = []
+	var rank := 0
+	var more := true
+	while more:                       # interleave: rank r of every lane
+		more = false
+		for lane_slots: Array in per_lane:
+			if rank < lane_slots.size():
+				out.append(lane_slots[rank])
+				more = true
+		rank += 1
 	return out
