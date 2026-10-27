@@ -49,6 +49,7 @@ const BLACKSMITH_UI := preload("res://scripts/blacksmith_ui.gd")
 const TINKERER_UI := preload("res://scripts/tinkerer_ui.gd")
 const DUMMY_RANGE := preload("res://scripts/dummy_range.gd")
 const ASCENSION_UI := preload("res://scripts/ascension_ui.gd")
+const UITWEEN := preload("res://scripts/ui_tween.gd")
 
 # Bridge relay code -> station (Escape maps to "": closes every panel).
 const STATION := {"Digit1": "war", "Digit2": "gear", "Digit3": "blacksmith",
@@ -68,6 +69,8 @@ var dummies = null
 var ascension = null    # W14 leg 3 station (MC 11274.1.25 / card 11341)
 var _panels: Dictionary = {}
 var _status = null
+var _open_station := ""       # V6 (MC 11530): motion direction only
+var _tab_seq: Array[String] = []   # bar order — same, visual state only
 
 
 func _ready() -> void:
@@ -116,6 +119,8 @@ func setup(tables_in, game_state, save_store, bridge_in, rng_in) -> void:
 		b.text = String(entry[1])
 		b.pressed.connect(_open.bind(String(entry[0])))
 		bar.add_child(b)
+		UITWEEN.attach(b)             # V6: hover/press feedback (motion)
+		_tab_seq.append(String(entry[0]))
 	# W17g: the shared slot WRAPS in the ONE ScrollContainer every station
 	# panel rides (vertical scroll enabled; the non-scroll axis stays
 	# fixed). PanelSlot keeps its name and stays the single parent of all
@@ -230,6 +235,25 @@ func _route_out_of_signal_frame(fn: Callable) -> void:
 func _open(which: String) -> void:
 	for key: String in _panels:
 		_panels[key].visible = key == which
+	# V6 (MC 11530): the station navigated TO rides the ONE shared
+	# motion helper — its content box (each station's single child,
+	# setup() invariant) slides ~24px in from the navigation side and
+	# fades 0->1. offset_transform_visual_only keeps layout, input and
+	# every rect pixel-pinned THROUGH the animation (probe rows), and
+	# .from() writes nothing before the first pump — so the shipped
+	# synchronous visibility flip above, the same handlers, and the
+	# -s-measured geometry are all untouched. The OUTGOING panel keeps
+	# the shipped immediate hide: hub_probe_stations.gd asserts the
+	# previous station's visible == false in the SAME call (:93), so a
+	# deferred leave-fade is the logic change this card forbids —
+	# declared, not silent.
+	if which != "" and which != _open_station:
+		var dir := 1.0
+		if _open_station != "" and _tab_seq.find(which) \
+				< _tab_seq.find(_open_station):
+			dir = -1.0
+		UITWEEN.enter(_panels[which].get_child(0) as Control, dir)
+	_open_station = which
 	_refresh_status()
 
 

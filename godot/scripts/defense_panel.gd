@@ -44,6 +44,7 @@ extends Control
 const PLACER := preload("res://scripts/defense_placer.gd")
 const BANK_LIST := preload("res://scripts/bank_list.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
+const UITWEEN := preload("res://scripts/ui_tween.gd")
 
 const PRESS := {"KeyM": "place", "KeyE": "upgrade", "KeyN": "sell"}
 
@@ -86,6 +87,7 @@ func setup(mission, placer_in = null) -> void:
 		b.name = "Class_" + String(row["class"])
 		b.pressed.connect(_on_place_pressed.bind(String(row["class"])))
 		box.add_child(b)
+		UITWEEN.attach(b)             # V6 (MC 11530): hover/press motion
 		class_buttons[String(row["class"])] = b
 	upgrade_btn = _action(box, "Upgrade", _on_upgrade)
 	repair_btn = _action(box, "Repair", _on_repair)
@@ -339,6 +341,7 @@ func _action(box, label: String, handler: Callable):
 	b.text = label
 	b.pressed.connect(handler)
 	box.add_child(b)
+	UITWEEN.attach(b)                 # V6 (MC 11530): hover/press motion
 	return b
 
 
