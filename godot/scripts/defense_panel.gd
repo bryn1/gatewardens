@@ -29,6 +29,17 @@ extends Control
 #   rebuilt inside refresh() off m.defense_list. Before this card
 #   select_defense was harness-only — a real player could never reach
 #   Upgrade/Repair/Sell (W17b's false-green class, one layer deeper).
+# - POLL sync (W17e, MC 11274.1.32 / card 11397): button enabled/disabled
+#   used to change ONLY inside refresh(), and refresh() ran ONLY on
+#   action-driven events — green rising between refreshes left buttons
+#   stale-disabled and the browser silently swallowed real clicks
+#   (served REPRO-B: place dead while affordable; REPRO-A: the same
+#   staleness + refresh()'s row REBUILD churn losing the click beside it).
+#   poll(presses) now runs sync() — enabled flags + selected-marks only,
+#   from CURRENT sim state — EVERY poll, while the expensive row
+#   clear+rebuild stays behind a dirty check on the defense list
+#   (count/uids). E9 unchanged: the rebuild that remains keeps detach +
+#   queue_free (never free a control mid-emit).
 
 const PLACER := preload("res://scripts/defense_placer.gd")
 const BANK_LIST := preload("res://scripts/bank_list.gd")
@@ -50,6 +61,8 @@ var assign_btn = null
 var unassign_btn = null
 var relic_rows = null                # shared item_row list over the pool
 var defense_rows = null              # W17c: selectable rows (defense list)
+var _rows_uids: Array = []           # W17e: uids the rows were last built
+                                     # for — the rebuild dirty check
 var info_label = null
 
 
@@ -135,6 +148,7 @@ func _rebuild_defense_rows() -> void:
 	for child: Node in defense_rows.get_children():
 		defense_rows.remove_child(child)
 		child.queue_free()
+	var built: Array = []
 	for rec: Dictionary in m.defense_list:
 		var obj = rec["obj"]
 		var b := Button.new()
@@ -145,6 +159,8 @@ func _rebuild_defense_rows() -> void:
 				int(obj.hp), int(obj.hp_max)]
 		b.pressed.connect(_on_defense_row.bind(int(rec["uid"])))
 		defense_rows.add_child(b)
+		built.append(int(rec["uid"]))
+	_rows_uids = built
 
 
 func _on_defense_row(uid: int) -> void:
@@ -173,8 +189,14 @@ func handle_press(code: String) -> void:
 
 
 # Reads the relay (drain-once model: the mission step (5) owns the queue,
-# so callers hand the codes over — no second pump here).
+# so callers hand the codes over — no second pump here). W17e: the
+# enabled-flags + selected-marks sync runs BEFORE draining presses (state
+# re-gated from the CURRENT sim, and a defense that DIED since the last
+# action refresh re-enters the rebuild through the same dirty check).
 func poll(presses: Array) -> void:
+	sync()
+	if _rows_dirty():
+		_rebuild_defense_rows()
 	for code: Variant in presses:
 		handle_press(String(code))
 
@@ -208,29 +230,67 @@ func _result_sell() -> Dictionary:
 	return res
 
 
-func refresh() -> void:
-	info_label.text = "green %d / cap %d / defenses %d" % [
-		int(m.green), int(m.defense_cap), int(m.defenses)]
+# W17e (MC 11274.1.32 / card 11397): the poll-path sync — button
+# enabled/disabled + the selected-marks ONLY, computed from CURRENT sim
+# state (I2: gates stay the shipped can_afford static; no cost math here).
+# Cheap by contract: text is touched only where a mark changed (no
+# churn), rows are NEVER freed here (E9 lives in the rebuild alone).
+func sync() -> void:
 	for row: Dictionary in class_rows:
 		var btn = class_buttons[String(row["class"])]
 		btn.disabled = not SIM_ECONOMY.can_afford(int(m.green),
 				int(row["cost"]))
-		btn.text = "%s (%d)%s" % [String(row["name"]), int(row["cost"]),
+		var want := "%s (%d)%s" % [String(row["name"]), int(row["cost"]),
 			" *" if class_rows[selected_class]["class"] == String(row["class"]) else ""]
+		if String(btn.text) != want:
+			btn.text = want
 	var obj = _selected_obj()
 	var ucost := int(obj.next_upgrade_cost()) if obj != null else -1
 	upgrade_btn.disabled = ucost < 0 \
 			or not SIM_ECONOMY.can_afford(int(m.green), ucost)
 	repair_btn.disabled = obj == null or float(obj.missing_ratio()) <= 0.0
 	sell_btn.disabled = obj == null
+	assign_btn.disabled = obj == null or selected_relic <= 0 \
+			or int(obj.relic_uid) != 0
+	unassign_btn.disabled = obj == null or int(obj.relic_uid) == 0
+	# Defense-row selected-mark: the "» " prefix rides the existing text
+	# (hp/tier text is refresh data, never re-rendered on this path).
+	for child: Node in defense_rows.get_children():
+		var b := child as Button
+		if b == null:
+			continue
+		var marked := int(String(b.name).trim_prefix("Row_")) \
+				== selected_uid
+		var text := String(b.text)
+		if marked and not text.begins_with("»"):
+			b.text = "» " + text
+		elif not marked and text.begins_with("»"):
+			b.text = text.substr(2)
+
+
+# W17e dirty check: the rebuild runs only when the defense LIST changed
+# (count, or uids in order). A select/sell-refresh no longer churns the
+# rows into unsized new controls — the REPRO-A shape of losing the
+# player's next click to a mid-frame rebuild.
+func _rows_dirty() -> bool:
+	if _rows_uids.size() != m.defense_list.size():
+		return true
+	for i: int in m.defense_list.size():
+		if int(m.defense_list[i]["uid"]) != int(_rows_uids[i]):
+			return true
+	return false
+
+
+func refresh() -> void:
+	info_label.text = "green %d / cap %d / defenses %d" % [
+		int(m.green), int(m.defense_cap), int(m.defenses)]
+	sync()                           # W17e: the ONE enabled/mark pass
 	# Relic picker repaint (shared item_row rows over the C11 pool; the
 	# assigned row is BADGED selected, assignment itself is mission-side).
 	BANK_LIST.fill(relic_rows, m.tables, m.relic_pool, selected_relic,
 			_on_relic_picked)   # the ONE fill loop (bank_list, W16)
-	assign_btn.disabled = obj == null or selected_relic <= 0 \
-			or int(obj.relic_uid) != 0
-	unassign_btn.disabled = obj == null or int(obj.relic_uid) == 0
-	_rebuild_defense_rows()        # W17c: rows track the list every action
+	if _rows_dirty():                # W17e: rows track LIST changes only
+		_rebuild_defense_rows()
 
 
 func _on_place_pressed(class_id: String) -> void:
