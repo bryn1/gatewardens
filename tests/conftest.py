@@ -25,12 +25,14 @@ _class_cache_ready = False
 
 
 def ensure_class_cache():
-    """`godot --headless --import godot/` exactly once per session (F14)."""
+    """`godot --headless --path godot/ --import` exactly once per session
+    (F14). The positional `--import <path>` form is a no-op in 4.7.2:
+    it exits 0 without writing .godot/ or .import sidecars."""
     global _class_cache_ready
     if _class_cache_ready:
         return
     proc = subprocess.run(
-        [GODOT, "--headless", "--import", repo_path("godot")],
+        [GODOT, "--headless", "--path", repo_path("godot"), "--import"],
         capture_output=True, text=True, timeout=600)
     if proc.returncode != 0:
         raise RuntimeError(
