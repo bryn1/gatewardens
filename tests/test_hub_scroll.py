@@ -75,6 +75,7 @@ const BANK_FILL := 150              # ~one normal WIN banks this many rows
 const DECK := ["warden", "deadeye", "embercaller"]
 const SLOT := "Slot_warden_weapon"  # gear_panel_ui _rebuild_heroes name
 const SERVED := Vector2(1280, 720)   # the served canvas (project viewport)
+const GW_STATE := preload("res://scripts/game_state.gd")
 
 
 class Monitor:
@@ -314,6 +315,28 @@ class Monitor:
 		if not gone:
 			_fail("the equipped row (uid 5) is still in the bank")
 			return
+		# ROUND 4 CLOSE (the served P1): the click-equip must SURVIVE the
+		# shipped save round-trip — the C13 listener wrote the file inside
+		# the equip's mutated emit; read it back through the shipped door
+		# into a FRESH state (a boot reads like this). Semantic equality
+		# is save_probe's VERIFIED parse-vs-parse door (JSON numbers are
+		# float); the pre-round-4 save carried no equipped payload and
+		# this line prints survived=false -> RED (transcript W17g4-red-
+		# click_save.log).
+		var d: Dictionary = main_ref.save.load_save()
+		var fresh = GW_STATE.new(hub.state.tables)
+		fresh.from_save(d)
+		var eq_saved: Variant = JSON.parse_string(
+				JSON.stringify(hub.state.equipped))
+		var survived: bool = JSON.parse_string(
+				JSON.stringify(fresh.equipped)) == eq_saved
+		print("GWEQUIP-SAVE survived=" + str(survived) + " fresh_base=" \
+				+ String(((fresh.equipped.get("warden", {}) as Dictionary)
+						.get("weapon", {}) as Dictionary)
+						.get("base_id", "?")))
+		if not survived:
+			_fail("click-equipped gear lost on the save round-trip")
+			return
 		print("GWEQUIP-OK")
 		get_tree().quit(0)
 
@@ -471,6 +494,11 @@ def test_equip_click_path_engine_leg(tmp_path, class_cache):
     assert post["eq_base"] == "oaken_cleaver", (pre, post)
     assert int(post["bank"]) == int(pre["bank"]) - 1, (pre, post)
     assert post["uid5_gone"] == "true", post
+    # Round-4 close: the click-equipped row survives the shipped save
+    # round-trip (the served P1: bank persisted, equipped did not).
+    sv = _kv(out, "GWEQUIP-SAVE")
+    assert sv["survived"] == "true", sv
+    assert sv["fresh_base"] == "oaken_cleaver", sv
 
 
 def test_scroll_planted_red_prefix_shape_goes_red(tmp_path, class_cache):

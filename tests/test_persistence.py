@@ -49,11 +49,15 @@ PROBE = "res://sim/save_probe.gd"
 
 # C6 pinned write surface: (section-literal, key) pairs, hero sections
 # written as "hero:" + id. This set IS the contract — anything else fails.
+# [meta2].equipped_json ADDED by the MC 11408 round-4 P1 ruling (equip
+# persisted bank-1 without persisting equipped -> equip+reload destroyed
+# the item); old saves without the key load to equipped {} (I5 default).
 C6_PAIRS = {
     ("meta", "schema_version"), ("meta", "asc_earned"),
     ("meta", "asc_spent_json"), ("hero:", "level"), ("hero:", "xp"),
     ("bank", "items_json"), ("meta2", "gold"), ("meta2", "deck_json"),
     ("meta2", "completed_json"), ("meta2", "materials_json"),
+    ("meta2", "equipped_json"),
 }
 
 C13_MUTATORS = ["add_hero_xp", "spend_asc", "bank_add", "equip",

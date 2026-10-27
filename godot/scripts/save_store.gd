@@ -7,7 +7,10 @@ extends RefCounted
 #   [hero:<id>] level:int, xp:int          (one section per touched hero)
 #   [bank]      items_json:String          (Array of C9 rows)
 #   [meta2]     gold:int, deck_json:String, completed_json:String,
-#               materials_json:String      (materials_json = F2-6)
+#               materials_json:String (materials_json = F2-6),
+#               equipped_json:String  (the C5 equipped map — added by the
+#               MC 11408 round-4 P1 ruling: equip persisted bank-1 while
+#               equipped had no key, so equip+reload DESTROYED the item)
 # Write = hollow_dawn DawnWell mechanism EXTENDED (atomic temp+rename, a
 # torn write cannot land mid-save); unreadable previous file -> *.corrupt
 # copy kept + fresh defaults (C6 recovery rule, I5 "never crash").
@@ -18,6 +21,10 @@ extends RefCounted
 #   W4 brief's extra [meta2] line is superseded by the pinned table —
 #   stop-condition precedent MC 11274.1.9/.10). tests/test_persistence.py
 #   pins both the exact key list and this absence.
+# - OLD SAVES: [meta2] may lack equipped_json (every file written before
+#   MC 11408 r4); load_save defaults it to "{}" — a missing key is the
+#   same I5 door every *_json key rides, NO schema bump (a bump fails
+#   from_save's version guard and would wipe real saves to the seed).
 # - Pinned row API wins over the brief's paraphrase: write(d:Dictionary)
 #   -> bool, load_save() -> Dictionary ({} = missing/corrupt/foreign),
 #   var write_seq (C13 ack source). The dict d is GWGameState.to_save().
@@ -52,6 +59,8 @@ func write(d: Dictionary) -> bool:
 		String(d.get("completed_json", "{}")))
 	cfg.set_value("meta2", "materials_json",
 		String(d.get("materials_json", "{}")))
+	cfg.set_value("meta2", "equipped_json",
+		String(d.get("equipped_json", "{}")))
 	var tmp_path := path + ".tmp"
 	if cfg.save(tmp_path) != OK:
 		printerr("SAVE_WRITE_FAIL path=%s" % tmp_path)
@@ -84,6 +93,7 @@ func load_save() -> Dictionary:
 		"deck_json": String(cfg.get_value("meta2", "deck_json", "[]")),
 		"completed_json": String(cfg.get_value("meta2", "completed_json", "{}")),
 		"materials_json": String(cfg.get_value("meta2", "materials_json", "{}")),
+		"equipped_json": String(cfg.get_value("meta2", "equipped_json", "{}")),
 	}
 	for section: String in cfg.get_sections():
 		if section.begins_with("hero:"):

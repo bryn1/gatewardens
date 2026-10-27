@@ -19,8 +19,12 @@ extends RefCounted
 #
 # Readings recorded on the card trail:
 # - to_save()/from_save() carry the C6 save-fields subset (the pinned C6
-#   key list); equipped is NOT persisted — C6 carries no key for it (the
-#   pinned list wins over the brief's wording).
+#   key list; [meta2].equipped_json ADDED by the MC 11408 round-4 P1
+#   ruling: equip removed the row from the bank (persisted) while
+#   equipped was never written, so equip+reload DESTROYED the item —
+#   equipped gear is the meta (DD2 lineage) and persists now. Old saves
+#   miss the key -> {} (I5 back-compat; NO schema bump — a bump would
+#   fail the version guard and wipe every real player save).
 # - bank_add stamps uid from data only: next uid = max bank uid + 1, so
 #   uid uniqueness survives reload with NO extra C6 counter key.
 # - hero meta rows initialize lazily (level 1 / xp 0): C6 [hero:<id>]
@@ -53,7 +57,7 @@ var gold: int = 0
 var materials: Dictionary = {}   # material_id -> count (F2-6)
 var completed: Dictionary = {}   # "gatefall_normal" -> true
 var deck: Array = []             # hero ids, array order = C4 swap order
-var equipped: Dictionary = {}    # hero_id -> {slot -> C9 row} (not saved)
+var equipped: Dictionary = {}    # hero_id -> {slot -> C9 row} (C6 equipped_json, W17g r4)
 var saved_ack: int = 0           # C5 mirror of GWSaveStore.write_seq (C13)
 # Lifetime anchor for the C13 listener GWCompose wires to `mutated`: a
 # signal connection keeps only an ObjectID on a RefCounted target, so an
@@ -182,6 +186,7 @@ func to_save() -> Dictionary:
 		"deck_json": JSON.stringify(deck),
 		"completed_json": JSON.stringify(completed),
 		"materials_json": JSON.stringify(materials),
+		"equipped_json": JSON.stringify(equipped),
 	}
 
 
@@ -208,6 +213,12 @@ func from_save(d: Dictionary) -> void:
 	deck = json_array(d.get("deck_json", "[]"))
 	completed = json_dict(d.get("completed_json", "{}"))
 	materials = int_dict(json_dict(d.get("materials_json", "{}")))
+	# W17g r4 (MC 11408): equipped restores from [meta2].equipped_json;
+	# an OLD save misses the key -> {} (json_dict's I5 default — the same
+	# back-compat door every *_json key rides). JSON numbers arrive as
+	# float (named limitation the bank blob already carries; consumers
+	# int() the row fields, VERIFIED by the persist probe's round-trip).
+	equipped = json_dict(d.get("equipped_json", "{}"))
 
 
 func heroes_save() -> Dictionary:
