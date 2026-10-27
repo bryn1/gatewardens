@@ -6,7 +6,7 @@ PROBE: sha256sum /home/claudecode/Games/gatewardens/tests/fixtures/mission_gatef
 
 # W11-close (MC 11466) — orchestrator close evidence (V1.1-a sprite wiring)
 
-Child commits (message-cleanup rewrite, trees identical): assets 15042b7, wiring d32c7d8 (pushed tip 3749a3b) (author "code (11466)"). Child pointer read;
+Child commits (message-cleanup rewrite, trees identical): assets 15042b7, wiring d32c7d8 ; pushed as origin/main 9d61801 (verified this session) (author "code (11466)"). Child pointer read;
 everything below measured BY THE ORCHESTRATOR at the committed tree.
 
 ## 1. Mechanism (read, not summarized)
