@@ -6,3 +6,7 @@ __pycache__/
 # stays discoverable through the committed .gitkeep marker.
 static/*
 !static/.gitkeep
+# W18 (MC 11437): the Windows desktop export (build/Gatewardens.exe) is an
+# evidence-side artifact too — same law as static/ above; reproduce with
+# tools/export_windows.sh.
+build/

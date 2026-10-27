@@ -12,6 +12,12 @@ the headless suite is 222 pytest green and the hygiene gate reads
 
 **No shop. No loot boxes. No timers. No monetization, ever — by owner ruling 2026-10-25.**
 
+**Windows download** — the v1 release page carries a Windows zip asset: unpack
+and double-click `Gatewardens.exe` (Windows 10/11, 64-bit; one self-contained
+file, no installer). Saves live in `%APPDATA%\Godot\app_userdata\Gatewardens`.
+Unsigned-build caveat stated as it is: SmartScreen may warn — the build is
+unsigned, no malware, click More info > Run anyway.
+
 ## What shipped
 
 - **Hub, six stations** — War Table (mission select), Gear (bank list + hero
