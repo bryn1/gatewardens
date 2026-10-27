@@ -6,4 +6,4 @@ Clean-room, forever-free action tower defense in the Dungeon Defenders vein (God
 
 Web client build (DECLARED W12 one-liner): `bash tools/export_web.sh` → `static/` (build artifacts, never committed), served by `python3 server/server.py` (GW_PORT, default 8124).
 
-Status: v1 build waves W1–W13 DONE (190 pytest green, main @ 817f8d2); pre-GA clean-code/doc sweep in flight (MC 11274.1.24). Not yet GA — see LEDGER.md for the acceptance list with evidence levels.
+Status: **v1 (GA)** — build waves W1–W17g DONE (222 pytest green, hygiene gate 0 hits; victory, equip and persistence browser-VERIFIED served). What shipped + the honest known-limits list: RELEASE_NOTES.md; acceptance list with evidence levels: LEDGER.md.
