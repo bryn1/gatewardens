@@ -32,6 +32,16 @@ extends Control
 # end to end (the A9 hub-overlap fix, setup() site), and F-2 the war
 # table's start crossing is routed out of the pressed-signal frame
 # (the A9 freed-during-emit console ERROR fix, _retarget_war_buttons).
+#
+# W17g (MC card 11408 / workspace 11274): the shared panel slot rides ONE
+# ScrollContainer ("PanelScroll", vertical scroll) so a full victory
+# bank (~150 rows) reaches the DECK equip rows by mouse wheel — the
+# A9-served greybox overflow (a plain VBox has no viewport clip). Engine
+# fact (VERIFIED 4.7.2): a plain Control root reports min size (0,0) to
+# a Container ancestor, so the scrolled content could never SEE the
+# panel's height — the hub therefore syncs each panel root's minimum
+# from its content Container (_sync_panel_min, container sizing only:
+# no origins, no manual positions; test_hub_scroll.py gates red/green).
 
 const WAR_TABLE := preload("res://scripts/war_table.gd")
 const GEAR_PANEL := preload("res://scripts/gear_panel_ui.gd")
@@ -106,9 +116,20 @@ func setup(tables_in, game_state, save_store, bridge_in, rng_in) -> void:
 		b.text = String(entry[1])
 		b.pressed.connect(_open.bind(String(entry[0])))
 		bar.add_child(b)
+	# W17g: the shared slot WRAPS in the ONE ScrollContainer every station
+	# panel rides (vertical scroll enabled; the non-scroll axis stays
+	# fixed). PanelSlot keeps its name and stays the single parent of all
+	# six stations (the W13 layout gate's parentage row unchanged).
+	var scroll := ScrollContainer.new()
+	scroll.name = "PanelScroll"
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root_box.add_child(scroll)
 	var slot := VBoxContainer.new()
 	slot.name = "PanelSlot"
-	root_box.add_child(slot)
+	slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(slot)
 	# The five station panels (pinned rows), each fed only injected deps,
 	# mounted into the shared slot — placed by the container, never by a
 	# stacked origin (F-1 above).
@@ -142,11 +163,24 @@ func setup(tables_in, game_state, save_store, bridge_in, rng_in) -> void:
 	ascension.setup(tables, state)
 	_panels = {"war": war, "gear": gear, "blacksmith": blacksmith,
 		"tinkerer": tinkerer, "dummies": dummies, "ascension": ascension}
+	# W17g: every panel rides the scroll the same way — fill the row
+	# width; the root min size is kept synced from the content box(es)
+	# by the hub's OWN _process pump (the shipped per-frame drain — one
+	# mechanism, DEFERRED by construction: see _sync_panel_mins).
+	for panel: Control in _panels.values():
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	state.mutated.connect(_refresh_status)
 	_open("war")
 
 
 func _process(_delta: float) -> void:
+	# W17g fix round (MC card 11408, served evidence): the min sync runs
+	# EVERY frame from this shipped pump — a content Container's min
+	# size is only valid after its layout frame completes, so the hub
+	# re-reads it next frame (same-frame reads floor the scroll: served
+	# wheel stuck ~500px above the DECK rows). Change-gated sets only:
+	# no per-frame re-sort churn.
+	_sync_panel_mins()
 	if bridge == null:
 		return
 	for code: Variant in bridge.drain_presses():
@@ -197,6 +231,29 @@ func _open(which: String) -> void:
 	for key: String in _panels:
 		_panels[key].visible = key == which
 	_refresh_status()
+
+
+# W17g: the scroll's content height is the VISIBLE panel's content height.
+# A plain Control reports min (0,0) to its Container ancestors (engine
+# fact, header), so the hub sets each panel root's CUSTOM min from its
+# content Containers — hidden panels sync to zero, so the scroll range
+# never sums hidden stations. Sizing only: containers still own every
+# position. Change-gated (an equal set would re-sort forever); the
+# per-frame re-read converges as the layout frames land.
+func _sync_panel_min(panel: Control) -> void:
+	var tall := 0.0
+	if panel.visible:
+		for content: Node in panel.get_children():
+			var cbox := content as Container
+			if cbox != null:
+				tall += cbox.get_combined_minimum_size().y
+	if panel.custom_minimum_size.y != tall:
+		panel.custom_minimum_size = Vector2(0.0, tall)
+
+
+func _sync_panel_mins() -> void:
+	for panel: Control in _panels.values():
+		_sync_panel_min(panel)
 
 
 func _refresh_status() -> void:
