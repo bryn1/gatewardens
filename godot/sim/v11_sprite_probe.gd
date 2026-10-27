@@ -1,19 +1,25 @@
-# v11_sprite_probe — the V1.1-a headless render proof (MC 11466). Boots
-# the REAL Main.tscn composition root under -s, enters a mission through
-# the shipped router (main.start_mission — never around it), and asserts
-# on the LIVE scene tree that (1) the 12 committed batch-1 sheets load
-# at 512px, (2) every sprite-backed entity node carries its bank texture
+# v11_sprite_probe — the V1.1-a/b headless render proof (MC 11466,
+# (id, tier) rows since V1.1-b MC 11520). Boots the REAL Main.tscn
+# composition root under -s, enters a mission through the shipped
+# router (main.start_mission — never around it), and asserts on the
+# LIVE scene tree that (1) the 12 committed batch-1 sheets load at
+# 512px, (2) every sprite-backed entity node carries its bank texture
 # — hero pawns (incl. the F2 hot-swap visibility), placed towers, and
-# spawned enemies, (3) gate_blockade / barbed_snare / warden_breaker
-# KEEP the greybox mesh (no fake art), and (4) the ONE facing mechanism
-# flips the left-facing enemy sheets only on a screen-right step, at
-# spawn and live through runner.step.
-# Harness license (the mission_smoke precedent, declared): the main core
-# is made 5x sturdier so the legs cannot end the mission, and `green` is
-# written to fund the place legs. Everything else drives real entry
-# points. E5: -s never dispatches _ready — main._ready() is driven here.
-# Machine rows, print order: SPRITEBANK-TEX HEROES SWAP TOWERS GREYBOX
-# ENEMIES FLIP OK; any failure prints SPRITEBANK-FAIL <why> and quits 1.
+# spawned enemies, (3) V1.1-b tier skins: a ballista upgraded ONCE and
+# a hailspire upgraded TWICE through the shipped defense_obj.upgrade()
+# entry point carry their T2/T3 sheet in the live tree, and
+# gate_blockade/barbed_snare are Sprite3D on their batch-2 sheets —
+# only warden_breaker stays mesh, (4) the ONE facing mechanism flips
+# the left-facing enemy sheets only on a screen-right step, at spawn
+# and live through runner.step.
+# Harness license (the mission_smoke precedent, declared): the main
+# core is made 5x sturdier so the legs cannot end the mission, and
+# `green` is written to fund the place and upgrade legs. Everything
+# else drives real entry points. E5: -s never dispatches _ready —
+# main._ready() is driven here.
+# Machine rows, print order: SPRITEBANK-TEX HEROES SWAP TOWERS TIER
+# GATEART ENEMIES FLIP OK; any failure prints SPRITEBANK-FAIL <why>
+# and quits 1.
 extends SceneTree
 
 const GW_TABLES := preload("res://sim/sim_tables.gd")
@@ -93,6 +99,7 @@ func _init() -> void:
 	for row: Dictionary in m.tables.rows("towers"):
 		trows[String(row["id"])] = row
 	var ti := 0
+	var tobjs := {}
 	for tid: String in TOWER_IDS:
 		var pl: Dictionary = m.place_defense(trows[tid], 1, Vector3(ti, 0.0, 0.0))
 		if not bool(pl["ok"]):
@@ -103,21 +110,51 @@ func _init() -> void:
 		if tspr == null or tspr.texture != SPRITE_BANK.texture_for(tid):
 			_fail("tower sheet: %s" % tid)
 			return
+		tobjs[tid] = obj
 		ti += 1
 	print("SPRITEBANK-TOWERS n=3")
 
-	# --- 4) un-sprited units KEEP the greybox mesh (brief rule) ---
+	# --- 3b) V1.1-b tier skins through the SHIPPED upgrade entry point:
+	#         ballista upgraded once reads T2, hailspire twice reads T3,
+	#         on the live tree node (the upgrade repaint swapped it).
+	#         The expected sheet is pinned by its committed RESOURCE
+	#         PATH, not through the bank: asking the bank would make a
+	#         broken tier map self-consistent via the T1 fallback (the
+	#         planted-red run proved the bank-as-oracle shape goes green
+	#         on a dropped T3 key). ---
+	for legs: Array in [
+			["ballista", 1, "res://assets/v11/tower_ballista_T2.png"],
+			["hailspire_tower", 2, "res://assets/v11/tower_hailspire_T3.png"]]:
+		var tid2: String = String(legs[0])
+		var tobj = tobjs[tid2]
+		for _i in range(int(legs[1])):
+			var up: Dictionary = tobj.upgrade()
+			if not bool(up["ok"]):
+				_fail("upgrade refused %s: %s" % [tid2, str(up)])
+				return
+		var uobj = tobj
+		var uspr: Sprite3D = uobj.node as Sprite3D
+		var want_tier: int = int(legs[1]) + 1
+		if uspr == null or String(uspr.texture.resource_path) != String(legs[2]) \
+				or int(uobj.tier) != want_tier - 1:
+			_fail("tier sheet: %s T%d" % [tid2, want_tier])
+			return
+	print("SPRITEBANK-TIER ballista=T2 hailspire=T3")
+
+	# --- 4) V1.1-b: gate_blockade / barbed_snare exit the greybox —
+	#        Sprite3D on their committed batch-2 sheets (tier-agnostic) ---
 	for gid: String in ["gate_blockade", "barbed_snare"]:
 		var pl2: Dictionary = m.place_defense(trows[gid], 1,
 				Vector3(20 + ti, 0.0, 0.0))
 		if not bool(pl2["ok"]):
 			_fail("place_defense refused %s: %s" % [gid, str(pl2)])
 			return
-		if ((m.defense_list[-1] as Dictionary)["obj"]).node is Sprite3D:
-			_fail("%s wrongly got a sprite" % gid)
+		var gspr: Sprite3D = ((m.defense_list[-1] as Dictionary)["obj"]).node as Sprite3D
+		if gspr == null or gspr.texture != SPRITE_BANK.texture_for(gid):
+			_fail("%s not a sprite on its sheet" % gid)
 			return
 		ti += 1
-	print("SPRITEBANK-GREYBOX blockade=mesh trap=mesh")
+	print("SPRITEBANK-GATEART blockade=sprite trap=sprite")
 
 	# --- 5) spawned enemies carry their sheet (lane_g1 walks +x: the
 	#        left-facing sheets must already read flip at spawn) ---

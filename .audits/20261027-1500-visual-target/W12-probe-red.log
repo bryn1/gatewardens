@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+SPRITEBANK-TEX n=12 px=512
+SPRITEBANK-HEROES n=3
+SPRITEBANK-SWAP active=1 visible=deadeye
+SPRITEBANK-TOWERS n=3
+SPRITEBANK-FAIL tier sheet: hailspire_tower T3

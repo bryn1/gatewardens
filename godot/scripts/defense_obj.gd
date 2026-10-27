@@ -83,7 +83,8 @@ var total_spent := 0        # C3 sell base: place + upgrade green ONLY
 var charges := 0            # trap_charges countdown (others: 0, unused)
 var fire_acc := 0.0         # trap charge meter (one drain per fire-second)
 var pos := Vector3.ZERO
-var node = null             # greybox MeshInstance3D (made here, added by mission)
+var node = null             # visual: bank Sprite3D or greybox MeshInstance3D
+                            # (made here, added by mission; swapped on upgrade)
 var fire_by_class: Dictionary = {}   # pinned class-dispatch dict
 var relic_uid := 0          # assigned relic pool uid (0 = none, C11)
 var relic_bonuses: Dictionary = {}   # stat -> add (SimInventory's, C11)
@@ -227,6 +228,7 @@ func upgrade() -> Dictionary:
 	m.green = int(m.green) - cost
 	tier += 1
 	_apply_tier()
+	_refresh_visual()
 	total_spent += cost
 	return {"ok": true, "cost": cost, "tier": tier + 1}
 
@@ -256,15 +258,33 @@ func _apply_tier() -> void:
 	hp = hp_max
 
 
+# V1.1-b (MC 11520) upgrade hook: the visual is (id, tier)-chosen, so a
+# tier step repaints it — the same slot swaps to the new tier's bank
+# sheet (or stays greybox while the bank answers null). Replace-not-add:
+# one make_sprite call through _make_visual, no new node type, no
+# second render path; the mission's defense_list entry only ever reads
+# obj.node, so swapping the scene-tree child here is the whole update.
+func _refresh_visual() -> void:
+	var old = node
+	node = _make_visual()
+	var parent = old.get_parent() if old != null else null
+	if parent != null:
+		parent.remove_child(old)
+		parent.add_child(node)
+		old.free()
+
+
 # Visual per idiom (W6/W8 primitives + .tres tints, zero per-entity
 # .tscn): tower capsule, blockade cube, trap flat plate. V1.1-a (MC
 # 11466): the bank-first question IS the visual decision — a committed
-# batch-1 tower sheet replaces the capsule at the same footprint;
-# gate_blockade and barbed_snare have no sheet and keep the greybox
-# (replace-not-add, one path, no fake art).
+# sheet replaces the greybox at the same footprint (replace-not-add,
+# one path, no fake art). V1.1-b (MC 11520): the bank answer is now
+# (id, CURRENT tier) — the 3 shooters pick their T1/T2/T3 sheet,
+# gate_blockade/barbed_snare carry their batch-2 sheet tier-agnostic,
+# un-sprited ids keep the greybox.
 func _make_visual():
 	var sprite := SPRITE_BANK.make_sprite(String(trow["id"]),
-			SPRITE_BANK.WORLD_H_TOWER)
+			SPRITE_BANK.WORLD_H_TOWER, tier + 1)
 	if sprite != null:
 		sprite.position = pos
 		return sprite
