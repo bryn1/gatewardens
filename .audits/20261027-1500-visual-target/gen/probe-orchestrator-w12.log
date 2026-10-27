@@ -1,0 +1,11 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+SPRITEBANK-TEX n=12 px=512
+SPRITEBANK-HEROES n=3
+SPRITEBANK-SWAP active=1 visible=deadeye
+SPRITEBANK-TOWERS n=3
+SPRITEBANK-TIER ballista=T2 hailspire=T3
+SPRITEBANK-GATEART blockade=sprite trap=sprite
+SPRITEBANK-ENEMIES n=6 boss_greybox=1
+SPRITEBANK-FLIP right=flipped left=plain
+SPRITEBANK-OK
