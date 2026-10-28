@@ -1,6 +1,6 @@
 PROBE: sha256sum /home/claudecode/Games/gatewardens/godot/scripts/sprite_bank.gd => ^c04ef6e331a0f96f7cbec3150aea5e0461703716ad383622bcce0c451c37ea1d
 PROBE: grep -c VERIFY_EXIT=0 /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/V7-native-served-evidence.md => ^1$
-PROBE: grep -c POSTED_OK /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/v7-native-run.log => ^1$
+PROBE: grep -c POSTED_OK /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/v7-native-run.log => ^2$
 PROBE: sha256sum /home/claudecode/Games/gatewardens/tests/fixtures/mission_gatefall_normal.jsonl => ^eafe3932f7d30898
 PROBE: sha256sum /home/claudecode/Games/gatewardens/tests/fixtures/mission_gatefall_hard.jsonl => ^5e37c4b089209e64
 PROBE: grep -c v1.1 /home/claudecode/Games/gatewardens/README.md => ^1$
