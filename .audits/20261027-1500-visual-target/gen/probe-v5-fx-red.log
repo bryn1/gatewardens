@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+V5FX-MOUNT child=1 after_runner=1
+V5FX-TRACER n=4908 frames=40000
+V5FX-SPARK n=191844
+V5FX-POOF n=9
+V5FX-FAIL fx sheet never seen on a live node (id=fx_proj_ice path=res://assets/v11/fx_proj_ice.png)

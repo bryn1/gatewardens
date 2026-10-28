@@ -1,0 +1,11 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+V5FX-MOUNT child=1 after_runner=1
+V5FX-TRACER n=848 frames=270
+V5FX-SPARK n=318
+V5FX-POOF n=5
+V5FX-ART n=4 paths=pinned
+V5FX-CAP live_max=63 cap=64
+V5FX-SETTLE live_max=63 baseline=0 settle_frames=12
+V5FX-TEARDOWN freed=1 kids_at_free=0
+V5FX-OK

@@ -584,11 +584,11 @@ def _uid_consistency_violations(tscn_text):
 def test_mission_tscn_uids_match_the_sidecars():
     bad = _uid_consistency_violations(read_text(MISSION_TSCN))
     assert not bad, "mission.tscn uid drift (export ERROR source): %r" % bad
-    # the three script rows carry explicit uids (an attribute-less ext
+    # the script rows carry explicit uids (an attribute-less ext
     # row resolves through the editor cache AT CONVERSION TIME — the
     # stale-cache poisoning this card closed; the .tres assets carry no
-    # uid by shipped design, so exactly the 3 scripts are pinned):
-    assert len(_ext_rows(read_text(MISSION_TSCN))) == 3, \
+    # uid, so exactly the SCRIPT rows are pinned; V5 MC 11552: 3 -> 4).
+    assert len(_ext_rows(read_text(MISSION_TSCN))) == 4, \
         "the script ext_resource rows must all carry uid attributes"
 
 

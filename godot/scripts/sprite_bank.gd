@@ -47,6 +47,13 @@ const TEXTURES := {
 	"icon_green": preload("res://assets/v11/icon_green.png"),
 	"icon_wave": preload("res://assets/v11/icon_wave.png"),
 	"icon_core": preload("res://assets/v11/icon_core.png"),
+	# V5 (MC 11552): the combat-FX set rides the SAME id->file map —
+	# fx_director.gd is its only consumer (billboards through make-
+	# style scaling); no second preload path, no parallel fx system.
+	"fx_spark_hit": preload("res://assets/v11/fx_spark_hit.png"),
+	"fx_poof_death": preload("res://assets/v11/fx_poof_death.png"),
+	"fx_proj_bolt": preload("res://assets/v11/fx_proj_bolt.png"),
+	"fx_proj_ice": preload("res://assets/v11/fx_proj_ice.png"),
 }
 
 # V4 presentation sizes live HERE (the ui_tween.gd precedent): the I2-
