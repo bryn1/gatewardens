@@ -61,6 +61,15 @@ func row_for(class_id: String) -> Dictionary:
 	return {}
 
 
+# F4 (MC 11616 / V12-PLAN §F4): the family picker resolves by towers.json
+# DATA ID (ballista/bombard/hailspire_tower/...), not by class.
+func row_for_id(tower_id: String) -> Dictionary:
+	for row: Dictionary in tower_defs:
+		if String(row["id"]) == tower_id:
+			return row
+	return {}
+
+
 func slot_at(at: Vector3) -> int:
 	for i: int in slots.size():
 		if slots[i] == at:
@@ -102,16 +111,33 @@ func cancel_ghost() -> void:
 
 
 # place(class, tier) per the brief, plus an explicit-slot override for
-# deterministic callers. With no armed ghost the confirm falls to the
-# FIRST free slot (greybox confirm reading). Validity that belongs to the
-# placer (phase, slot, known class) is checked here; cap + affordability
-# + the spend are the mission application site's answer (single site).
+# deterministic callers. F4 (MC 11616): the gates live ONCE in place_id
+# (replace-not-add) — this keeps its class semantics (first-row-wins) and
+# delegates to place_id on the winning row's data id; phase + class are
+# checked here FIRST so the class refusals keep their shipped order.
 func place(class_id: String, tier: int, slot: int = -1) -> Dictionary:
 	if String(m.phase_kind) != "build":
 		return {"ok": false, "why": "phase"}
 	var row := row_for(class_id)
 	if row.is_empty():
 		return {"ok": false, "why": "class"}
+	return place_id(String(row["id"]), tier, slot)
+
+
+# F4 (MC 11616 / V12-PLAN §F4): THE one placement gate sequence by data
+# id — the family picker's entry, and place()'s own delegate. With no
+# armed ghost the confirm falls to the FIRST free slot (greybox confirm
+# reading, the SAME resolution order the class buttons always used).
+# Validity that belongs to the placer (phase, known id, slot) is checked
+# here; cap + affordability + the spend are the mission application
+# site's answer (mission.place_defense — single site, I2/I4). Unknown id
+# is the NEW "id" refusal (plan contract row).
+func place_id(tower_id: String, tier: int, slot: int = -1) -> Dictionary:
+	if String(m.phase_kind) != "build":
+		return {"ok": false, "why": "phase"}
+	var row := row_for_id(tower_id)
+	if row.is_empty():
+		return {"ok": false, "why": "id"}
 	var at := slot
 	if at < 0:
 		at = ghost

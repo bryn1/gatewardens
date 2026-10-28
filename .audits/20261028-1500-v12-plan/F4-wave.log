@@ -1,0 +1,116 @@
+.audits/20261028-1500-v12-plan/F4-wave.log — v1.2 F4 shop family picker
+Card MC 11616 (wave W3) — coder profile. Repo /home/claudecode/Games/gatewardens,
+tip origin/main 867f015 at intake. Spec: V12-PLAN.md §F4 (DA-SHIPPED).
+
+INTENT + REUSE (plan cites the EXISTING path — NO second placement mechanism):
+  - Icons grep-VERIFIED committed + TEX-pinned BEFORE the picker:
+      $ grep -n "icon_bombard\|icon_hailspire" godot/scripts/sprite_bank.gd
+      47:	"icon_bombard": preload("res://assets/v11/icon_bombard.png"),
+      48:	"icon_hailspire": preload("res://assets/v11/icon_hailspire.png"),
+  - Placement rides THE one application site: placer.place_id -> mission.place_defense
+    (godot/scripts/mission.gd:321-342 — defense_cap + SimEconomy.can_afford + the
+    single `green -= cost` write; C12 step (5) crossing intact, mission.gd NOT touched).
+  - REPLACE-NOT-ADD: place(class) keeps phase+class refusal order and DELEGATES to
+    place_id(winner-id) — the placer calls m.place_defense from EXACTLY one place
+    (pinned by the source-truth leg: text.count("m.place_defense(") == 1).
+  - NEW refusal string {"why":"id"} for unknown ids (plan contract row).
+  - DECLARED READING: the brief's "gold delta matches items.json price" is a wording
+    slip — items.json carries relics; TOWER prices ride towers.json base_cost
+    (bombard 160 / hailspire_tower 140 / ballista 100), exactly the plan's "-160 / -140".
+    Prices re-derived from data in the test, never literals.
+  - Button press = the shipped selection entry: the panel button's own pressed
+    signal — the same chain a browser click emits (GUI pickability of EVERY panel
+    button incl. the new Family_* two is pinned by test_mission_clicks' push_input
+    legs — suite green at final tree).
+
+LOC WATCH (gate metric = text.split("\n")):
+  defense_panel.gd   373 -> 399  / 400  => FITS; the plan's declared W16-style
+    split fallback NOT TRIGGERED -> NO sibling file -> NO GOVERNED_LITERALS edit
+    in tools/check_hygiene.py (LOCKED pin #10 is CONDITIONAL on the split;
+    evaluated, not fired — cited in the commit body too).
+  defense_placer.gd  202 -> 228  / 400  (soft-250 note NOT raised at suite time;
+    check_hygiene reports it as a note row only, unchanged class from baseline for
+    panel-adjacent files — see gate tail below).
+
+TESTS (tests/test_family_picker.py NEW, 2 legs; engine tier = the shipped
+conftest.run_probe_script idiom — ONE harness mechanism, probe into tmp_path):
+
+  $ python3 -m pytest tests/test_family_picker.py -q          # GREEN first run
+  ..                                                [100%]
+  2 passed in 5.53s
+
+PLANTED-RED (task row: swap the family id mapping) — honest two-cycle transcript:
+  CYCLE 1 INCIDENT (recorded per doctrine): the real work was UNSTAGED, so
+  `git checkout -- godot/scripts/defense_placer.gd` reverted the CARD'S OWN
+  placer edits too (checkout restores the INDEX = HEAD here). Edits re-applied
+  identically; real work then STAGED (git add <3 files>) and the cycle re-run —
+  checkout -- now reverts the PLANT only. Lesson for later plant cards:
+  STAGE the real work before planting.
+
+  $ git add godot/scripts/defense_placer.gd godot/scripts/defense_panel.gd tests/test_family_picker.py   # staged
+  $ sed -i 's|if String(row\["id"\]) == tower_id:|if String(row["class"]) == tower_id:|' \
+        godot/scripts/defense_placer.gd                      # PLANT: id-mapping swap
+  $ grep -n '== tower_id' godot/scripts/defense_placer.gd
+  68:		if String(row["class"]) == tower_id:
+  $ python3 -m pytest tests/test_family_picker.py -q
+  E         FP-FAIL place 1: empty defense_list
+  E         FP-FAIL place 2: empty defense_list
+  E         FP-FAIL poll did not re-gate family buttons when green ran short
+  2 failed in 5.48s
+  PYTEST_RED_EXIT=1
+  $ git checkout -- godot/scripts/defense_placer.gd
+  $ git diff godot/scripts/defense_placer.gd | wc -l
+  0                                     # diff-vs-index EMPTY (restore verified)
+  $ grep -n 'String(row\["id"\]) == tower_id' godot/scripts/defense_placer.gd
+  68:		if String(row["id"]) == tower_id:
+  $ python3 -m pytest tests/test_family_picker.py -q
+  ..                                                [100%]
+  2 passed in 5.53s
+  PYTEST_GREEN_EXIT=0
+
+  Engine rows the GREEN run asserts (all re-derived from towers.json/gatefall.json):
+    FP-FIND buttons=2 bombard_disabled=0 hail_disabled=0
+    FP-PLACE n=1 fam=bombard          uid=1 green=140 count=1   (300-160 EXACTLY)
+    FP-PLACE n=2 fam=hailspire_tower  green=0   count=2         (140-140 EXACTLY)
+    FP-SYNC phase=off  bombard_disabled=1 hail_disabled=1       (W17e poll-sync)
+    FP-REFUSE ok=0 why=green green=0 count=2                    (no state change)
+    FP-SYNC phase=on2  bombard_disabled=0 hail_disabled=0       (income lever)
+    FP-PLACE n=3 fam=bombard / n=4 fam=hailspire_tower          (right family every time)
+    FP-ID ok=0 why=id  green=100 count=4                        (NEW refusal)
+    FP-CLASS ok=1 fam=ballista cost=100                          (winner path unchanged)
+    FP-COUNT n=5 fams=bombard,hailspire_tower,bombard,hailspire_tower,ballista
+    FP-OK ; rc0 + stderr EMPTY (W4 ruling).
+
+SHIPPED-KIT SMOKE (panel-booting probes re-run, untouched kit):
+  $ godot --headless --path godot -s res://sim/v4_icon_probe.gd
+  V4-ICONS-TEX n=8 px=512 / V4-ICONS-SHOP n=3 paths=left=28 / V4-ICONS-TEXT n=3 byte-exact
+  V4-ICONS-HUD n=3 beside=1 / V4-ICONS-COEXIST moved=1 rest=1 icon=ok / V4-ICONS-OK
+  V4_RC=0  stderr 0 bytes   (SHOP/TEXT legs read class_buttons by dict — no exhaustive
+  button count; the two new Family_* buttons ride the same ICON_FOR + bank 28px idiom)
+  $ godot --headless --path godot -s res://sim/v1_world_probe.gd
+  V1W-FRAME n=33 min_margin=113.6 floor=60.0 / V1W-OK
+  V1_RC=0  stderr 0 bytes
+
+GATES AT FINAL TREE:
+  $ python3 -m pytest -q
+  231 passed in 169.19s (0:02:49)                     # 229 W1 baseline + this file's 2
+  FULL_SUITE_EXIT=0                                   # ONE attempt (no load timeout)
+  $ python3 tools/check_hygiene.py | tail -1
+  check_hygiene: 0 hit(s)
+  $ git diff --stat tests/fixtures/ | wc -l
+  0                                                   # golden fixtures diff EMPTY
+  $ godot --headless --path godot --check-only --script res://scripts/defense_placer.gd
+  placer_rc=0
+  $ godot --headless --path godot --check-only --script res://scripts/defense_panel.gd
+  panel_rc=0
+  $ python3 -c 'LOC gate metric'
+  godot/scripts/defense_panel.gd 399
+  godot/scripts/defense_placer.gd 228
+
+Files touched (pathspec commit): godot/scripts/defense_placer.gd,
+godot/scripts/defense_panel.gd, tests/test_family_picker.py (NEW), LEDGER.md,
+this log. ZERO godot/sim/ + data/ edits. No push.
+
+served-browser leg: orchestrator (MC 11509 D3 — icon-painted buttons + click placements visible in-world ride the close, same row as F3/F5)
+
+VERIFY_EXIT=0

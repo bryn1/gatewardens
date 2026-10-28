@@ -65,6 +65,7 @@ const ICON_FOR := {
 var m = null
 var placer = null
 var class_rows: Array = []
+var picker_rows: Array = []              # F4: class winners + family rows
 var selected_class := 0              # index into class_rows
 var selected_uid := 0                # 0 = no defense selected
 var selected_relic := 0              # C11: pool relic uid armed for assign
@@ -90,16 +91,31 @@ func setup(mission, placer_in = null) -> void:
 		placer = PLACER.new()
 		placer.setup(m)
 	class_rows = placer.classes()
+	picker_rows = class_rows.duplicate()   # F4 (MC 11616): the family
+	# picker rows (the NON-winner towers.json rows — bombard, hailspire)
+	# ride the SAME button loop and the SAME W17e poll sync; a press
+	# places THAT family's T1 via placer.place_id, the one gate sequence.
+	var winner_ids: Array = []
+	for crow: Dictionary in class_rows:
+		winner_ids.append(String(crow["id"]))
+	for row: Dictionary in m.tables.rows("towers"):
+		if not winner_ids.has(String(row["id"])):
+			picker_rows.append({"id": String(row["id"]),
+					"name": String(row["name"]),
+					"cost": int(row["base_cost"]), "fam": true})
 	var box := VBoxContainer.new()
 	box.name = "Rows"
 	add_child(box)
 	info_label = Label.new()
 	info_label.name = "Green"
 	box.add_child(info_label)
-	for row: Dictionary in class_rows:
+	for row: Dictionary in picker_rows:
+		var fam: bool = bool(row.get("fam", false))
+		var cid := String(row.get("class", ""))
 		var b := Button.new()
-		b.name = "Class_" + String(row["class"])
-		b.pressed.connect(_on_place_pressed.bind(String(row["class"])))
+		b.name = ("Family_" + String(row["id"])) if fam else ("Class_" + cid)
+		var target: Callable = _on_family_pressed if fam else _on_place_pressed
+		b.pressed.connect(target.bind(String(row["id"]) if fam else cid))
 		var icon_id := String(ICON_FOR.get(String(row["id"]), ""))
 		if icon_id != "":            # V4: icon-bearing rows (brief row 2)
 			b.icon = SPRITE_BANK.texture_for(icon_id)
@@ -108,7 +124,9 @@ func setup(mission, placer_in = null) -> void:
 					SPRITE_BANK.ICON_PX)   # 4.x Control override API
 		box.add_child(b)
 		UITWEEN.attach(b)             # V6 (MC 11530): hover/press motion
-		class_buttons[String(row["class"])] = b
+		if not fam:
+			class_buttons[cid] = b
+		row["btn"] = b
 	upgrade_btn = _action(box, "Upgrade", _on_upgrade)
 	repair_btn = _action(box, "Repair", _on_repair)
 	sell_btn = _action(box, "Sell", _on_sell)
@@ -258,12 +276,13 @@ func _result_sell() -> Dictionary:
 # Cheap by contract: text is touched only where a mark changed (no
 # churn), rows are NEVER freed here (E9 lives in the rebuild alone).
 func sync() -> void:
-	for row: Dictionary in class_rows:
-		var btn = class_buttons[String(row["class"])]
+	for row: Dictionary in picker_rows:
+		var btn = row["btn"]
 		btn.disabled = not SIM_ECONOMY.can_afford(int(m.green),
 				int(row["cost"]))
 		var want := "%s (%d)%s" % [String(row["name"]), int(row["cost"]),
-			" *" if class_rows[selected_class]["class"] == String(row["class"]) else ""]
+			" *" if class_rows[selected_class]["class"] \
+				== String(row.get("class", "")) else ""]
 		if String(btn.text) != want:
 			btn.text = want
 	var obj = _selected_obj()
@@ -320,6 +339,13 @@ func _on_place_pressed(class_id: String) -> void:
 		if String(class_rows[i]["class"]) == class_id:
 			select_class(i)
 	place_selected()
+
+
+# F4 (MC 11616): the family press — the SAME place-then-refresh shape as
+# _on_place_pressed; every gate is the placer/application-site answer.
+func _on_family_pressed(tower_id: String) -> void:
+	placer.place_id(tower_id, 1)
+	refresh()
 
 
 func _on_upgrade() -> void:
