@@ -137,6 +137,25 @@ buttons only (picker is a list of item_row instances — fits soft ceiling); gw_
 | sim/mission_smoke.gd + _w8/_flow/_swap legs | mission-flow harness (W6; W16 split, MC 11274.1.28) | driver `extends SceneTree`; legs `extends RefCounted`, `static func run(driver, leg)`; boots the REAL mission.tscn under `-s` and drives setup()+step(); MISSION-SMOKE-* machine rows, E3 early-return discipline |
 | sim/hub_probe.gd + _equip/_services/_stations/_mission legs | hub/stations harness (W9; W16 split) | same leg pattern; seeds meta through C13 mutators only, drives every station leg through shipped entry points; thirteen HUB-PROBE-* machine rows incl. the W14 legs (ASC/RELIC + the P2-10 unknown-uid equip refusal, MC 11274.1.25 / commit 1067391) — tests/test_hub.py re-derives each number from data. `validate_probe` never existed (W16 truth pass): boot = main.gd file-level check, schema = pytest layer |
 
+### Verification kits (godot/sim/ — manual pixel/probe legs, deliberately NOT in the pytest suite)
+
+The `v*_probe`/`v*_shot` kits under sim/ are MANUAL legs: run by hand with the repo-canonical
+Godot binary (the one tests/conftest.py pins, GW_GODOT-overridable), evidence rows/PNGs land in
+the audit run's gen/ dir, and the LEDGER row for the card that (re-)ran them records it. The
+pixel kits stay OUT of CI on purpose (ruling MC 11575 W3, DC-1): wiring them in would make the
+suite depend on GPU-window-free PNG writing under a real GL display (xvfb + opengl3) — pixels
+are verified per card + by describe-image reads, not by the number tier.
+
+- `sim/v11_boss_shot.gd` — the boss BILLBOARD PIXEL proof (MC 11462 DA-fix): the ONLY leg that
+  proves the warden_breaker boss renders as a Sprite3D on its sheet path in a served frame
+  (asserts the spawned node IS a Sprite3D, captures gen/v112-boss-shot.png + v112-boss-zoom.png,
+  plus the close gen/v112-boss-near.png where the art itself reads). Run from the repo root:
+  `xvfb-run /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --rendering-driver opengl3 --path godot -s res://sim/v11_boss_shot.gd`
+- Superseded kits retire to `sim/archive/` — `git mv` keeps history, the first line carries the
+  `SUPERSEDED — DO NOT USE` label with the successor chain (versioned-truth law; NEVER delete).
+  `sim/archive/v11_shot3.gd` (MC 11462 first pixel proof, archived at clean-code W3): its unique
+  legs live verbatim in v5_fx_shot → v1_world_shot → v11_boss_shot.
+
 ### scripts/ — scene layer (NO autoloads; every dependency arrives as a setup()/call argument — R3/C1)
 
 | file | concern | interface / note |

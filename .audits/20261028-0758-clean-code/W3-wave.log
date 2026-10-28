@@ -1,0 +1,92 @@
+W3-wave.log — clean-code W3 (MC 11575) — coder profile, 2026-10-28
+Base: tip 0ffb086 (origin/main == HEAD, VERIFIED; clean at start except pre-existing UNTRACKED
+files under .audits/20261027-1500-visual-target/gen/ + 11574-close-evidence.md — untouched).
+Rows fixed: DC-1 (P2, v11_boss_shot zero text refs) + KC-1 (P4, v11_shot3 archive).
+
+== FIXTURE SHAS BEFORE (gate: byte-identical law; measured BEFORE any edit, this session) ==
+  eafe3932f7d30898565664341697a32f20ecda7458d379be65b668bf2d6f3912  tests/fixtures/mission_gatefall_normal.jsonl
+  5e37c4b089209e64e26395237830bc16a1cf62aa3b9a6d427be2f361f970f628  tests/fixtures/mission_gatefall_hard.jsonl
+
+== BASELINE HYGIENE (before any edit) ==
+python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)", 20 note lines. HYGIENE_EXIT=0.
+
+== KC-1 INSTRUMENT: hygiene-walk check BEFORE choosing the archive location ==
+tools/check_hygiene.py walk(): dirs I1_DIRS incl. godot/, recurses every dir not in SKIP_DIRS,
+ceiling class .gd/.py only (>250 = soft note, >400 = hit), bare-rand scan .gd only, .uid NOT
+in CODE_EXTS. Archived kit at godot/sim/archive/: 96 lines < 250 soft, zero randf/randi calls
+=> the walker spawns ZERO new notes at the plain path — no SKIP location needed. Census names
+no archive dir => task fallback godot/sim/archive/ USED. (test_purity sim_files() + the parse
+probe enumerate FLAT sim_*.gd names only — "archive" is neither a file nor a sim_* name: no
+purity/parse leg affected; grep proved no tscn/cfg/gd references the kit by uid:// or path.)
+
+== KC-1 MOVE ==
+git mv godot/sim/v11_shot3.gd  -> godot/sim/archive/v11_shot3.gd        (git R status)
+git mv godot/sim/v11_shot3.gd.uid -> godot/sim/archive/v11_shot3.gd.uid (git R status)
+ONE header line prepended per versioned-truth law:
+  "# SUPERSEDED — DO NOT USE (archived clean-code W3, MC 11575; unique legs live in
+   v5_fx_shot -> v1_world_shot -> v11_boss_shot, chain recorded in their headers)"
+File content otherwise byte-identical (supersession chain: the census's 3 successor headers
+each rerun the SAME capture path + more; v11_shot3's unique legs — button-click boot + mission
+pixels — exist verbatim in all three). NEVER delete; git history preserves the pre-move file.
+
+== KC-1 PARSE/RE-RUN GATES AT THE NEW HOME ==
+1) STRICT parse instrument: $G --headless --path godot --check-only --script
+   res://sim/archive/v11_shot3.gd -> CHECKONLY_EXIT=0, stderr clean. THE KIT PARSES.
+2) DoD -s form (headless): $G --headless --path godot -s res://sim/archive/v11_shot3.gd ->
+   RUN_EXIT=1, tail "SHOT-FAIL mission never found (started=true)". HONEST: the script loads,
+   boots Main.tscn and clicks (started=true) — the kit's click-driven mission entry needs the
+   declared xvfb+opengl3 form (header line 7 names it), headless never got a mission pre-move
+   either (pre-existing property of the kit, not a move regression). Recorded, not fudged.
+3) DECLARED command end-to-end at the NEW home (supersedes (2) as the run proof):
+   xvfb-run -a $G --rendering-driver opengl3 --path godot -s res://sim/archive/v11_shot3.gd
+   -> XVFB_EXIT=0; rows: PLACE ballista/bombard/hailspire_tower ok=true, SPAWNED n=6 on
+   lane_g1, SHOT-OK pixel_f200.png, SHOT-OK pixel_f480.png, SHOT-DONE. (ALSA audio ERROR lines
+   = box has no sound device — environmental, every kit run here shows it.) GREEN.
+   (xvfb-run needed -a: default display :99 held by another session — instrument note.)
+
+== DC-1 DOC LEG (chosen reading DECLARED: doc leg, NOT pytest wiring) ==
+REASONING (task-mandated, here + LEDGER row): the kit is a SCREENSHOT kit — wiring it into CI
+would make the suite depend on GPU-window-free PNG writing under a real GL display; the suite's
+contract is the number/engine tier, pixel proofs ride per-card runs + describe-image reads.
+Home: NEW section "Verification kits" in docs/ARCHITECTURE.md (ONE place — ARCHITECTURE is the
+doc the Architect keeps true and already documents every -s harness; the section names the kit,
+its unique leg, the exact command, and the sim/archive/ convention the KC-1 move created).
+GATE: grep -rn v11_boss_shot --include=*.md = 3 hits, all docs/ARCHITECTURE.md (was ZERO
+text refs repo-wide — the DC-1 measured fact, now closed).
+
+== DC-1 RUN GATE — v11_boss_shot.gd UNCHANGED (no header pointer added — none needed) ==
+xvfb-run -a $G --rendering-driver opengl3 --path godot -s res://sim/v11_boss_shot.gd
+-> BOSS_EXIT=0. Tail:
+  SPAWNED warden_breaker class=Sprite3D
+  SHOT-OK .../gen/v112-boss-shot.png crop=.../gen/v112-boss-zoom.png boss@(401.57, 397.80)
+          x=145 y=141 tex=res://assets/v11/enemy_warden_breaker.png
+  SHOT-OK-NEAR .../gen/v112-boss-near.png
+  SHOT-DONE
+PNGs landed per the kit's declared pattern (OUT_DIR gen/, names v112-boss-{shot,zoom,near}.png).
+The three are TRACKED committed DA-fix evidence: the run rewrote them (live OS-entropy RNG =>
+different pixels); git checkout -- restored the committed pixels, verified back to:
+  shot 2e44e7802940c12e… zoom 4a572804ae5573a2… near 580b5a073143ca74…
+(The shot3 xvfb re-run likewise rewrote the tracked pixel_f200/f480: run pixels f1eb8376…/
+de411356… differing from committed 3cbc8315…/ef166522… — restored to the committed pair.)
+NO PNG from these runs is committed.
+
+== GATES AT FINAL TREE ==
+1) python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)", 20 notes — IDENTICAL set to the
+   baseline (no NEW note from godot/sim/archive/). HYGIENE_EXIT=0.
+2) python3 -m pytest -q -> tail "222 passed in 161.59s (0:02:41)" PYTEST_EXIT=0. ONE attempt.
+3) FIXTURES AFTER: eafe3932…/5e37c4b0… — BYTE-IDENTICAL to the BEFORE pair.
+4) PURITY: git show --stat proves zero godot/sim/sim_*.gd logic modules touched (moved kit is
+   not a sim_ module; the diff = the two renames + 1 header line + docs/ARCHITECTURE.md +
+   LEDGER.md + this log).
+5) WHAT GOT SMALLER: godot/sim/ active kit/harness files 22 -> 21 (flat ls count; the archived
+   kit + its .uid ride sim/archive/); zero code lines changed anywhere (header line is a
+   comment; the two .md edits are docs). Nesting proxy unchanged.
+
+== HONEST LIMITS ==
+- The bare-headless -s leg of the archived kit exits 1 with its own SHOT-FAIL detector (2. above):
+  its run form is xvfb+opengl3 BY HEADER DECLARATION; parse proof = --check-only rc 0, run
+  proof = the green xvfb re-run. Both recorded above; the LEDGER row says it too.
+- gen/ pixel PNGs from re-runs differ from committed pixels by design (runtime RNG seeded from
+  OS entropy); committed evidence restored untouched, no PNG committed.
+
+VERIFY_EXIT=0

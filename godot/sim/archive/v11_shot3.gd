@@ -1,3 +1,4 @@
+# SUPERSEDED — DO NOT USE (archived clean-code W3, MC 11575; unique legs live in v5_fx_shot -> v1_world_shot -> v11_boss_shot, chain recorded in their headers)
 # v11_shot3 — runtime PIXEL proof (MC 11462 close kit). Fully honest path:
 # lets Main boot to the HUB normally, then feeds a REAL InputEventMouseButton
 # on "Start gatefall — normal" (the same button the browser journey clicks),
