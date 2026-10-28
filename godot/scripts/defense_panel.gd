@@ -45,8 +45,22 @@ const PLACER := preload("res://scripts/defense_placer.gd")
 const BANK_LIST := preload("res://scripts/bank_list.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 const UITWEEN := preload("res://scripts/ui_tween.gd")
+const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
 
 const PRESS := {"KeyM": "place", "KeyE": "upgrade", "KeyN": "sell"}
+
+# V4 (MC 11549 / VISUAL-TARGET row V4): class-id -> icon id, explicit
+# (the sprite_bank sheet-map idiom — never a stem rule). All five tower
+# ids carry an icon so the declared family picker (defense_placer
+# header) rides rows that already resolve; the shipped classes() list
+# shows the class winners (tower/blockade/trap). Decoration only: the
+# Button.icon scales WITH the button under ui_tween.attach (V6) and
+# sync() never touches icons — texts, handlers, signals unchanged.
+const ICON_FOR := {
+	"ballista": "icon_ballista", "bombard": "icon_bombard",
+	"hailspire_tower": "icon_hailspire", "gate_blockade": "icon_blockade",
+	"barbed_snare": "icon_snare",
+}
 
 var m = null
 var placer = null
@@ -86,6 +100,12 @@ func setup(mission, placer_in = null) -> void:
 		var b := Button.new()
 		b.name = "Class_" + String(row["class"])
 		b.pressed.connect(_on_place_pressed.bind(String(row["class"])))
+		var icon_id := String(ICON_FOR.get(String(row["id"]), ""))
+		if icon_id != "":            # V4: icon-bearing rows (brief row 2)
+			b.icon = SPRITE_BANK.texture_for(icon_id)
+			b.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+			b.add_theme_constant_override("icon_max_width",
+					SPRITE_BANK.ICON_PX)   # 4.x Control override API
 		box.add_child(b)
 		UITWEEN.attach(b)             # V6 (MC 11530): hover/press motion
 		class_buttons[String(row["class"])] = b

@@ -1,0 +1,9 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+V4-ICONS-BOOT buttons=3 phase=build
+V4-ICONS-TEX n=8 px=512
+V4-ICONS-SHOP n=3 paths=left=28
+V4-ICONS-TEXT n=3 byte-exact
+V4-ICONS-HUD n=3 beside=1
+V4-ICONS-COEXIST moved=1 rest=1 icon=ok scale=(1.0, 1.0)
+V4-ICONS-OK

@@ -1,0 +1,11 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+V6-PROBE-BOOT panels=6 open=war
+V6-TWEEN-START running=1 visible war=0 black=1
+V6-ATREST-START off=0,0 mod=1,1,1,1
+V6-TWEEN-MID frames=22 min_alpha=0.04444444552064 max_offx=22.9333324432373
+V6-REST-RECT black=[P: (0.0, 89.0), S: (633.0, 159.0)] same_as_pre=true
+V6-REST roundtrip_rect=same visibility=1
+V6-HOVER in=(1.03, 1.03) out=(1.0, 1.0) moved=1 rect=[P: (140.0, 54.0), S: (94.0, 31.0)]
+V6-PRESS down=(1.03, 1.03) up=(1.0, 1.0) under=false rect=[P: (140.0, 54.0), S: (94.0, 31.0)]
+V6-OK

@@ -36,7 +36,25 @@ const TEXTURES := {
 	# (the upgrade ladder changes hp/dps, never the art).
 	"gate_blockade": preload("res://assets/v11/tower_gate_blockade.png"),
 	"barbed_snare": preload("res://assets/v11/tower_barbed_snare.png"),
+	# V4 (MC 11549): the HUD/shop icon set rides the SAME id->file map —
+	# texture_for(id) resolves icon_* ids exactly like unit ids (no
+	# second preload path; VISUAL-TARGET V4 "icon-bearing presentation").
+	"icon_ballista": preload("res://assets/v11/icon_ballista.png"),
+	"icon_bombard": preload("res://assets/v11/icon_bombard.png"),
+	"icon_hailspire": preload("res://assets/v11/icon_hailspire.png"),
+	"icon_blockade": preload("res://assets/v11/icon_blockade.png"),
+	"icon_snare": preload("res://assets/v11/icon_snare.png"),
+	"icon_green": preload("res://assets/v11/icon_green.png"),
+	"icon_wave": preload("res://assets/v11/icon_wave.png"),
+	"icon_core": preload("res://assets/v11/icon_core.png"),
 }
+
+# V4 presentation sizes live HERE (the ui_tween.gd precedent): the I2-
+# governed UI scripts (hud.gd, defense_panel.gd) carry ZERO number
+# literals, so the ~28px icon size and the beside-label gap have their
+# one home in this ungoverned presentation map.
+const ICON_PX := 28          # the brief's ~28px chunky icon size
+const ICON_GAP := 6          # HUD icon gap beside its label
 
 # The committed batch-2 upgrade skins of the 3 shooters, keyed
 # (id, DISPLAY tier). T1 rides TEXTURES; no other entry lives here —

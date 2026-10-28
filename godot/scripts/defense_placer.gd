@@ -38,6 +38,9 @@ func setup(mission) -> void:
 # v1 class list (brief: "lists v1 classes"): one entry per distinct
 # towers.json class, first row of that class wins — the tower class ships
 # three families and the family picker is a later frontend row (declared).
+# V4 (MC 11549): the row carries the WINNING row's data id too — the
+# panel maps the shop ICON from it, so "first row wins" keeps its single
+# home here instead of a second dedupe in the UI.
 func classes() -> Array:
 	var out: Array = []
 	var seen: Dictionary = {}
@@ -46,8 +49,8 @@ func classes() -> Array:
 		if seen.has(cls):
 			continue
 		seen[cls] = true
-		out.append({"class": cls, "name": String(row["name"]),
-			"cost": int(row["base_cost"])})
+		out.append({"class": cls, "id": String(row["id"]),
+			"name": String(row["name"]), "cost": int(row["base_cost"])})
 	return out
 
 

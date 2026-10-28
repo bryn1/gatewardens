@@ -47,12 +47,16 @@ extends CanvasLayer
 #   IGNORE since W10, which is why the bug hid in the CODE-built nodes).
 
 const SIM_WAVE := preload("res://sim/sim_wave.gd")
+const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
 
 var m = null                        # mission root (duck-typed READ source)
 var wave_label = null
 var green_label = null
 var def_label = null
 var core_label = null
+var icon_wave = null                # V4 (MC 11549): beside-label icons
+var icon_green = null               # (TextureRect CHILDREN of the
+var icon_core = null                # labels — the Label rect never moves)
 var hero_bar = null
 var boss_box = null
 var boss_label = null
@@ -96,6 +100,20 @@ func setup(mission) -> void:
 	toast_label = Label.new()              # W11 loot toast (the shipped
 	toast_label.name = "ToastLabel"        # hook pattern: code-built node)
 	$Root/TopLeft.add_child(toast_label)
+	# V4 (MC 11549 / VISUAL-TARGET row V4): icon_green beside the green
+	# count, icon_wave beside the wave counter, icon_core beside core HP
+	# — TextureRect CHILDREN of the Labels (a Label is not a Container,
+	# so children never join the VBox layout and the pinned Label rects
+	# stay byte-identical), riding to the RIGHT of the text in refresh():
+	# TopLeft starts at x=16, so a left placement would clip off-canvas.
+	# Label texts themselves are never edited (declared row: text stays);
+	# mouse_filter lands via the shipped _ignore_mouse pass below.
+	icon_wave = _build_icon("Icon_Wave", "icon_wave")
+	wave_label.add_child(icon_wave)
+	icon_green = _build_icon("Icon_Green", "icon_green")
+	green_label.add_child(icon_green)
+	icon_core = _build_icon("Icon_Core", "icon_core")
+	core_label.add_child(icon_core)
 	# W17b (MC 11274.1.29 / card 11386): the overlay is PURE DISPLAY, so
 	# EVERY Control under $Root takes MOUSE_FILTER_IGNORE. Engine defaults
 	# are NOT display-safe (VERIFIED headless this card): the code-built
@@ -145,6 +163,28 @@ func refresh() -> void:
 	banner.visible = m.outcome != null
 	banner.text = banner_text()
 	toast_label.text = toast_text()
+	_place_icon(icon_wave, wave_label)     # V4: ride beside the CURRENT
+	_place_icon(icon_green, green_label)   # text width as counts grow —
+	_place_icon(icon_core, core_label)     # the Label rect itself never moves
+
+
+# ---- V4 icon wiring (MC 11549) ----
+
+func _build_icon(nm: String, id: String) -> TextureRect:
+	var icon := TextureRect.new()
+	icon.name = nm
+	icon.texture = SPRITE_BANK.texture_for(id)   # THE one id->file map
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.size = Vector2(SPRITE_BANK.ICON_PX, SPRITE_BANK.ICON_PX)
+	return icon
+
+
+func _place_icon(icon: TextureRect, label: Label) -> void:
+	# Beside the text on the right, vertically centred (the 2.0 division
+	# is the I2 structural set).
+	icon.position = Vector2(label.size.x + float(SPRITE_BANK.ICON_GAP),
+			(label.size.y - float(SPRITE_BANK.ICON_PX)) / 2.0)
 
 
 # ---- accessors the smoke + pytest legs read back (pure reads) ----
