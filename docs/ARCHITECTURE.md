@@ -60,7 +60,7 @@ Layout v2 (one dir per project; never a sibling naming scheme):
                                         # no sim_ prefix so the purity/parse scans skip them)
     scripts/ *.gd                       # scene layer — every dep injected as an argument
     scenes/ *.tscn                      # hub.tscn mission.tscn + component scenes + item_row.tscn (F2-12)
-    assets/                             # greybox: procedural/BoxMesh placeholders + materials
+    assets/                             # v1.1 (MC 11462): assets/v11/ = original stylized sprite bank served by scripts/sprite_bank.gd; greybox ArrayMesh/BoxMesh + material tints remain the fallback where the bank has no sheet (only warden_breaker)
   static/                               # web-export output; gitignored (built artifacts never enter the repo — trail doctrine). "web export x2" = export-run REPRODUCIBILITY (two clean passes, identical served set), not artifact commitment.
   server/ server.py static_app.py       # GW's OWN static-only server (F3): both files written
                                         # for GW, static_app.py self-contained (own
@@ -159,7 +159,7 @@ buttons only (picker is a list of item_row instances — fits soft ceiling); gw_
 | scripts/mission_relics.gd | NEW (W16 split): the C11 relic-pool crossing | `static func assign/unassign/defense_by_uid/pool_row/relic_owner/live_count(m)` — build-phase-only gates, refusals and the C5 count site, byte-identical to the W14 body |
 | scripts/phase_controller.gd | build↔combat alternation; blue refill at combat start; green award at wave end; build-phase-start downed-hero revival (C4) | `step(delta)`; signals `phase_changed(kind)`, `wave_done(index)`; state machine only, numbers from economy/balance |
 | scripts/hero_controller.gd | CharacterBody3D move/jump, hot-swap (F1–F3) with C4 semantics | feel params from `balance.feel` + heroes row, read at setup (F6); reads Bridge only; rig stays on mission |
-| scripts/hero_pawn.gd | SHIPPED (W7, MC 11274.1.14 / card 11321; row added W16): the ONE greybox pawn scene parameterized by hero id | scenes/hero_pawn.tscn + scripts/hero_pawn.gd; primitive mesh from assets/ + per-hero tint mats mat_hero_<id>.tres (heroes.json declares no color field - the fixed greybox palette is the declared reading); hero_controller builds one per deck hero |
+| scripts/hero_pawn.gd | SHIPPED (W7, MC 11274.1.14 / card 11321; row added W16; VISUALS REPLACED v1.1 MC 11462): the ONE pawn scene parameterized by hero id — visual asks scripts/sprite_bank.gd texture_for(hero id) for the original sprite billboard (null → original primitive+tint fallback) | scenes/hero_pawn.tscn + scripts/hero_pawn.gd + assets/v11/hero_*.png via sprite_bank.gd; per-hero tint mats mat_hero_<id>.tres kept for the fallback + flash idiom (heroes.json declares no color field - the fixed palette is the declared reading); hero_controller builds one per deck hero |
 | scripts/hero_combat.gd | two attacks + 4 abilities; spends blue; damage via SimCombat | NO numeric balance literals (I2); cooldowns in mission `hero_state` (C4) — ticks ONLY for the ACTIVE hero, inactive/downed arrays frozen (F2-8) |
 | scripts/enemy_runner.gd | lane path follow (ground/air), attack core/melee, death → green+xp+drops | `spawn(row,lane,tables,rng)`; lane walk only — gravity never applied on-lanes (air lanes = waypoint y, F16); projectiles ownerless (C4) |
 | scripts/lane_path.gd | waypoint walker (shared by enemy_runner) | `static func advance(pos:Vector3, wps:Array[Vector3], speed:float, dt:float)->Dictionary` (`{pos,wp_index,arrived}`); y comes from the map waypoints, never rewritten (F16) |
@@ -173,8 +173,12 @@ buttons only (picker is a list of item_row instances — fits soft ceiling); gw_
 ### Scenes (shipped): scenes/mission.tscn, scenes/hub.tscn, scenes/hud.tscn,
 ### scenes/item_row.tscn (F2-12), scenes/hero_pawn.tscn, scenes/mission_stub.tscn.
 ### enemy/defense/core/ghost/pawn_<archetype>/dummy scenes from the c3 plan are LATER-WAVES
-### ONLY — the greybox builds those visuals in code (core_obj/defense_obj/hero rig).
-### Assets: greybox = ArrayMesh/BoxMesh + material tints (VS tint pattern); 3090 pipeline later.
+### ONLY — visuals are built in code (core_obj/defense_obj/hero rig) BUT painted from
+### v1.1 (MC 11462): scripts/sprite_bank.gd (the ONE id->sheet map, tier-aware) supplies
+### original stylized art from assets/v11/ to hero_pawn/defense_obj/enemy_runner + the
+### world floor + core emblem; greybox primitives remain the null-fallback (one id:
+### warden_breaker). The 3090 generation pipeline LANDED at v1.1 (prompts + sha256
+### manifests per asset under .audits/20261027-1500-visual-target/gen/).
 
 ### static/ server/ tests/ tools/
 - static/ — export target, gitignored (W12: built artifacts are evidence-side, never product-side; "web export x2" = two reproducible clean export passes, asserted served-file-set + index sha equality in W12 evidence).
