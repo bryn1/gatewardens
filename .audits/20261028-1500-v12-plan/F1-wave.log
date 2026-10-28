@@ -1,0 +1,147 @@
+# F1 wave log — v1.2 RETURN-TO-HUB, END-ONLY (MC 11623 / wave W2)
+
+Repo /home/claudecode/Games/gatewardens (base tip 8934737, suite baseline
+231). Owner artifact verbatim 2026-10-28: "rec on all 3" ratifying
+END-ONLY — NO mid-mission exit control ships; return-to-hub from mission
+END (victory AND defeat) screens only. Spec: V12-PLAN.md §F1 (followed).
+Skills loaded: coding-discipline, workspace-convention (versioned-truth;
+git history is this repo's version store — no file replaced, main.gd
+GAINED the end-only section; no truth-file edited). reuse-research-gate
+NOT loaded (its own scope excludes executing an existing plan).
+
+## Implementation (main.gd only, + tests NEW — zero godot/sim/ + data/)
+
+- THE CONTROL: CanvasLayer "EndReturn" + Button "RETURN TO HUB"
+  (bottom-center), BUILT IN CODE by main.gd _f1_end_screen() — hud.gd
+  untouched (pinned display-only row). Builder self-gates on the shipped
+  mission.outcome field (returns while null => mid-mission the control
+  DOES NOT EXIST); rides the ONE existing frame pump (_process).
+- TEARDOWN boundary (plan): layer mounts UNDER the routed mission
+  subtree, never beside _routed => _mount's remove_child+free frees it
+  WITH the mission; open_hub() hides any instance as the belt.
+- THE ROUTE: _return_to_hub() reuses the ONE router entry open_hub(),
+  DEFERRED (hub.gd F-2 shipped answer to free-inside-pressed-emit;
+  LEDGER E9). No second router. _return_pending once-flag answers the
+  DA-cited click-during-the-flush edge.
+- Invalid leg implemented in code: the handler refuses while outcome ==
+  null (router state unchanged) — tested below.
+
+## LOC WATCH (gate metric text.split("\n"))
+
+  $ wc -l godot/scripts/main.gd
+  before 192  after 244
+  before 193  after 245   # gate metric
+  UNDER soft 250 — NO soft note needed; hard ceiling 400 far.
+  (Plan estimate ~218; delta = ruling/mechanism comment block.)
+
+## Engine tier — probe transcripts (conftest.run_probe_script, ONE harness)
+
+GREEN run (no args):
+
+  RC= 0
+  GWRETURN-MID buttons=10 return_ctls=0 ctl=0
+  GWRETURN-MID refused=1 mission_kept=1
+  GWRETURN-WIN ctl=1 ack=3 bank=1 clicked=1
+  GWRETURN-WIN routed=Hub preserved ack=3 bank=1
+  GWRETURN-LOSE ctl=1 ack=4 bank=1 clicked=1
+  GWRETURN-LOSE routed=Hub preserved ack=4 bank=1
+  GWRETURN-OK
+  ERR bytes: 0
+
+Rows read: MID = NEGATIVE leg pinning the OWNER RULING at runtime —
+during the mission the routed tree carries 10 Buttons and ZERO route to
+main._return_to_hub, ctl=0; a direct call of the SHIPPED click path
+refuses (mission kept). WIN/LOSE ack=3 then 4: the ONCE C13 end-commit
+moved saved_ack exactly one write BEFORE the click (set_deck write +
+end-commit legs); saved_ack + bank_count read back through the SHIPPED
+C5 mirror __GW_LAST_SNAPSHOT byte-equal pre/post click = state
+preserved, NO second write; routed=Hub; no stale control survived
+(_leg_routed scans every hub Button's pressed connections).
+
+## PLANTED-RED (two forms; a gate that never went RED is no gate)
+
+(a) SHIPPED in-test leg (arg "no_return_ctl" frees the end control —
+    the control-removed shape):
+
+  PLANTED RC= 1
+  ['GWRETURN-MID buttons=10 return_ctls=0 ctl=0',
+   'GWRETURN-MID refused=1 mission_kept=1',
+   'GWRETURN-PLANT freed=1',
+   'GWRETURN-FAIL win end screen exposes NO return control']
+
+(b) DoD mutation cycle on a scratch copy of the commit tree (git archive
+    HEAD + F1 files, /tmp/f1gate): _f1_end_screen() gated OFF
+    (`if true: return`) — the exact "gate off the return control" shape:
+
+  PLANT_PYTEST: engine leg FAILED rc1 — probe OUT tail:
+    GWRETURN-MID refused=1 mission_kept=1
+    GWRETURN-FAIL win end screen exposes NO return control
+  REVERT: cp back, cmp => REVERT_BYTE_OK
+  RE-run engine leg: 1 passed (GREEN)
+
+## TESTS — tests/test_return_hub.py NEW (3 legs, one file)
+
+  $ timeout 900 python3 -m pytest -q tests/test_return_hub.py   (LIVE tree)
+  3 passed in 7.32s        # LIVE checkout, sibling work present, green
+  (isolated copy identical: 3 passed in 6.89s)
+
+Legs: engine contract (MID negative + WIN + LOSE + preservation + no
+survivor), planted-red (a), source-truth (ruling STRUCTURAL in main.gd:
+builder+handler outcome-guards x2, the ONLY route deferred
+(open_hub.call_deferred, no sync open_hub beside it), mount-under-
+mission, hub-side belt, pump call-site pin).
+
+## GATES AT FINAL TREE (live checkout — declared as the suite's tree)
+
+  $ python3 -m pytest -q
+  239 passed in 167.97s (0:02:47)
+  FULL_SUITE_EXIT=0                    # ONE attempt (no load timeout)
+  # 231 baseline + this file's 3 + the coexisting F2 child's UNCOMMITTED
+  # tests/test_bulk_sell.py 5 — all green, zero collision, honest count.
+  $ python3 tools/check_hygiene.py | tail -1
+  check_hygiene: 0 hit(s)
+  $ python3 tools/check_hygiene.py | grep -c "^note"
+  21                                  # HEAD archive baseline 20; the +1
+                                      # is THEIR game_state.gd 365->396
+                                      # growth (F2 sibling); F1 adds ZERO
+                                      # notes (main.gd 244 < soft 250).
+  $ git diff --stat tests/fixtures/ | wc -l
+  0                                   # golden fixtures diff EMPTY
+  $ godot --headless --path godot --check-only --script res://scripts/main.gd
+  PARSE_RC=0 (rc0 once the sibling's transient game_state hole closed — see below)
+
+## Shared-checkout incidents (honest, non-F1, NOT chased)
+
+1. For part of the session the F2 sibling's UNCOMMITTED game_state.gd
+   referenced _sell_values() before defining it: `--check-only --script
+   res://scripts/main.gd` compiled RED through that dependency while
+   their hole was open. Transient non-F1 failure: logged, not chased;
+   the sibling filled it (their working tree) before the final gates —
+   live parse rc0, live suite green.
+2. SANDBOX reading DECLARED: an early full-suite cycle ran on a
+   git-archive HEAD+F1 copy and went FALSE-RED (test_scaffold placeholder
+   404 + test_served import-skip) — the archive drops the UNTRACKED
+   static/ web-export artifacts those legs serve; collection there misses
+   untracked tests/ files too. The LIVE checkout is the tree the 231
+   baseline was measured in and is the gate tree. Lesson recorded here:
+   do not gate this suite through git archive.
+3. LEDGER.md RACE DECLARED: the F2 card appended its LEDGER row to the
+   working tree at 20:13:01Z while my gates ran. My F1 row is appended
+   LAST in the working file; the F1 commit STAGES LEDGER.md PARTIAL
+   (plumbing: staged blob = HEAD + my row only) so the sibling's row is
+   NOT staged/committed by my card and lands atomically in THEIR commit.
+   Reading used: "never stage their files" governs even inside the shared
+   ledger; pathspec-only honored via the exact 4-path staged set +
+   plain commit of that index (a pathspec commit of the WORKING file
+   would have swept their row in).
+
+## Files touched (pathspec commit)
+
+godot/scripts/main.gd, tests/test_return_hub.py (NEW), LEDGER.md
+(partial stage as above), this log. ZERO godot/sim/ + data/ edits.
+No push. No git config.
+
+served-browser leg: orchestrator (MC 11509 D3 — behavior-gated engine
+legs + one journey screenshot ride the close, plan F1 row).
+
+VERIFY_EXIT=0

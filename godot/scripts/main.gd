@@ -60,6 +60,8 @@ var __GW_LAST_SNAPSHOT: String = ""   # desktop readback of the C5 push
 var _routed = null              # current routed scene (child of root)
 var _js_bridge = null           # JavaScriptBridge singleton; null off-web
 var _js_relay = null            # keeps the gwHost callback alive (E1)
+var _return_ctl = null          # F1 end-screen CanvasLayer (child of mission)
+var _return_pending := false    # one route per end (DA F1 flush-edge guard)
 
 
 func _ready() -> void:
@@ -96,6 +98,12 @@ func _ready() -> void:
 # ---------- router — root persists, scenes mount as children ----------
 
 func open_hub() -> void:
+	# F1 teardown belt (plan boundary): a stale RETURN-TO-HUB control
+	# cannot survive into the hub — _mount frees it with the mission
+	# subtree, hide it here as the second guard.
+	if _return_ctl != null and is_instance_valid(_return_ctl):
+		_return_ctl.visible = false
+	_return_pending = false
 	mission = null
 	_routed = _mount(HUB_SCENE)
 	if _routed != null and _routed.has_method("setup"):
@@ -130,6 +138,49 @@ func _mount(path: String):
 	return node
 
 
+# ---------- F1 return to base — END-ONLY (MC 11623) ----------
+# Owner ruling 2026-10-28 verbatim "rec on all 3": NO mid-mission exit
+# control ships; RETURN TO HUB exists on the victory AND defeat end
+# screens only. Rides the ONE existing frame pump (_process); the
+# control mounts UNDER the routed mission subtree (never a sibling of
+# _routed), so _mount's remove_child+free tears it down with the
+# mission (plan teardown boundary). The route reuses the ONE router
+# entry open_hub() — the deferred form is hub.gd's shipped F-2 answer
+# (free-inside-pressed-emit = engine error), not a second mechanism.
+
+func _f1_end_screen() -> void:
+	if mission == null or mission.outcome == null:
+		return                 # END-ONLY: mid-mission the control does NOT exist
+	if _return_ctl != null and is_instance_valid(_return_ctl):
+		return
+	var layer := CanvasLayer.new()
+	layer.name = "EndReturn"
+	var btn := Button.new()
+	btn.name = "ReturnToHub"
+	btn.text = "RETURN TO HUB"
+	btn.anchor_left = 0.5
+	btn.anchor_right = 0.5
+	btn.anchor_top = 1.0
+	btn.anchor_bottom = 1.0
+	btn.offset_left = -120.0
+	btn.offset_right = 120.0
+	btn.offset_top = -88.0
+	btn.offset_bottom = -48.0   # bottom-center, over the outcome banner
+	btn.pressed.connect(_return_to_hub)
+	layer.add_child(btn)
+	mission.add_child(layer)   # under the routed mission: freed WITH it
+	_return_ctl = layer
+
+
+func _return_to_hub() -> void:
+	if mission == null or mission.outcome == null:
+		return                 # Invalid leg: the click path refuses
+	if _return_pending:
+		return                 # DA F1 edge: click during the flush — once only
+	_return_pending = true
+	open_hub.call_deferred()   # F-2: the route lands outside the pressed emit
+
+
 # ---------- input — pinned forward-only relay into the bridge ----------
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -153,6 +204,7 @@ func _forward(code: String, down: bool) -> void:
 
 func _process(_delta: float) -> void:
 	push_snapshot()
+	_f1_end_screen()   # END-ONLY return control (built only once outcome != null)
 
 
 func push_snapshot() -> void:
