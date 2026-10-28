@@ -35,8 +35,10 @@ const CORE_EMBLEM_Y := 4.5
 # framed arena board from the ONE sprite_bank map, 1:1 over the whole
 # plane (PlaneMesh UVs cover the plane; the board is NOT seamless so
 # repeat is OFF). The ground node's size/transform are never touched
-# (placement raycasts + lane paths depend on them) and mat_ground.tres
-# on disk stays the greybox — the override is a runtime duplicate.
+# (placement raycasts + lane paths depend on them); mat_ground.tres on
+# disk is the bank-null fallback material only — the override below is
+# a runtime duplicate, applied every boot (V1 ships sprited: no shipped
+# id renders greybox).
 static func paint_arena(m) -> void:
 	var ground := m.get_node_or_null("Ground") as MeshInstance3D
 	if ground == null:
@@ -96,7 +98,9 @@ static func make_core(m, id: String, kind: String, row: Dictionary, sc: Vector3)
 	# V1 core emblem (MC 11559): the gold wolf-crest billboard rides the
 	# box (the box stays), parented to the core node itself so it walks
 	# with the core's scale/state. Null-safe like every sprite_bank
-	# consumer: no committed sheet, no child, no crash.
+	# consumer: a null sheet means no child and no crash — the guard
+	# rides future un-sprited ids; icon_core itself IS committed (bank
+	# TEXTURES), so the emblem parents on every real boot.
 	var emblem := SPRITE_BANK.make_sprite("icon_core", CORE_EMBLEM_H)
 	if emblem != null:
 		emblem.position = Vector3(0, CORE_EMBLEM_Y, 0)

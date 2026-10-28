@@ -1,0 +1,70 @@
+W1-wave.log — clean-code W1 (MC 11575) — coder profile, 2026-10-28
+Base: tip 7e6fda7 (origin/main, clean at start except 3 pre-existing UNTRACKED
+files under .audits/20261027-1500-visual-target/gen/ + 11574-close-evidence.md —
+untouched). Rows fixed: SZ-1 (conftest engine-leg timeout margin), D-1 (fx scale
+formula -> reuse make_sprite), CR-2 (mission_world comment rewords).
+
+== FIXTURE SHAS BEFORE (gate: byte-identical law) ==
+  normal: eafe3932f7d30898565664341697a32f20ecda7458d379be65b668bf2d6f3912
+  hard:   5e37c4b089209e64e26395237830bc16a1cf62aa3b9a6d427be2f361f970f628
+
+== SZ-1: margin number + why ==
+tests/conftest.py run_probe_script default timeout 300 -> 900.
+WHY 900: SZ-1 measured the golden leg at 6m10s WALL (370s) with only 3.8s user
+CPU — the leg is scheduler-bound, so wall scales with box load (steady 14–20
+here, nproc 14). 900s = ~2.4x the measured worst leg: survives a load-20 burst
+(~1.5x of load-11 ≈ 560s) with slack, while a genuinely HUNG probe still fails
+inside one pytest pass (the 5 engine legs on the worst-case path add <= 75min of
+timeout headroom, and only fire when a probe actually hangs). The 5 load-fragile
+legs (test_sim_golden x3, test_hub_scroll engine legs x2) all route through
+run_probe_script with NO explicit timeout override (VERIFIED: test_sim_golden.py:79-80,
+test_hub_scroll.py:414-415) — one number fixes all of them. Rationale is in the
+function docstring, not only here.
+
+== D-1 verification (formulas ARE equal — merge permitted) ==
+sprite_bank.gd:118  s.scale = Vector3.ONE * (world_h / (float(tex.get_height()) / 100.0))
+fx_director.gd:197  s.scale = Vector3.ONE * (h        / (float(tex.get_height()) / 100.0))
+Same expression; h/world_h are per-call world-height args. texture_for(id) rides
+the tier=1 default and the 4 fx_* ids are NOT in TIER_TEXTURES, so
+texture_for(fx_id) == make_sprite's lookup byte-for-byte (VERIFIED:
+sprite_bank.gd:79-85 keys = ballista/bombard/hailspire_tower only). Node props
+(texture, billboard, scale, order) identical; null-case returns {} as before.
+REUSE: _spawn_fx now calls SPRITE_BANK.make_sprite(fx_id, h) — the ONE factory.
+
+== CR-2: reword-only, no code lines touched ==
+mission_world.gd:38-39 "mat_ground.tres on disk stays the greybox" reworded to
+"the bank-null fallback material only — override applied every boot (V1 ships
+sprited)"; :99 "no committed sheet, no child, no crash" reworded to state
+icon_core IS committed and the null-guard rides future un-sprited ids.
+
+== BEFORE/AFTER LOC (gate metric: text.split("\n")) + nesting proxy (max indent depth) ==
+tests/conftest.py           LOC 61 -> 69  max_depth 3 -> 3   (+8 docstring: the margin rationale; code line: timeout 300->900)
+godot/scripts/fx_director.gd LOC 218 -> 217 max_depth 7 -> 7 (-1: the 5-line hand-rolled factory body collapses into one make_sprite call; +1 comment line)
+godot/scripts/mission_world.gd LOC 115 -> 120 max_depth 4 -> 4 (+5 comments only, CR-2 rewords — no code line changed)
+Size story: fx_director SMALLER (formula gone, one factory call); conftest/mission_world
+grew only in COMMENTS recording the why (margin rationale + de-staled claims) — code unchanged.
+
+== GATES AT FINAL TREE ==
+1) python3 tools/check_hygiene.py ->
+   tail: "check_hygiene: 0 hit(s)"  HYGIENE_EXIT=0
+2) /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot -s res://sim/v5_fx_probe.gd -> V5FX-OK, counters:
+   V5FX-MOUNT child=1 after_runner=1 / V5FX-TRACER n=848 frames=270 / V5FX-SPARK n=318 /
+   V5FX-POOF n=5 / V5FX-ART n=4 paths=pinned / V5FX-CAP live_max=63 cap=64 /
+   V5FX-SETTLE live_max=63 baseline=0 settle_frames=12 / V5FX-TEARDOWN freed=1 kids_at_free=0
+   diff vs gen/probe-v5-fx-green.log (V5 rows) = EMPTY (BYTE-STABLE). V5FX_EXIT=0.
+3) ... -s res://sim/v11_sprite_probe.gd -> SPRITEBANK-OK (rc=0, grep -c SPRITEBANK-OK = 1;
+   rows incl. SPRITEBANK-TIER ballista=T2 hailspire=T3, ENEMIES n=6 boss_sheet=1, FLIP both).
+4) python3 -m pytest -q -> tail "222 passed in 163.80s (0:02:43)" PYTEST_EXIT=0.
+   ONE attempt — no timeout fired (this run rode box load ~2, nproc 14; load at
+   session start 1.09). HONEST LIMIT: the load-14-20 condition SZ-1 measured was
+   NOT reproduced in this session, so the 900s margin is proven by arithmetic on
+   the audit's own numbers (370s worst leg + 2.4x headroom), not by a live
+   load-20 green run; the raised cut cannot FALSE-FAIL a leg the old 300s passed
+   (900 > 300, strictly more headroom). No second attempt needed; none run.
+
+== FIXTURE SHAS AFTER (byte-identical law, post-suite) ==
+eafe3932f7d30898565664341697a32f20ecda7458d379be65b668bf2d6f3912  tests/fixtures/mission_gatefall_normal.jsonl
+5e37c4b089209e64e26395237830bc16a1cf62aa3b9a6d427be2f361f970f628  tests/fixtures/mission_gatefall_hard.jsonl
+git status --porcelain -- tests/fixtures/ = EMPTY (unmodified).
+
+VERIFY_EXIT=0

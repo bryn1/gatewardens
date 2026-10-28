@@ -181,20 +181,18 @@ func _spawn_poof(at: Vector3) -> void:
 		spawned_poofs += 1
 
 
-# The ONE billboard factory here: bank texture (the same id->file map —
-# V5 card row 3), camera-facing, footprint-scaled like make_sprite.
+# The ONE fx spawn site here; the billboard itself comes from
+# sprite_bank.make_sprite — the ONE factory (id->file map, V5 card
+# row 3; camera-facing; the 100px=1u scale formula lives there only,
+# D-1 reuse MC 11575 W1).
 # {} = nothing spawned (bank null OR the MAX_FX cap dropped it).
 func _spawn_fx(fx_id: String, at: Vector3, life: float,
 		h: float) -> Dictionary:
 	if _fx.size() >= MAX_FX:
 		return {}               # cost cap: drop NEW (header discipline)
-	var tex := SPRITE_BANK.texture_for(fx_id)
-	if tex == null:
-		return {}
-	var s := Sprite3D.new()
-	s.texture = tex
-	s.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	s.scale = Vector3.ONE * (h / (float(tex.get_height()) / 100.0))
+	var s := SPRITE_BANK.make_sprite(fx_id, h)
+	if s == null:
+		return {}               # bank: id has no committed sheet
 	s.position = at
 	add_child(s)
 	var e := {"node": s, "life": life}

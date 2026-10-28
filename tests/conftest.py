@@ -41,11 +41,18 @@ def ensure_class_cache():
     _class_cache_ready = True
 
 
-def run_probe_script(res_path, args=(), data_home=None, timeout=300):
+def run_probe_script(res_path, args=(), data_home=None, timeout=900):
     """One `-s` probe invocation: godot --headless --path godot/ -s
     <res_path> -- <args>. With data_home the desktop user:// redirect
     (XDG_DATA_HOME temp dir, the save_probe/BN4 idiom) is applied, so a
-    probe never touches the developer's real save."""
+    probe never touches the developer's real save.
+
+    Timeout (SZ-1, MC 11575 W1): the golden leg measured 6m10s WALL
+    at box load ~11 (3.8s user CPU — the leg is scheduler-bound, not
+    compute-bound), and this box runs load 14-20 in steady state, so
+    the old 300s cut false-failed healthy legs under load. 900s holds
+    ~2.4x the measured worst leg — headroom for load 20 bursts while
+    still failing a genuinely hung probe inside one pytest pass."""
     env = dict(os.environ)
     if data_home is not None:
         env["XDG_DATA_HOME"] = str(data_home)
