@@ -1,0 +1,9 @@
+# V7 native+serve run log (orchestrator, 2026-10-28 UTC) — consolidated real measurements
+
+exe artifact sha256 44299c3dfa095d6b24dad370ba4d3a0ea4439708b0eeaa6ca65dd59ef01e71c4 113584640B
+in-guest Get-FileHash == artifact sha (POSTED_OK on movie/shot ingest via :8132)
+RTX - NVIDIA GeForce RTX 2060 (Native OpenGL API detected: 3.3, boot.log)
+Movie Maker mode enabled, recording movie in 1280x720 @ 60 FPS (10.00s, 60fps, MJPG; POSTED_OK)
+RESP_True (Gatewardens PID 6528, Get-Process Responding)
+cleanup verified: tasks deleted (absent), mine_left=0, game_procs=0, neighbor files untouched => CLEAN
+headless rAF instrument note: 6.3fps on static hub == harness throttle (not game cost)
