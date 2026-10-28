@@ -23,11 +23,17 @@
 # committed sheet moves with the record's pos like the mesh did. No
 # committed sheet (future ids) keeps the primitive —
 # the same add/move/free lifecycle either way, one path.
+#
+# Walk pose (v1.2 F5, MC 11610): the visual branch of step() hands the
+# step distance to enemy_anim — procedural bob/sway, VISUAL only (the
+# sim truth stays ent["pos"]; every constant lives in that file, this
+# one is I2-governed and gains zero literals).
 
 extends Node3D
 
 const LANE_PATH := preload("res://scripts/lane_path.gd")
 const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
+const ENEMY_ANIM := preload("res://scripts/enemy_anim.gd")
 
 const MESH_GROUND := preload("res://assets/mesh_capsule.tres")
 const MESH_AIR := preload("res://assets/mesh_box.tres")
@@ -133,7 +139,11 @@ func step(delta: float) -> Dictionary:
 				ent["pos"], ent["lane"]["wps"], float(ent["speed"]), delta)
 		ent["pos"] = mv["pos"]
 		ent["wp_index"] = int(mv["wp_index"])
-		ent["node"].position = mv["pos"]   # mission-local space (root identity)
+		# mission-local space (root identity). F5 walk pose: the ONE
+		# procedural mechanism rides this same visual write — pos plus
+		# bob/sway from the distance just walked; ent["pos"] never moves.
+		ENEMY_ANIM.walk_step(ent["node"], mv["pos"],
+				(mv["pos"] as Vector3).distance_to(old_pos))
 		# The ONE shared facing mechanism (V2): a step toward screen-right
 		# flips the left-facing enemy sheet; a no-op on greybox nodes.
 		SPRITE_BANK.face(ent["node"], (mv["pos"] as Vector3).x - old_pos.x)

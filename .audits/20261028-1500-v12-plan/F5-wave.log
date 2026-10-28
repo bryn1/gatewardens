@@ -1,0 +1,109 @@
+# F5 wave log — v1.2 procedural enemy walk (MC 11610, V12-PLAN §F5 decision (i))
+
+Repo /home/claudecode/Games/gatewardens, base tip origin/main a48848e. Visual layer only.
+
+## REUSE CHECK (second-mechanism law, declared per brief)
+
+- `grep -n "sin\|bob\|sway\|phase" godot/scripts/fx_director.gd` (since/snapshot
+  noise excluded): ZERO hits — fx_director owns fx LIFETIMES; its only motion is
+  the tracer-chord `lerp` (:216). No velocity/sine pose helper to reuse.
+- `grep -n "sin(\|bob\|sway\|phase" godot/scripts/ui_tween.gd`: ZERO hits —
+  ui_tween is create_tween motion on Control panels (engine Tween, fires on
+  signals, not a per-tick pure helper; Node3D billboards are not Controls).
+- Reading: neither fits a per-walk-tick pure pose offset → `enemy_anim.gd` is
+  authored as the ONE new mechanism (bob/sway from move distance); if a future
+  sheet pass wants pose-maps they land INSIDE it (one mechanism, plan (iii)).
+
+## MOUNT + FILES
+
+- NEW godot/scripts/enemy_anim.gd (82 lines, pure statics: phase_advance /
+  bob_offset / sway_offset / walk_step mount helper). Ungoverned constants
+  declared with rationale: PHASE_PER_UNIT=9.0 rad/u, BOB_AMP=0.23 u (~1.5 px
+  at the shipped ~13 px character, mid of the plan's +-1-2 px band),
+  SWAY_AMP=0.06 rad, PHASE_META on the visual node only.
+- enemy_runner.gd mount: ONE call site `ENEMY_ANIM.walk_step(ent["node"],
+  mv["pos"], (mv["pos"] as Vector3).distance_to(old_pos))` replacing the bare
+  visual write; NO literals (hyg.literal_violations == [] VERIFIED), no new
+  Node/timer (phase rides the node meta, dies with it).
+- LOC before/after (watch row): enemy_runner.gd 152 -> 162 — under the 250 soft
+  note threshold, no note tripped. (Comment block +6, preload +1, call +4/-1.)
+
+## ENGINE PROOF (throwaway /tmp/f5_pose_probe.gd — NOT shipped kit, NOT in godot/sim/)
+
+`timeout 120 .../Godot_v4.7.2-stable_linux.x86_64 --headless --path godot -s /tmp/f5_pose_probe.gd`
+Real enemy_runner + real enemies.json speeds (skitterling 5.0 vs husk_brute 2.2), 24 ticks:
+
+    F5-POSE tick=0 n=0 speed=5.0 sim_y=0.0000 node_y=0.1568 bob=0.1568 sway_rad=0.0409
+    F5-POSE tick=0 n=1 speed=2.2 sim_y=0.0000 node_y=0.0745 bob=0.0745 sway_rad=0.0194
+    ...
+    F5-DIFF pose_5u=0.172727 pose_2.2u=0.229499 equal=false
+    F5-RANGE n=0 bob_min=0.0097 bob_max=0.2299 spread=0.2202
+    F5-RANGE n=1 bob_min=0.0030 bob_max=0.2295 spread=0.2265
+    F5-EQ n=0 sim_pos=(0.0, 0.0, -2.0) node_pos=(0.0, 0.172727, -2.0) walked=2.0000 expect=2.0000
+    F5-EQ n=1 sim_pos=(0.0, 0.0, -0.88) node_pos=(0.0, 0.229499, -0.88) walked=0.8800 expect=0.8800
+    F5-OK   rc=0, stderr EMPTY
+
+TWO DIFFERENT VELOCITIES -> TWO DIFFERENT POSE OUTPUTS (0.172727 vs 0.229499,
+equal=false; sway rows differ too); bobs OSCILLATE (spread ~0.22, bounded by
+BOB_AMP, never < 0 = never dips under the F16 lane y); sim rows are the exact
+no-anim walk (walked == speed*24/60 to <0.001; x/z equal_approx every tick).
+
+## PLANTED-RED (scratch, reverted, rc recorded)
+
+`sed BOB_AMP 0.23 -> 0.0` on enemy_anim.gd, then `python3 -m pytest tests/test_enemy_walk.py -q`:
+
+    FAILED tests/test_enemy_walk.py::test_zero_distance_walk_holds_the_neutral_pose_exactly_zero
+    FAILED tests/test_enemy_walk.py::test_bob_amplitude_bounded_and_declared_band_holds
+    2 failed, 4 passed in 0.10s
+    PLANTED_RED_PYTEST_RC=1
+
+Restored 0.23 (file copied back from /tmp/enemy_anim.keep.gd); green re-run:
+`6 passed`. (enemy_anim.gd is NEW/untracked — `git checkout --` does NOT revert
+it; copy-back is the revert path, honest note.)
+
+## HEADLESS MISSION SMOKE (shipped kit, UNCHANGED)
+
+`--headless --path godot -s res://sim/v1_world_probe.gd` -> V1W_RC=0,
+`V1W-OK` (FLOOR/AABB/CORE n=2/FRAME n=33 min_margin=113.6), stderr 0 bytes.
+
+## TESTS (tests/test_enemy_walk.py — 6 pure/source-truth legs, headless)
+
+zero-distance -> neutral pose EXACTLY 0.0 (+ absf no-backwards + frozen phase);
+phase monotone with distance + wrapped [0,TAU) over 500 accumulations;
+amplitude bounded (cycle peak == BOB_AMP, |sway| <= SWAY_AMP) + declared
++-1-2 px band (planted-red target); enemy_anim never writes ent["pos"]
+(line-wise comment-scan + no ent[ in blank_code); step() keeps its ONE
+ent["pos"] write + exactly ONE walk_step call; literal_violations(runner)==[].
+Note (VERIFIED this card): blank_code blanks the QUOTED KEY too, so the
+ent["pos"]-write pin runs raw — stated in the test docstring.
+
+## GATES AT FINAL TREE
+
+- `python3 -m pytest -q` -> **229 passed in 165.27s, PYTEST_RC=0, ONE attempt**
+  (222 baseline + 6 F5 legs + 1 sibling test_relic_negatives.py leg present in
+  the shared checkout during the run — coexistence row, not touched by me;
+  no transient failure occurred, no re-run needed).
+- `python3 tools/check_hygiene.py` -> `check_hygiene: 0 hit(s)` (20 notes =
+  baseline set; my files under the soft ceiling, no new note).
+- `git diff --stat tests/fixtures/` -> EMPTY (no output before `(end)`).
+- ZERO sim touch: the commit's --stat below lists NO godot/sim/sim_*.gd,
+  NO data/, NO sprite_bank/hud; enemy_runner.gd +11/-1 is the visual branch.
+- Both scripts parse: `--check-only` rc=0 x2 (enemy_anim, enemy_runner).
+
+## FINDING ROW (unused asset, NOT wired per plan)
+
+- `godot/assets/v11/enemy_skitterling_run.png` (+ .import) stays committed and
+  UNWIRED — sprite_bank.gd:80 declares it "a run pose for the later animation
+  card"; F5's decision (i) ships PROCEDURAL instead and explicitly keeps the
+  sheet unwired (plan (iii) row). Natural home if the owner ever wants it: an
+  optional pose-map INSIDE enemy_anim (one mechanism). No sheets wired this
+  card. P4 (dead-asset, honest-unwired — CR-1 class, recorded not silently fixed).
+
+## SERVED-BROWSER LEG (handoff)
+
+The real served-browser mid-walk screenshot + describe-image ("enemies show
+vertical shuffle; no jitter/teleport") is the ORCHESTRATOR's leg per brief
+(MC 11509 D3) — this card delivers the deterministic pose-math proof above +
+the unchanged-kit smoke.
+
+VERIFY_EXIT=0
