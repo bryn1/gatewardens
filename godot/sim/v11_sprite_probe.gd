@@ -11,6 +11,9 @@
 # gate_blockade/barbed_snare are Sprite3D on their batch-2 sheets.
 # (3b) Since the MC 11462 DA fix loop the warden_breaker boss carries
 # its batch-5 sheet too, asserted path-pinned (the tier-leg pattern).
+# (3c) Since clean-code W2 (MC 11575 CR-1) the bombard batch-3 T3 skin
+# (committed unwired) rides the same leg shape: load + live repaint +
+# the bank answer pinned against the literal path it must return.
 # (4) the ONE facing mechanism flips the left-facing enemy sheets only
 # on a screen-right step, at spawn and live through runner.step.
 # Harness license (the mission_smoke precedent, declared): the main
@@ -19,8 +22,8 @@
 # else drives real entry points. E5: -s never dispatches _ready —
 # main._ready() is driven here.
 # Machine rows, print order: SPRITEBANK-TEX HEROES SWAP TOWERS TIER
-# GATEART ENEMIES FLIP OK; any failure prints SPRITEBANK-FAIL <why>
-# and quits 1.
+# TIER3 GATEART ENEMIES FLIP OK; any failure prints SPRITEBANK-FAIL
+# <why> and quits 1.
 extends SceneTree
 
 const GW_TABLES := preload("res://sim/sim_tables.gd")
@@ -141,6 +144,38 @@ func _init() -> void:
 			_fail("tier sheet: %s T%d" % [tid2, want_tier])
 			return
 	print("SPRITEBANK-TIER ballista=T2 hailspire=T3")
+
+	# --- 3c) W2 (MC 11575 CR-1): bombard T3 — the batch-3 skin that
+	#        shipped COMMITTED BUT UNWIRED (dead weight in the pck, the
+	#        T3 tower still painted T1). Same tier-leg idiom, three
+	#        assertions: the committed sheet LOADS as a Texture2D, the
+	#        live node upgraded twice through the shipped upgrade()
+	#        entry point carries it (pinned by its committed RESOURCE
+	#        PATH, never through the bank), and the bank's own answer
+	#        for ("bombard", 3) is pinned against the literal path it
+	#        must return — a dropped entry now goes RED on both. ---
+	var bomb_t3 := "res://assets/v11/tower_bombard_T3.png"
+	var t3res := ResourceLoader.load(bomb_t3)
+	if t3res == null or not (t3res is Texture2D):
+		_fail("bombard T3 sheet does not load as Texture2D")
+		return
+	var bobj = tobjs["bombard"]
+	for _i in range(2):
+		var bup: Dictionary = bobj.upgrade()
+		if not bool(bup["ok"]):
+			_fail("upgrade refused bombard: %s" % str(bup))
+			return
+	var b3spr: Sprite3D = bobj.node as Sprite3D
+	if b3spr == null or String(b3spr.texture.resource_path) != bomb_t3 \
+			or int(bobj.tier) != 2:
+		_fail("tier sheet: bombard T3")
+		return
+	var bank_t3: Texture2D = SPRITE_BANK.texture_for("bombard", 3)
+	if bank_t3 == null or not String(bank_t3.resource_path) \
+			.contains("tower_bombard_T3"):
+		_fail("bank answer for bombard T3 is not the T3 sheet")
+		return
+	print("SPRITEBANK-TIER3 bombard=T3")
 
 	# --- 4) V1.1-b: gate_blockade / barbed_snare exit the greybox —
 	#        Sprite3D on their committed batch-2 sheets (tier-agnostic) ---

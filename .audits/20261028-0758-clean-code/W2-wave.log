@@ -1,0 +1,149 @@
+W2-wave.log — clean-code W2 (MC 11575) — coder profile, 2026-10-28
+Base: tip 921c687 (origin/main == HEAD, VERIFIED; clean at start except pre-existing
+UNTRACKED files under .audits/20261027-1500-visual-target/gen/ + 11574-close-evidence.md —
+untouched). Row fixed: CR-1 (P1) — bombard T3 skin committed (50d59e2, batch 3) but UNWIRED:
+TIER_TEXTURES had no "bombard" 3 entry, so a shipped T3 bombard rendered T1 while the
+sprite_bank header (:11-12) claimed "bombard T3 has no committed skin -> reads T1".
+
+== FIXTURE SHAS BEFORE (gate: byte-identical law; measured BEFORE any edit, this session) ==
+  eafe3932f7d30898565664341697a32f20ecda7458d379be65b668bf2d6f3912  tests/fixtures/mission_gatefall_normal.jsonl
+  5e37c4b089209e64e26395237830bc16a1cf62aa3b9a6d427be2f361f970f628  tests/fixtures/mission_gatefall_hard.jsonl
+  (identical to the W1-recorded pair eafe3932…/5e37c4b0…)
+
+== FIX AT ROOT (WIRE IT, sprite_bank.gd) ==
+1) TIER_TEXTURES: "bombard" gains 3: preload("res://assets/v11/tower_bombard_T3.png") —
+   the EXACT idiom of the ballista/hailspire tier entries (byte-exact file name verified
+   against ls godot/assets/v11/: tower_bombard_T3.png; .import committed with it).
+2) Header truth rewrite: the falsified clause "(bombard T3 has no committed skin -> reads T1)"
+   replaced by the true statement — all six committed _T2/_T3 shooter skins are wired since
+   this wave (CR-1 names the gap it fixes), and the STILL-TRUE fallback rides the tiers that
+   genuinely have no sheets (no _T4/_T5 sheets exist -> those read T1). The ladders run to
+   T5 (towers.json: 5 tier rows per shooter, measured) so the fallback clause stays honest.
+3) Block comment over TIER_TEXTURES de-staled: "batch-2 upgrade skins" -> true provenance
+   (T2/T3 skins landed batch 2 = 8ac3aeb "tower T2/T3 skins x5"; bombard T3 landed batch 3 =
+   50d59e2) — measured via git log --diff-filter=A per png.
+
+== DOC SWEEP (replace-not-delete; grep-to-zero result) ==
+grep -rn "greybox" godot/ docs/ README.md RELEASE_NOTES.md LEDGER.md (excl. .import/.audits)
+= 53 hits, NONE falsified by the wiring (each classified below). The task's named suspect —
+docs/ARCHITECTURE.md — carries NO bombard/T3-tier claim at all (grep -i bombard docs/ README.md
+= 0 hits); its greybox rows (:63,:179-181,:228 "no shipped id is greybox") stayed TRUE
+before AND after the fix (an unwired T3 rendered T1 ART, not greybox). README.md:9 "T1–T3
+tower art" is TRUE after the wiring (was the aspirational side of CR-1; no edit needed — the
+FIX makes the doc true, not the doc the fix). RELEASE_NOTES.md :5,:14 = v1.1 HISTORY section,
+true at the tag ABOUT GREYBOX (nothing greybox rendered at the tag either) — untouched per
+the historical-claims law. The ONLY falsified statement repo-wide was the sprite_bank.gd
+header itself — fixed in (1)-(3) above. grep -rn "no committed" = 3 hits, all true now:
+  fx_director.gd:195  null-case return guard comment — fx ids genuinely have no tier sheets; true
+  sprite_bank.gd:15   future-ids null rule — true (ids with NO sheet at all return null by design)
+  sprite_bank.gd:113  make_sprite null contract — true (mechanism statement, not an id claim)
+Greybox 53-hit census (one-line justification per class; every hit historical or true-context):
+  mission_smoke_w8.gd:119, hub_probe_stations.gd:63, v6_tween_probe.gd:8  — HUB UI still ships
+    greybox controls; true mechanism/history.
+  v11_boss_shot.gd:16,86  — boss greybox-frame GUARD (boss now sprited; guard rides the null
+    case; file is W3's, untouched).
+  v11_sprite_probe.gd:70,77,180  — capsule-hidden + exit-the-greybox leg rows; true.
+  mission.tscn:10,26  — SubResource ID "env_greybox"; a scene resource name, test_hub_layout
+    pins WorldEnvironment/env literals (FINDINGS §5 pin 4) — renaming = pin move, out of scope.
+  defense_placer.gd:106; defense_obj.gd:86,263,280,284; enemy_runner.gd:119,138; hero_pawn.gd:
+    3,7,29,31,32; core_obj.gd:2,23; mission_world.gd:41,45; hero_controller.gd:10;
+    sprite_bank.gd:6,37,39,91,114,128  — null-fallback MECHANISM statements (bank returns null ->
+    caller keeps greybox): all true, kept by design (ARCHITECTURE:63).
+  hub.gd:11,26,39,195; defense_panel.gd:12,120,161,197  — hub/panel UI greybox styling, shipped
+    true (UI was never part of the v1.1 sprite pass).
+  ARCHITECTURE.md:63,179,181,228; README.md:9; RELEASE_NOTES.md:5,14  — classified above (true /
+    history-locked).
+  LEDGER.md:61,67,68,69,85  — append-only history rows (journey/W17b/W17c/tag), true at record.
+
+== VERIFICATION LEG (v11_sprite_probe.gd, extends the tier-leg + boss-leg idiom) ==
+New 3c leg, machine row SPRITEBANK-TIER3 bombard=T3, three assertions: (a) the committed
+res://assets/v11/tower_bombard_T3.png LOADS as a Texture2D (direct ResourceLoader, never the
+bank as oracle); (b) the live node upgraded TWICE through the shipped defense_obj.upgrade()
+entry point carries it, pinned by its committed RESOURCE PATH + tier index; (c) the bank's own
+answer for ("bombard", 3) is pinned against the literal path it must return.
+READING NOTE: the task named bank.get_tower_texture("bombard",3) — that method does NOT exist
+(grep repo-wide: 0 hits); the bank's (id,tier) lookup idiom is texture_for(id, tier)
+(sprite_bank.gd:101, used by defense_obj:287 and every probe leg) — used that.
+
+--- GREEN (full transcript, rc=0, stderr EMPTY: file .tmp/tmp_w2_stderr_green.txt) ---
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+SPRITEBANK-TEX n=12 px=512
+SPRITEBANK-HEROES n=3
+SPRITEBANK-SWAP active=1 visible=deadeye
+SPRITEBANK-TOWERS n=3
+SPRITEBANK-TIER ballista=T2 hailspire=T3
+SPRITEBANK-TIER3 bombard=T3
+SPRITEBANK-GATEART blockade=sprite trap=sprite
+SPRITEBANK-ENEMIES n=6 boss_sheet=1
+SPRITEBANK-FLIP right=flipped left=plain
+SPRITEBANK-OK
+PROBE_RC=0
+
+--- PLANTED RED (stronger than the DoD example: the ACTUAL shipped-bug shape — the T3 entry
+--- temporarily REMOVED from TIER_TEXTURES, not just a wrong-path literal; proves the leg
+--- catches the original CR-1, not merely its own string) ---
+...
+SPRITEBANK-TOWERS n=3
+SPRITEBANK-TIER ballista=T2 hailspire=T3
+SPRITEBANK-FAIL tier sheet: bombard T3
+PROBE_RC=1
+(earlier rows unchanged; the leg died at the live-tree path-pin, exactly where an unwired T3
+paints T1 — the (c) bank-pin would also have fired: bank fell back to T1 base sheet.)
+
+--- REVERT + GREEN AGAIN (rc=0) ---
+SPRITEBANK-TIER ballista=T2 hailspire=T3
+SPRITEBANK-TIER3 bombard=T3
+SPRITEBANK-GATEART blockade=sprite trap=sprite
+SPRITEBANK-ENEMIES n=6 boss_sheet=1
+SPRITEBANK-FLIP right=flipped left=plain
+SPRITEBANK-OK
+PROBE_RC=0
+BYTE-STABILITY of pre-existing rows (the law): SPRITEBANK-TIER ballista=T2 hailspire=T3 and
+SPRITEBANK-ENEMIES n=6 boss_sheet=1 unchanged in all three transcripts (grep-verified in the
+captures above); only the NEW row TIER3 was inserted between TIER and GATEART, and the probe
+header's machine-rows list updated to match print order.
+
+== SIBLING PROBES (icons/world unaffected — run anyway per DoD) ==
+... -s res://sim/v4_icon_probe.gd  -> tail: V4-ICONS-TEXT n=3 byte-exact / V4-ICONS-HUD n=3
+   beside=1 / V4-ICONS-COEXIST moved=1 rest=1 icon=ok scale=(1.0, 1.0) / V4-ICONS-OK  ICON_RC=0
+... -s res://sim/v1_world_probe.gd -> tail: V1W-FRAME-PT x4 rows / V1W-FRAME n=33
+   px_min=370.2,229.1 px_max=950.2,606.4 min_margin=113.6 worst=lane_g3:wp0 floor=60.0 /
+   V1W-OK  WORLD_RC=0
+
+== BEFORE/AFTER LOC (gate metric text.split("\n")) + nesting proxy (max indent depth) ==
+godot/scripts/sprite_bank.gd      LOC 128 -> 132  max_depth 2 -> 2  (+2 code: the T3 entry line-wrapped
+                                                          into the 2-line tier idiom; +2 comment: header truth)
+godot/sim/v11_sprite_probe.gd     LOC 215 -> 250  max_depth 4 -> 4  (+35: leg 3c + header note; AT the
+                                                          250 soft mark, > 250 is what the gate notes — 0 hits, no new note)
+Size story: both files grow ONLY with the wiring + its machine leg + truth comments; no concern moved.
+
+== ZERO-BEHAVIOR-CHANGE LAW ==
+- Fixture shas AFTER:
+  5e37c4b089209e64e26395237830bc16a1cf62aa3b9a6d427be2f361f970f628  tests/fixtures/mission_gatefall_hard.jsonl
+  eafe3932f7d30898565664341697a32f20ecda7458d379be65b668bf2d6f3912  tests/fixtures/mission_gatefall_normal.jsonl
+  BYTE-IDENTICAL to BEFORE (and to the W1-recorded pair). git status --porcelain -- tests/fixtures/ EMPTY.
+- git diff --name-only = godot/scripts/sprite_bank.gd + godot/sim/v11_sprite_probe.gd ONLY:
+  zero godot/sim/sim_*.gd LOGIC modules touched (grep -c on the name list = 0). The probe is a
+  kit (no sim_ prefix — the purity/parse scans skip kits) and is a DoD-named verification leg.
+  The change selects a DIFFERENT committed TEXTURE at display tier 3 — visual repaint, the
+  stated FIX of CR-1; sim (hp/dps/economy/waves) untouched, golden replay proves it.
+
+== GATES AT FINAL TREE ==
+1) /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot
+   -s res://sim/v11_sprite_probe.gd -> SPRITEBANK-OK incl. new SPRITEBANK-TIER3 bombard=T3
+   (rc=0, empty stderr); planted-red rc=1 captured above. PROBE_EXIT=0.
+2) python3 tools/check_hygiene.py -> tail: "check_hygiene: 0 hit(s)"  HYGIENE_EXIT=0
+   (notes identical to the audit BASELINE list — no NEW soft note: probe sits AT 250, gate
+   notes only > 250).
+3) python3 -m pytest -q -> tail "222 passed in 177.65s (0:02:57)"  PYTEST_EXIT=0. ONE attempt.
+4) grep -rn greybox -> 53 hits, NONE falsified (full census + justifications above); grep -rn
+   "no committed" -> 3 hits, all true mechanism statements (above).
+
+== HONEST LIMITS ==
+- The probe edit puts v11_sprite_probe.gd exactly AT the 250 soft mark (gate threshold is
+  > 250 — clean now; any future line into this kit tips it into a note: next editor splits or
+  trims first).
+- The planted red fired the live-tree pin (b) before the bank pin (c) could print; both guards
+  exist and (c) independently fails the same dropped entry (bank answered the T1 base sheet).
+
+VERIFY_EXIT=0

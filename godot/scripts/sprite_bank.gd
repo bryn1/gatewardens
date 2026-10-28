@@ -7,9 +7,11 @@
 # Tier skin rule (V1.1-b): TEXTURES carries the BASE sheet of every
 # sprited id — the T1 skin of the 3 shooters, the tier-agnostic sheets
 # (gate_blockade, barbed_snare since batch 2, heroes, enemies);
-# TIER_TEXTURES adds the committed _T2/_T3 shooter skins only. An
-# unknown tier falls back to the base sheet (bombard T3 has no
-# committed skin -> reads T1), so a tiered id is never null once a T1
+# TIER_TEXTURES adds the committed _T2/_T3 shooter skins only — all
+# six are wired since clean-code W2 (MC 11575 CR-1: bombard T3 landed
+# with batch 3 but shipped unwired, so a T3 bombard still read T1).
+# An unknown tier falls back to the base sheet (no _T4/_T5 sheets
+# exist -> those tiers read T1), so a tiered id is never null once a T1
 # exists. Ids with no committed sheet at all (future ids) return null
 # by design: no fake art (brief rule). Sheet names differ from
 # data ids (hailspire_tower -> tower_hailspire_T1.png), so the map is
@@ -72,14 +74,16 @@ const TEXTURES := {
 const ICON_PX := 28          # the brief's ~28px chunky icon size
 const ICON_GAP := 6          # HUD icon gap beside its label
 
-# The committed batch-2 upgrade skins of the 3 shooters, keyed
-# (id, DISPLAY tier). T1 rides TEXTURES; no other entry lives here —
+# The committed upgrade skins of the 3 shooters (T2/T3 skins landed
+# with batch 2, bombard T3 with batch 3), keyed (id, DISPLAY tier).
+# T1 rides TEXTURES; no other entry lives here —
 # enemy_skitterling_run.png is a run pose for the later animation card
 # and is deliberately NOT wired.
 const TIER_TEXTURES := {
 	"ballista": {2: preload("res://assets/v11/tower_ballista_T2.png"),
 		3: preload("res://assets/v11/tower_ballista_T3.png")},
-	"bombard": {2: preload("res://assets/v11/tower_bombard_T2.png")},
+	"bombard": {2: preload("res://assets/v11/tower_bombard_T2.png"),
+		3: preload("res://assets/v11/tower_bombard_T3.png")},
 	"hailspire_tower": {2: preload("res://assets/v11/tower_hailspire_T2.png"),
 		3: preload("res://assets/v11/tower_hailspire_T3.png")},
 }
