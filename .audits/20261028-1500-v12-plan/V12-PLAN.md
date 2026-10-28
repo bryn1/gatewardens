@@ -10,6 +10,15 @@ READ-ONLY run: no repo edits; scratch `/tmp/v12cam/` (camera probes + live kit c
 here is LEDGER + docs/ARCHITECTURE.md + .audits/20261028-0758-clean-code/FINDINGS.md, all read
 this session).
 
+## DA-fix c1 (2026-10-28)
+
+Replace-not-delete revision per the DA gate c1 verdict FIX
+(`/home/claudecode/.local/state/knut-dispatch/card-11607.out/DA-verdict.md`): P2-1 (F2 guard
+mechanism + W2 row), P3-1 (pin #10 on the F4 fallback split), P3-2 (F3 planted-red declared),
+P4-a..e applied, none declined. F6 camera numbers and the wave structure are UNCHANGED — every
+F6 row MATCHED the DA's independent re-derivation (incl. the live kit re-run on a scratch copy
+carrying the candidate rig: min_margin 121.8 px).
+
 ## Standing constraints (binding, restated)
 
 Length reason (file hygiene, owner 2026-09-23): the MC 11607 brief mandates ONE deliverable with
@@ -23,8 +32,11 @@ ONE section per feature + a single WAVES/DA-gate tail — splitting would scatte
   mission.step-only: `godot/sim/sim_headless.gd:145 m.step(DT)`, run by tests/test_sim_golden.py:45
   `SIM = "res://sim/sim_headless.gd"` through conftest.py:44 `run_probe_script` — VERIFIED this
   session; the ARCHITECTURE row's "sim/sim_harness.gd" name is stale, the shipped runner is
-  sim_headless.)
-- File hygiene 250 soft / 400 hard (check_hygiene gate; mission.gd AT 399/400 — FINDINGS.md §1
+  sim_headless — carry a doc-sweep row for that ARCHITECTURE line when the doc is next touched
+  (DA P4-e).)
+- File hygiene 250 soft / 400 hard (check_hygiene gate; LOC per the gate metric
+  `text.split("\n")` incl. the trailing-newline empty element — mission.gd AT 400/400, DA P4-a;
+  FINDINGS.md §1
   W4 watch row: this milestone MUST NOT grow mission.gd).
 - Suite 222 green + grows (NEW tests expected; note FINDINGS.md BASELINE: green is load-fragile
   on a busy box — SZ-1; suite legs below stay on the documented timeout).
@@ -64,7 +76,11 @@ state saves are committed on _end_mission, nothing lost").
   the full step() completes (input is processed between steps via the relay), so no torn state;
   (2) commit is once-gated by `committed` (`mission.gd:382`) — returning to hub fires NO second
   write; the hub simply reads state; (3) reload path stays (F1 adds a second, in-game exit to the
-  same committed state — NOT a second save mechanism).
+  same committed state — NOT a second save mechanism; (4) teardown (DA P4-c): the banner's
+  CanvasLayer mounts UNDER the routed mission subtree, never as a sibling of `_routed` (it is not
+  in mission.tscn — no pin #1 hit), so `_mount`'s `remove_child`+`free` tears it down with the
+  mission, AND `open_hub()` hides any instance as a belt — a stale RETURN-TO-HUB button cannot
+  survive into the hub.
 - **OWNER DECISION — mid-mission abandon?** Two readings: (i) v1.2 ships END-OF-MISSION return
   only; mid-mission escape stays "reload" (saves already persist live — C13 mutated-writes,
   LEDGER:16); (ii) add an abandon button = must define rewards. **Recommendation: (i).** Abandon
@@ -74,7 +90,8 @@ state saves are committed on _end_mission, nothing lost").
   `mission._end_mission` with outcome="lose" (zero new money/loot paths — the loss leg already
   banks nothing), button gated by a confirm state.
 
-**Files:** `godot/scripts/main.gd` (banner-mount + deferred route, ~25 LOC, 192→~217 ✓), NEW
+**Files:** `godot/scripts/main.gd` (banner-mount + deferred route, ~25 LOC, 193→~218 gate-metric
+✓), NEW
 `tests/test_return_hub.py`. **NOT touched:** mission.gd (ceiling), hud.gd (pinned read-only),
 mission.tscn (pin #1 ext-rows==4, test_mission_clicks.py:591), hub.gd, fixtures.
 **Tests:** NEW `test_return_hub.py` engine tier (push_input click idiom,
@@ -91,7 +108,9 @@ test_mission_clicks.py:404 pattern): after `outcome="win"` + committed, click �
 item/bank sell anywhere — VERIFIED by grep `sell` over scripts+sim+data (only the defense rows)
 and by the release-notes honesty line (LEDGER:115: "no shipped item salvage service"). Bank rows
 live in `game_state.gd:55 var bank`, written ONLY through the named mutators (`bank_add` :109;
-guarded by tests/test_hub.py:329 `test_no_bank_writes_beside_the_mutators`). Gold: `add_gold` /
+guarded by tests/test_hub.py:329 `test_no_bank_writes_beside_the_mutators` — a BAN-REGEX
+`bank.append(|bank_add(` over the 8 HUB_LAYER scene-script files + a `mutated.emit(` source-scan,
+NOT a named-mutator whitelist; VERIFIED read this session). Gold: `add_gold` /
 `spend_gold` are the named mutators (`game_state.gd:138-150`).
 
 **Contract (feature class: hub/meta UI + one new pure sim static + one new data key — fixtures
@@ -126,14 +145,21 @@ one gold delta, one save commit.
   gains a max-rarity arg + one row — plan-compatible either way.)
 
 **Files:** `godot/sim/sim_inventory.gd` (pure static), `godot/scripts/game_state.gd`
-(364→~385 ✓, mutator joins the named-mutator set — the test_hub.py:329 guard's NAMED list must be
-updated IN THE SAME COMMIT, it greps call-sites), `godot/scripts/gear_panel_ui.gd` (169→~185,
+(365→~386 gate-metric ✓, mutator joins the named-mutator set — DA P2-1 CORRECTION: the
+test_hub.py:329 `test_no_bank_writes_beside_the_mutators` guard is a BAN-REGEX (`bank.append(|
+bank_add(`) over the 8 HUB_LAYER files plus a `mutated.emit(` source-scan — there is NO named
+list to update, `game_state.gd` is not a HUB_LAYER file and `state.sell_bank(` matches none of
+those patterns (DA probe; matches my own :329 read above); NO guard edit is required or made),
+`godot/scripts/gear_panel_ui.gd` (170→~186 gate-metric,
 button beside the bank list `gear_panel_ui.gd:32,97`), `godot/data/rarity.json` (+sell_value),
 NEW `tests/test_bulk_sell.py`. **NOT touched:** defense sell path, economy.json, mission files.
 **Tests:** NEW engine-tier leg (hub_probe idiom): single/multi-row gold = Σ sell_values, bank
 empty after, save round-trip persists gold+empty bank, empty-bank refusal (all three unchanged),
-double-press idempotence; source-truth leg: bulk-sell mutator is the only new bank writer (reuse
-the :329 guard). Planted-red: sell writes bank WITHOUT add_gold → gold assert RED.
+double-press idempotence; source-truth leg (DA P2-1): grep in the new test that game_state.gd has
+no `bank.append(`/inline `bank` write outside the sanctioned `bank_add`/`sell_bank`-clear, AND
+re-run the UNEDITED test_hub.py green to prove sell_bank trips no :329 ban-regex (it is not a
+HUB_LAYER file and the call string matches no pattern). Planted-red: sell writes bank WITHOUT
+add_gold → gold assert RED.
 **Wave W2. UI/hub/mount + pure static — fixtures untouched (no mission.step path).**
 
 ## F3 — RELIC-ASSIGN HARDENING
@@ -163,6 +189,17 @@ is asserted for UNEQUIP (`pool_intact`), never for SELL (grep `sell` in hub_prob
 **Files:** NEW `tests/test_relic_negatives.py` ONLY (engine tier over the real mission.tscn,
 test_hub.py:118 pattern). Zero implementation files. **Wave W1. Tests-only leg — fixtures
 untouched (probe-level engine runs never write them).**
+**Planted-red leg (P3-2, resolves the blanket "every gate proves it can go RED" row vs a
+tests-only card):** the card mutates ONE asserted relic rule in a THROWAWAY scratch copy of the
+engine tree (`/tmp`, never the repo — the tests-only contract forbids a repo edit), then runs the
+new test file against it: (a) in a scratch copy of `mission_relics.gd`, drop the double-assign
+guard at `:24` (so `assign` returns ok on a taken relic) → the `refused_taken` leg goes RED; or
+(b) in the scratch copy, make the sell path leave the sold defense in `m.defense_list` (sell-safety
+is that removal — `live_count` :71-76 and `relic_owner` :61-65 simply stop seeing the sold row, so
+its relic is unowned again) → the new stale-uid/sell-return leg goes RED (relic still reads
+owned, `relics_assigned` fails to drop). Green run beside the red run = the assertion bites. This
+is the sanctioned way a tests-only card earns its planted-red evidence without touching product
+code.
 
 ## F4 — FAMILY PICKER (bombard + hailspire shop buttons)
 
@@ -190,9 +227,20 @@ delegate to `place_id` on the winner's id — one implementation of the gates, r
 - Boundary: button disabled-state rides the W17e poll-sync mechanism (`defense_panel.gd:274`
   pattern — enabled flags from poll, NOT from pressed handlers, W17b false-green class); rapid
   double-press = two places or refusal, never a partial (each press runs the whole gate chain).
-- LOC watch: defense_panel.gd is 372/400 (measured this session); +2 buttons +2 handlers ≈ +25
-  LOC → fits but tight; fallback declared: W16-style split of the action-button block into a
-  sibling file IN THE SAME CARD if the diff overflows.
+- LOC watch: defense_panel.gd is 373/400 gate-metric (372 by `wc`, +1 trailing-newline empty
+  element — DA P4-a); +2 buttons +2 handlers ≈ +25
+  LOC → lands ~398/400 → fits but tight (fallback TRIGGERS if the diff lands >400). fallback
+  declared: W16-style split of the action-button block into a
+  sibling file IN THE SAME CARD if the diff overflows. **P3-1 (LOCKED pin #10, FINDINGS §5 row
+  10, VERIFIED read this session: "`tools/check_hygiene.py:78-83 GOVERNED_LITERALS` path-set +
+  tests importing STRUCT_VALS from the gate — a SPLIT of a governed file must update the set in
+  the same commit"): unlike the W16 mission split (mission.gd is NOT in the governed set — its
+  siblings are absent from it), defense_panel.gd IS a member (`check_hygiene.py:83`), so if the
+  split is taken the NEW sibling file MUST be added to `GOVERNED_LITERALS` in the SAME commit —
+  `literal_violations` runs only over set members (`:227`), so moving governed code out without
+  registering the sibling silently drops I2 governance (the moved literals become ungoverned).
+  The F4 card's acceptance carries a grep: the sibling name present in the GOVERNED_LITERALS
+  tuple, as a green-test leg.**
 
 **Files:** `godot/scripts/defense_placer.gd` (row_for_id + place_id), `godot/scripts/
 defense_panel.gd`, NEW `tests/test_family_picker.py`. **NOT touched:** mission.gd, data (icons
@@ -297,9 +345,10 @@ billboards face camera; the top screen band shows background beyond the 160 u pl
 does today at 41.8°, describe-image leg compares side-by-side); the current rig's non-orthonormal
 rows get REPLACED by an exact rotation (a latent-sloppiness fix, declared).
 **⚠ OWNER DECISION (the plan cannot require it):** changing the rig string moves **LOCKED pin #3**
-(`test_hub_layout.py:337-341` regex + `:398-403` planted literal `...0, 56.33, 44.14)`) — the
-shipped planted-red stops firing if the literal goes stale (false-green class the pins exist to
-prevent). The sanctioned path for an intentional move is exactly ONCE, documented in the LEDGER
+(`test_hub_layout.py:337-341` regex + `:398-403` planted literal `...0, 56.33, 44.14)`) — a
+stale literal CANNOT false-green: `:403` `assert planted != read_text(...)` RED-LOUDS when the
+replace no-ops (DA P4-d — the failure mode is loud, not silent; the re-pin is a required
+documented step, not a hidden hazard). The sanctioned path for an intentional move is exactly ONCE, documented in the LEDGER
 in the same commit — precedented (the V1 nudge moved it once, FINDINGS §5 row 3 note). If the
 owner declines the re-pin, the honest answer stands: **no deeper read exists without weakening or
 moving gate-owned strings — ship no camera change.** RECOMMENDATION: grant the one documented
@@ -319,8 +368,8 @@ read larger, whole arena + both cores + spawner markers still on screen").
 | wave | cards | files (exclusive) | notes |
 |---|---|---|---|
 | **W1** | **F3 ∥ F5** | F3: tests/test_relic_negatives.py • F5: enemy_anim.gd NEW, enemy_runner.gd, tests/test_enemy_walk.py | zero risk: tests-only ∥ visual-only; disjoint |
-| **W2** | **F2 ∥ F1** | F2: sim_inventory.gd, game_state.gd, gear_panel_ui.gd, rarity.json, tests/test_bulk_sell.py • F1: main.gd, tests/test_return_hub.py | disjoint; F2 card also updates the test_hub.py:329 named-mutator guard in-commit |
-| **W3** | **F4** | defense_placer.gd, defense_panel.gd, tests/test_family_picker.py | alone: panel LOC watch (372→~397), fallback split declared |
+| **W2** | **F2 ∥ F1** | F2: sim_inventory.gd, game_state.gd, gear_panel_ui.gd, rarity.json, tests/test_bulk_sell.py • F1: main.gd, tests/test_return_hub.py | disjoint. test_hub.py DELIBERATELY ABSENT from W2 (DA P2-1): its :329 guard is a ban-regex over the 8 HUB_LAYER files, and game_state.gd (a meta-mutator file, not HUB_LAYER) + `state.sell_bank(` trip none of it, so NO guard edit is needed — sell_bank is a NEW bank writer that the ban-regex does not and must not match (bank_add is the sanctioned mutator; sell_bank CALLS the sanctioned path, it does not write bank inline). If sell_bank is implemented as a bare `bank = []` it WILL trip nothing (regex looks for `bank.append(`/`bank_add(`) — the F2 card asserts via the NEW test_bulk_sell.py that sell_bank routes through the sanctioned bank clear, NOT by editing the guard. |
+| **W3** | **F4** | defense_placer.gd, defense_panel.gd, tests/test_family_picker.py | alone: panel LOC watch (373→~398 gate-metric); fallback split adds the sibling to GOVERNED_LITERALS in-commit (pin #10, DA P3-1) |
 | **W4** | **F6 (OWNER-GATED)** | mission.tscn, test_hub_layout.py (pin #3 re-pin ONCE), LEDGER, RELEASE_NOTES | spawns ONLY on the owner's documented re-pin grant; else closes "no ship" |
 
 Parallel pairs are lane-safe (dsh max 8, Lane E pre-flight at spawn time per fleet doctrine).
@@ -334,9 +383,14 @@ describe-image rows; F1/F2 are behavior-gated (engine legs) + one journey screen
 
 **DA-gate note (binding):** this doc goes to `devils-advocate` BEFORE any card spawns (workflow-
 plan two-phase; the orchestrator holds the SHIP/FIX/RECONSIDER loop). Prime DA targets: F6's
-pin-touch honesty + the two-gates-disagree finding (Gate A is an angular approximation that
-mis-measures the engine by ~2.5× at the margin — a gate-quality finding this plan SURFACES but
-does not fix in scope); F1's deferred-route edge (click during the flush); F2's refusal-string
+pin-touch honesty + the two-gates-disagree finding, stated per the measured reproduction state
+(DA P4-b — the earlier "~2.5×" shorthand is RETIRED here: no re-checkable factor exists): the
+engine's pixel projection reproduces from the 33 live kit rows at MEDIAN ~1 px error (my 0.91 /
+DA's 1.02; max 21-27 px, convention-dependent — the F6 basis finding), while Gate A's angular
+ratio is a DIFFERENT quantity — a proxy whose px-equivalent varies per point, calibrated at the
+V1 rig — so a gate passing Gate A says nothing numerical about Gate B px margins and vice versa;
+a gate-quality finding this plan SURFACES but does not fix in scope; F1's deferred-route edge
+(click during the flush); F2's refusal-string
 naming; F5's ungoverned-constants declaration.
 
 **Owner-decision summary (each with recommendation):** (1) F1 mid-mission abandon — rec: NO
