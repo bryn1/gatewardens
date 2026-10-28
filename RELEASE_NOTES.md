@@ -1,5 +1,53 @@
 # Gatewardens — Release Notes
 
+## v1.1 (visuals) — 2026-10-28
+
+The greybox is gone. v1.1 replaces placeholder art with an original
+stylized set generated on the fleet's 3090 — Dungeon Defenders 2 used as a
+**style reference only**, every asset generated original (clean-room held;
+prompts + sha256 manifests per asset in `.audits/20261027-1500-visual-target/`).
+
+**What shipped**
+
+- **Chunky unit sprites** — 3 heroes, 6 enemy types, all painted on-style
+  and wired through ONE sprite map (`sprite_bank.gd`); the last greybox
+  (warden_breaker enemy) retired.
+- **T1→T3 tower art** — ballista, bombard and hailspire each visibly
+  repaint on upgrade (tier skins wired through the shipped `upgrade()` call,
+  path-pinned probes + live pixel proof).
+- **The world** — flat grey plane replaced by a framed cartoon arena board;
+  the cores ride their wolf-crest emblem; camera nudged in (bounded by the
+  shipped frustum gate, +3.55%, all 33 lane/core points held with ≥60 px margin).
+- **HUD & shop icons** — gold-rimmed badges on the build bar, emblems beside
+  the green/wave/core counters; every label byte-identical at rest.
+- **Combat FX** — projectile tracers, hit sparks, death poofs — a visual-only
+  observer reading sim state from OUTSIDE (zero sim edits, proven by diff).
+- **Menus move** — tab-switch slide+fade tween and button hover/press
+  feedback via one shared helper; at-rest layout pixel-stable (byte tests green).
+- **Native proof** — fresh `Gatewardens.exe` re-verified on the VM120
+  Windows 11 / RTX 2060 seat: byte-identical transfer, live boot, and a
+  deterministic 1280×720 @ 60 FPS movie-mode capture; served web build
+  pixel-verified with the new art. Suite still 222 green, hygiene 0,
+  golden fixtures byte-identical.
+
+**Known limits, stated as they are**
+
+- The death poof's brown doesn't visually separate from brown enemy sprites
+  at the fixed camera — its presence is carried by counters, not pixels.
+- The outgoing tab still hard-cuts on switch (a shipped probe asserts the
+  previous station hidden synchronously; deferring it would be a logic change).
+- The build bar ships three class buttons (family picker is a declared later
+  row), so two of the five icon badges are registered but not yet visible.
+- Deeper camera zoom than +3.55% is gated by the shipped frustum-margin test
+  — an owner decision, not a silent change.
+- Served-web frame rate is honest-by-instrument: the native 60 FPS render
+  path is VERIFIED (movie capture); headless-browser measurement is
+  throttle-capped (~6 fps on a STATIC screen = the harness, not the game).
+
+**Promised vs shipped**: this milestone promised V1–V7 visual rows; all seven
+shipped with the caveats above. Enemy walk-cycle animation and per-tier
+blockade/snare skins were NOT in scope and are not claimed.
+
 ## v1 (GA) — 2026-10-27
 
 The full loop ships: fresh boot → hub → War Table starts the NORMAL mission
@@ -79,7 +127,9 @@ unsigned, no malware, click More info > Run anyway.
   not mistaken for a bug.
 - **(f) Greybox cosmetics.** Row labels can overlap in tall lists; the hub
   shows a centered "Gatewardens — Hub" label; the meta row is unstyled. Full
-  HUD styling is a named follow-on.
+  HUD styling is a named follow-on. *(SUPERSEDED for art by v1.1: unit/tower/
+  enemy/HUD art + the world texture shipped 2026-10-28 — the row-label overlap
+  in tall lists and the unstyled meta row REMAIN true.)*
 - **(g) The win lever is undiscoverable by design-accident.** Holding BOTH
   mouse buttons (primary + secondary attacks) plus a held skill key is real
   gameplay the UI never teaches — the golden replay pins it; players
