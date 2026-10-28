@@ -26,5 +26,13 @@
       "legendary": 4
     }
   },
-  "chest_tiers": ["powerful", "epic", "mythical", "legendary"]
+  "chest_tiers": ["powerful", "epic", "mythical", "legendary"],
+  "sell_value": {
+    "worn": 2,
+    "sturdy": 6,
+    "powerful": 12,
+    "epic": 20,
+    "mythical": 30,
+    "legendary": 40
+  }
 }

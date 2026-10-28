@@ -1,0 +1,137 @@
+# F2 wave log — bulk sell: SELL ALL behind one total-gold confirm (MC 11622, [type:code] wave W2)
+
+Repo /home/claudecode/Games/gatewardens. Base tip origin/main cf56d55+ (observed
+8934737/F4-close-evidence above it at intake). Suite baseline 231 green.
+Owner artifact (verbatim 2026-10-28): "rec on all 3" ratifying the F2 recommendation:
+SELL ALL sellable items with ONE confirm dialog showing the total gold BEFORE it is applied.
+Spec: .audits/20261028-1500-v12-plan/V12-PLAN.md §F2 (DA-SHIPPED text; DA P2-1 guard
+correction followed — see GUARD section).
+
+## GUARD (cited per plan, DA P2-1)
+
+  - tests/test_hub.py:329 `test_no_bank_writes_beside_the_mutators` is a BAN-REGEX
+    `bank\.append\(|bank_add\(` over the 8 HUB_LAYER scene-script files + a
+    `mutated\.emit\(` source-scan — NOT a named-mutator whitelist.
+  - game_state.gd is OUTSIDE that ban set (not a HUB_LAYER file — HUB_LAYER =
+    hub/gear_panel/item_row/war_table/blacksmith/tinkerer/dummy_range/ascension,
+    test_hub.py:58-60); the call string `state.sell_bank(` matches no pattern.
+  - Therefore NO guard edit is required or made; tests/test_hub.py is run-only and
+    UNEDITED (`git show --name-only HEAD` after this commit proves its absence;
+    orchestrator check). test_hub.py re-run green at this tree (rows below).
+  - sell_bank is a NEW bank writer that the ban-regex does not and must not match:
+    it routes the gold through the sanctioned add_gold mutator, it does not write
+    gold inline. The plan's alternative "bare `bank = []` trips nothing" reading is
+    followed; the NEW test_bulk_sell.py asserts the sanctioned routing instead of
+    editing the guard (source-truth legs below).
+
+## FILES (plan-exact; the task brief's "godot/scripts/sim_inventory.gd" is a wording
+## slip — the plan's exact path is godot/sim/sim_inventory.gd, VERIFIED on disk; trust-the-plan)
+
+  - godot/sim/sim_inventory.gd          bulk_sell pure static + header reading
+  - godot/scripts/game_state.gd         sell_bank_quote (read) + sell_bank mutator
+  - godot/scripts/gear_panel_ui.gd      SELL BANK button + ONE confirm state (label + confirm + cancel)
+  - godot/data/rarity.json              +sell_value {worn 2, sturdy 6, powerful 12, epic 20, mythical 30, legendary 40}
+  - tests/test_bulk_sell.py             NEW (engine tier + 4 source-truth/data legs)
+  - LEDGER.md                           F2 row appended LAST in the wave table
+  - NOT touched: test_hub.py (run-only), fixtures, economy.json, defense sell path, mission files.
+
+## CONTRACT IMPLEMENTATION READING (declared)
+
+  - ONE bulk math (task contract "reuse ... ONE mechanism, no second math"): the
+    shipped per-item sell value for BANK rows is the rarity.json sell_value map
+    (plan "Pricing = DATA"); sim_economy.sell_value is the pinned R1 DEFENSE formula
+    over total_spent — a base bank rows never have (plan VERIFIED: no bank item sell
+    existed). bulk_sell is the ONE site that sums it; the confirm quote
+    (sell_bank_quote) and the applied delta (sell_bank) BOTH call that static — the
+    number shown IS the number paid.
+  - sell_bank refusal (empty bank) = {ok:false, why:"empty"} with NO bank write, NO
+    gold write and NO emit (plan invalid-leg "bank/gold/save byte-identical (assert
+    all three)" read in its strongest form; the C13 unconditional-emit idiom is the
+    pinned reading of the OLD ten mutators, a refusal is not a state change —
+    declared reading, recorded in the game_state.gd header).
+  - Boundary "nothing-sellable": structurally the SAME case as empty — every ladder
+    rarity carries a declared value and no special non-sellable classes exist (plan
+    VERIFIED grep; equipped gear never sits in the bank, C6/C9 split). Asserted at
+    BOTH levels: panel press opens NO dialog + mutator refuses idempotent (BS-DOUBLE).
+  - Money delta lands in GWGameState.add_gold (meta layer, reached only from the hub
+    UI) per plan; mission replay/funnel never touched (fixtures pin below).
+  - rarity.json values: the plan's suggested ladder (worn 2 -> legendary 40,
+    monotone) — no other owner number artifact exists; monotone + coverage pinned by
+    the data leg.
+
+## SESSION TRANSCRIPT (commands + tails)
+
+$ git status --porcelain            # intake: clean, siblings absent
+  (empty — tree clean at intake)
+
+# implementation (5 file edits, all plan-path; contents via git show HEAD)
+
+$ python3 -m pytest tests/test_bulk_sell.py -q            # first run
+  ... BS-FAIL confirm cancel button missing  [probe node-path bug Gear/SellRow/...]
+  1 failed — FIXED in the probe (test-side node paths), no product change
+
+$ python3 -m pytest tests/test_bulk_sell.py -q            # second run
+  ... AssertionError ... '.append(' is contained here  [source-truth _body ran past
+  "static func" block boundary — test-side extractor fixed], no product change
+
+$ python3 -m pytest tests/test_bulk_sell.py -q            # final code tree
+  5 passed in 5.32s
+
+$ python3 -m pytest tests/test_hub.py tests/test_data_schemas.py tests/test_persistence.py tests/test_gear_persist.py -q
+  90 passed in 12.80s                                       # UNEDITED test_hub green:
+                                                            # sell_bank trips no :329 pattern
+
+$ python3 tools/check_hygiene.py | tail -1
+  check_hygiene: 0 hit(s)                                   # notes pre-existing; gear_panel
+                                                            # held under soft 250 (249)
+
+$ # gate metric LOC (text.split("\n") incl. trailing empty element — same metric as the gate)
+$ before: sim_inventory.gd 166 | game_state.gd 365 | gear_panel_ui.gd 170
+$ after:  sim_inventory.gd 191 | game_state.gd 396 | gear_panel_ui.gd 249
+  # game_state 396 <= 400 ceiling (plan estimate ~386 was low — declared watch row,
+  # >250 soft note pre-existing); gear_panel 249 < soft 250; all one-concern additions.
+
+$ git diff --stat tests/fixtures/
+  (empty)                                                   # golden fixtures byte-pinned
+
+## PLANTED-RED (one scratch mutation -> leg RED -> revert -> green)
+
+$ sed -i 's/return {"ok": true, "gold": gold, "sold": bank.size()}/return {"ok": true, "gold": bank.size(), "sold": bank.size()}/' godot/sim/sim_inventory.gd
+$ python3 -m pytest tests/test_bulk_sell.py -q
+  E  BS-QUOTE ok=1 total=3 sold=3 uid_intact=1
+  E  BS-FAIL quote wrong: { "ok": true, "gold": 3, "sold": 3 } total=20
+  1 failed, 4 passed in 5.42s                               # RED rc1: total uses COUNT not Σ
+$ sed -i 's/return {"ok": true, "gold": bank.size(), "sold": bank.size()}/return {"ok": true, "gold": gold, "sold": bank.size()}/' godot/sim/sim_inventory.gd
+  # revert = the same sed inverted (honest note: the card's own edits were UNCOMMITTED
+  # at plant time — `git checkout --` would have eaten them too; the F4 stage-before-
+  # plant lesson applied pre-emptively: line-sed is the revert path here).
+$ python3 -m pytest tests/test_bulk_sell.py -q
+  5 passed in 5.38s                                         # GREEN restored
+
+## GATES AT FINAL TREE
+
+$ python3 -m pytest tests/ -q
+  239 passed in 168.20s (0:02:48)
+  SUITE_EXIT=0                                              # ONE attempt, no re-run needed.
+  # 231 baseline + test_bulk_sell's 5 + the co-tending F1 sibling's test_return_hub 3
+  # (F1's main.gd/test_return_hub.py uncommitted in this shared checkout — expected
+  # transient-failure risk per brief, none observed; NEVER staged by this card, see below).
+
+$ python3 -m pytest tests/test_bulk_sell.py tests/test_hub.py tests/test_data_schemas.py tests/test_persistence.py tests/test_gear_persist.py -q
+  95 passed in 12.42s  -> TARGETED_EXIT=0                   # re-run at commit tree
+$ python3 tools/check_hygiene.py | tail -1
+  check_hygiene: 0 hit(s)  -> HYGIENE_EXIT=0                # hygiene 0 hits
+$ git diff --stat tests/fixtures/ | wc -l
+  0                                                         # fixtures diff EMPTY
+
+## COMMIT (pathspec-only; sibling F1 files main.gd + tests/test_return_hub.py NEVER staged;
+## author = profile+card; never git config, never push)
+
+$ git add godot/sim/sim_inventory.gd godot/scripts/game_state.gd godot/scripts/gear_panel_ui.gd godot/data/rarity.json tests/test_bulk_sell.py LEDGER.md .audits/20261028-1500-v12-plan/F2-wave.log \
+  && git -c user.name="coder (11622)" -c user.email=coder@agent-town.local commit -F - \
+     -m "v1.2 F2 (MC 11622): bulk sell — SELL ALL behind one total-gold confirm (owner ruling 2026-10-28)"
+  # proof rows (git show --name-only HEAD: the six paths + this log, NO test_hub.py,
+  # NO main.gd, NO tests/test_return_hub.py) ride the commit object itself —
+  # `git show --name-only HEAD` is the orchestrator's verification command.
+
+VERIFY_EXIT=0

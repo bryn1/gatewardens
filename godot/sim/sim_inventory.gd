@@ -34,6 +34,12 @@ const SIM_LOOT := preload("res://sim/sim_loot.gd")
 # - tinkering moves source.mods[mod_i] onto the target when the target has a
 #   free declared mod slot and the cost is affordable; on ok the transfer
 #   happens in place on both caller-owned rows.
+# - bulk_sell (v1.2 F2, MC 11622) is the ONE bulk-total sum over bank rows:
+#   the hub confirm quote and the GWGameState.sell_bank mutator both call
+#   this static, so the number the dialog shows IS the number applied —
+#   no second math. Per-row price is rarity.json "sell_value" (I2: one int
+#   per ladder name, never a literal here; sim_economy.sell_value is the
+#   pinned R1 defense formula over total_spent, a base bank rows never have).
 
 
 # F2-11/C9 equip crossing: {ok, bank}; see the header for the replace
@@ -63,6 +69,25 @@ static func equip(bank: Array, hero: String, item: Dictionary) -> Dictionary:
 	# ok:true for any weapon/armor/ring-shaped argument, which let a
 	# caller mark a phantom row worn while the bank kept everything.
 	return {"ok": false, "bank": kept}
+
+
+# Bulk sell (v1.2 F2, MC 11622 — owner ruling 2026-10-28: SELL ALL behind
+# ONE total-gold confirm): {ok, gold, sold} over EVERY bank row, summed
+# from the rarity.json sell_value map (see header — the ONE bulk math).
+# Pure: NO row is mutated, no RNG, no bank write (the mutator owns the
+# clear); the hub calls this for the confirm quote BEFORE applying and
+# GWGameState.sell_bank calls it again for the applied delta. Empty bank
+# is the pinned refusal {ok:false, why:"empty"} with zero gold and zero
+# sold — nothing-sellable and empty are structurally the SAME case here
+# (every ladder rarity carries a declared value; there are no special
+# non-sellable row classes in the shipped data, plan §F2 VERIFIED grep).
+static func bulk_sell(bank: Array, sell_values: Dictionary) -> Dictionary:
+	if bank.is_empty():
+		return {"ok": false, "why": "empty", "gold": 0, "sold": 0}
+	var gold := 0
+	for row: Dictionary in bank:
+		gold += int(sell_values.get(String(row.get("rarity", "")), 0))
+	return {"ok": true, "gold": gold, "sold": bank.size()}
 
 
 # Blacksmith Upgrade: gold ladder by the item's declared rarity + the flat

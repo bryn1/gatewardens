@@ -26,6 +26,13 @@ extends Control
 #   the hub_probe EQUIP leg.
 # - An empty deck renders a placeholder: deck selection is the HUD row
 #   (the C6 deck_json array order is the sole source read here).
+# - F2 bulk sell (v1.2, MC 11622; owner ruling 2026-10-28): SELL BANK
+#   enters ONE confirm state showing the quoted total BEFORE anything is
+#   applied — the quote is sell_bank_quote() over SimInventory.bulk_sell,
+#   the same sum the sell_bank mutator applies (shown = paid, no panel
+#   math). An empty bank is not quotable: the press refuses, no dialog
+#   opens. The sell widgets are setup-permanent (never rebuilt) — a press
+#   repaint stays E9-safe.
 # - Greybox Control styling per the defense_panel precedent; full HUD
 #   styling is the named frontend row.
 
@@ -39,6 +46,10 @@ var state = null
 var selected_uid := 0
 var _lists: Dictionary = {}       # section id -> row VBoxContainer
 var _hero_box = null
+var _sell_btn = null              # F2: the SELL BANK entry (setup-permanent)
+var _sell_row = null              # F2: the confirm row (label + confirm + cancel)
+var _sell_label = null
+var _confirming := false          # F2: confirm state — total quoted, nothing applied
 
 
 func setup(tables_in, game_state) -> void:
@@ -56,6 +67,29 @@ func setup(tables_in, game_state) -> void:
 		rows.name = "Rows_" + section
 		box.add_child(rows)
 		_lists[section] = rows
+	# F2 sell entry beside the bank list: it only ENTERS the confirm state.
+	_sell_btn = Button.new()
+	_sell_btn.name = "SellBank"
+	_sell_btn.text = "SELL BANK"
+	_sell_btn.pressed.connect(_on_sell_pressed)
+	box.add_child(_sell_btn)
+	_sell_row = HBoxContainer.new()
+	_sell_row.name = "SellRow"
+	box.add_child(_sell_row)
+	_sell_label = Label.new()
+	_sell_label.name = "SellTotal"
+	_sell_row.add_child(_sell_label)
+	var confirm := Button.new()
+	confirm.name = "SellConfirm"
+	confirm.text = "CONFIRM"
+	confirm.pressed.connect(_on_sell_confirm)
+	_sell_row.add_child(confirm)
+	var cancel := Button.new()
+	cancel.name = "SellCancel"
+	cancel.text = "CANCEL"
+	cancel.pressed.connect(_on_sell_cancel)
+	_sell_row.add_child(cancel)
+	_sell_row.visible = false
 	var deck_head := Label.new()
 	deck_head.text = "DECK"
 	box.add_child(deck_head)
@@ -110,6 +144,51 @@ func refresh() -> void:
 		BANK_LIST.fill(_lists[s], tables, bucket[s], selected_uid,
 				_on_picked)
 	_rebuild_heroes()
+	_refresh_sell()
+
+
+# ---------- F2 bulk sell: ONE confirm dialog, total shown BEFORE apply ----------
+
+# The dialog entry: a press only QUOTES (meta read — no write, no C13
+# trigger); an unquotable (empty) bank refuses, no dialog opens.
+func _on_sell_pressed() -> void:
+	if bool(state.sell_bank_quote()["ok"]):
+		_confirming = true
+		refresh()
+
+
+# The ONE application crossing: only reachable from the open confirm state.
+func _on_sell_confirm() -> void:
+	if not _confirming:
+		return
+	_confirming = false
+	state.sell_bank()
+	refresh()
+
+
+func _on_sell_cancel() -> void:
+	_confirming = false
+	refresh()
+
+
+func sell_confirm_shown() -> Dictionary:
+	# Read-back for the contract leg: the BEFORE-apply confirm state.
+	return {"shown": _confirming and _sell_row.visible,
+			"text": String(_sell_label.text)}
+
+
+func _refresh_sell() -> void:
+	# Quote through the same sum the mutator applies, EVERY repaint: the
+	# dialog text can never drift from what a CONFIRM pays; a bank that
+	# emptied while the dialog stood open drops it (refusal, no apply).
+	var quote: Dictionary = state.sell_bank_quote()
+	_sell_btn.disabled = not bool(quote["ok"])
+	if _confirming and not bool(quote["ok"]):
+		_confirming = false
+	_sell_row.visible = _confirming
+	if _confirming:
+		_sell_label.text = "SELL ALL %d rows for %d gold?" % [
+				int(quote["sold"]), int(quote["gold"])]
 
 
 func _on_picked(uid: int) -> void:

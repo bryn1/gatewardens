@@ -135,6 +135,37 @@ func equip(hero: String, slot: String, item: Dictionary) -> bool:
 	return ok
 
 
+# F2 bulk sell (v1.2, MC 11622; owner ruling 2026-10-28 verbatim: "SELL ALL
+# sellable items with ONE confirm dialog showing the total gold BEFORE it is
+# applied"). The confirm dialog is gear_panel's; the TOTAL is this class's
+# read-only quote through the ONE mechanism (SimInventory.bulk_sell) the
+# mutator applies — the number shown IS the number paid, no second math.
+func sell_bank_quote() -> Dictionary:
+	return SIM_INVENTORY.bulk_sell(bank, _sell_values())
+
+
+# The mutator half of F2. Refused (empty bank) = bulk_sell's pinned
+# {ok:false, why:"empty"} with NO bank write, NO gold write and NO emit —
+# the plan's stronger "bank/gold/save unchanged (assert all three)" leg;
+# the C13 no-op re-write idiom above stays the pinned reading of the OLD
+# ten mutators, sell_bank's refusal is not a state change at all (declared
+# reading, card trail). On ok the cleared bank and the whole total ride the
+# sanctioned add_gold emit — ONE C13 write commits the bulk sell (plan: one
+# gold delta, one save commit, no new trigger mechanism).
+func sell_bank() -> Dictionary:
+	var res: Dictionary = SIM_INVENTORY.bulk_sell(bank, _sell_values())
+	if bool(res["ok"]):
+		bank = []
+		add_gold(int(res["gold"]))
+	return res
+
+
+# F2 pricing door (I2): the per-rarity bulk-sell values ride rarity.json —
+# the ONE read site for both the quote and the mutator, no literal here.
+func _sell_values() -> Dictionary:
+	return _table("rarity").get("sell_value", {})
+
+
 func add_gold(n: int) -> void:
 	gold += n
 	mutated.emit()
