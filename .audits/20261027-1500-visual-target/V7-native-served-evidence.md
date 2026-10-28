@@ -1,4 +1,4 @@
-PROBE: sha256sum /home/claudecode/Games/gatewardens/build/Gatewardens.exe => ^44299c3dfa095d6b24dad370ba4d3a0ea4439708b0eeaa6ca65dd59ef01e71c4
+PROBE: sha256sum /home/claudecode/Games/gatewardens/build/Gatewardens.exe => ^f114ca86a9c04337d86f03c32f9cfdce2c63f85606a56fdf890981b7e158c106  # re-pinned at the DA-fix tag move; 44299c3d… (first pass, superseded) remains in the history rows below
 
 # V7 native + served pass — evidence (MC milestone 11462 / workspace 11274)
 
