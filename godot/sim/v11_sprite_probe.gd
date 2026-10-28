@@ -8,10 +8,11 @@
 # spawned enemies, (3) V1.1-b tier skins: a ballista upgraded ONCE and
 # a hailspire upgraded TWICE through the shipped defense_obj.upgrade()
 # entry point carry their T2/T3 sheet in the live tree, and
-# gate_blockade/barbed_snare are Sprite3D on their batch-2 sheets —
-# only warden_breaker stays mesh, (4) the ONE facing mechanism flips
-# the left-facing enemy sheets only on a screen-right step, at spawn
-# and live through runner.step.
+# gate_blockade/barbed_snare are Sprite3D on their batch-2 sheets.
+# (3b) Since the MC 11462 DA fix loop the warden_breaker boss carries
+# its batch-5 sheet too, asserted path-pinned (the tier-leg pattern).
+# (4) the ONE facing mechanism flips the left-facing enemy sheets only
+# on a screen-right step, at spawn and live through runner.step.
 # Harness license (the mission_smoke precedent, declared): the main
 # core is made 5x sturdier so the legs cannot end the mission, and
 # `green` is written to fund the place and upgrade legs. Everything
@@ -168,12 +169,18 @@ func _init() -> void:
 				or not espr.flip_h:
 			_fail("enemy sheet/flip on a +x lane: %s" % eid)
 			return
+	# --- 5b) the boss (MC 11462 DA fix loop): warden_breaker now
+	#        carries its batch-5 sheet. Pinned by its committed RESOURCE
+	#        PATH, never through the bank — asking the bank was the
+	#        proven false-green shape (the tier-leg comment above). ---
 	runner.spawn({"enemy_id": "warden_breaker", "count": 1}, lane_g1,
 			m.enemy_defs, m.rng)
-	if runner.entities[-1]["node"] is Sprite3D:
-		_fail("warden_breaker wrongly got a sprite")
+	var bspr: Sprite3D = runner.entities[-1]["node"] as Sprite3D
+	var boss_want := "res://assets/v11/enemy_warden_breaker.png"
+	if bspr == null or String(bspr.texture.resource_path) != boss_want:
+		_fail("boss sheet path-pinned: warden_breaker")
 		return
-	print("SPRITEBANK-ENEMIES n=6 boss_greybox=1")
+	print("SPRITEBANK-ENEMIES n=6 boss_sheet=1")
 
 	# --- 6) the ONE facing mechanism, live through runner.step ---
 	# Synthetic lanes (the shipped map has no pure ±x lane); wps typed

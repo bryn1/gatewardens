@@ -21,7 +21,7 @@
 #
 # Sprite visuals (V1.1-a, MC 11466): the bank answers first; the
 # committed sheet moves with the record's pos like the mesh did. No
-# committed sheet (warden_breaker, future ids) keeps the primitive —
+# committed sheet (future ids) keeps the primitive —
 # the same add/move/free lifecycle either way, one path.
 
 extends Node3D

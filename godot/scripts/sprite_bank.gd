@@ -10,8 +10,8 @@
 # TIER_TEXTURES adds the committed _T2/_T3 shooter skins only. An
 # unknown tier falls back to the base sheet (bombard T3 has no
 # committed skin -> reads T1), so a tiered id is never null once a T1
-# exists. Ids with no committed sheet at all (warden_breaker...) return
-# null by design: no fake art (brief rule). Sheet names differ from
+# exists. Ids with no committed sheet at all (future ids) return null
+# by design: no fake art (brief rule). Sheet names differ from
 # data ids (hailspire_tower -> tower_hailspire_T1.png), so the map is
 # explicit, never a stem rule.
 # Facings (VISUAL-TARGET V2/V3): heroes/towers sheets face RIGHT, enemy
@@ -32,6 +32,8 @@ const TEXTURES := {
 	"bone_lobber": preload("res://assets/v11/enemy_bone_lobber.png"),
 	"cinder_wisp": preload("res://assets/v11/enemy_cinder_wisp.png"),
 	"gale_harpy": preload("res://assets/v11/enemy_gale_harpy.png"),
+	# V1.1 DA fix loop (MC 11462): batch 5 — the boss exits the greybox.
+	"warden_breaker": preload("res://assets/v11/enemy_warden_breaker.png"),
 	# V1.1-b batch 2: these two exit the greybox; tier-agnostic sheets
 	# (the upgrade ladder changes hp/dps, never the art).
 	"gate_blockade": preload("res://assets/v11/tower_gate_blockade.png"),
