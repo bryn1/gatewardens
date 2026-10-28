@@ -1,0 +1,110 @@
+# v1.1 boss sprite wiring — evidence log (MC 11462 DA fix loop) — coder profile, 2026-10-28
+# note: brief's ~/Godot_... path absent; canonical repo binary used (tests/conftest.py GODOT): /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64
+
+== 1) PLANTED-RED: boss_want string broken to enemy_PLANTED_RED.png ==
+$ /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot -s res://sim/v11_sprite_probe.gd
+179:	var boss_want := "res://assets/v11/enemy_PLANTED_RED.png"
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+SPRITEBANK-TEX n=12 px=512
+SPRITEBANK-HEROES n=3
+SPRITEBANK-SWAP active=1 visible=deadeye
+SPRITEBANK-TOWERS n=3
+SPRITEBANK-TIER ballista=T2 hailspire=T3
+SPRITEBANK-GATEART blockade=sprite trap=sprite
+SPRITEBANK-FAIL boss sheet path-pinned: warden_breaker
+PROBE_RED_RC=1
+179:	var boss_want := "res://assets/v11/enemy_warden_breaker.png"
+
+== 2) GREEN: restored — full probe, all legs ==
+$ /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot -s res://sim/v11_sprite_probe.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+SPRITEBANK-TEX n=12 px=512
+SPRITEBANK-HEROES n=3
+SPRITEBANK-SWAP active=1 visible=deadeye
+SPRITEBANK-TOWERS n=3
+SPRITEBANK-TIER ballista=T2 hailspire=T3
+SPRITEBANK-GATEART blockade=sprite trap=sprite
+SPRITEBANK-ENEMIES n=6 boss_sheet=1
+SPRITEBANK-FLIP right=flipped left=plain
+SPRITEBANK-OK
+PROBE_GREEN_RC=0
+
+== 3) python3 -m pytest -q (repo root) ==
+$ python3 -m pytest -q
+........................................................................ [ 32%]
+........................................................................ [ 64%]
+........................................................................ [ 97%]
+......                                                                   [100%]
+222 passed in 161.25s (0:02:41)
+PYTEST_RC=0
+
+== 4) python3 tools/check_hygiene.py ==
+$ python3 tools/check_hygiene.py
+note: godot/scripts/defense_obj.gd 306 lines > soft 250
+note: godot/scripts/defense_panel.gd 373 lines > soft 250
+note: godot/scripts/dummy_range.gd:77 sanctioned draw: randf((
+note: godot/scripts/game_state.gd 365 lines > soft 250
+note: godot/scripts/hero_combat.gd:125 sanctioned draw: randf((
+note: godot/scripts/hub.gd 290 lines > soft 250
+note: godot/scripts/hud.gd 328 lines > soft 250
+note: godot/scripts/mission.gd 400 lines > soft 250
+note: godot/sim/sim_headless.gd 317 lines > soft 250
+note: godot/sim/sim_loot.gd:47 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:60 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:64 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:68 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:76 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:86 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:88 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:103 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:119 sanctioned draw: randi((
+note: godot/sim/v6_tween_probe.gd 313 lines > soft 250
+note: tools/check_hygiene.py 268 lines > soft 250
+check_hygiene: 0 hit(s)
+HYGIENE_RC=0
+
+== 5) FINAL re-run on the final tree (scratch removed, manifest written) ==
+$ /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot -s res://sim/v11_sprite_probe.gd
+SPRITEBANK-TEX n=12 px=512
+SPRITEBANK-HEROES n=3
+SPRITEBANK-SWAP active=1 visible=deadeye
+SPRITEBANK-TOWERS n=3
+SPRITEBANK-TIER ballista=T2 hailspire=T3
+SPRITEBANK-GATEART blockade=sprite trap=sprite
+SPRITEBANK-ENEMIES n=6 boss_sheet=1
+SPRITEBANK-FLIP right=flipped left=plain
+SPRITEBANK-OK
+PROBE_RC=0
+$ python3 -m pytest -q
+........................................................................ [ 32%]
+........................................................................ [ 64%]
+........................................................................ [ 97%]
+......                                                                   [100%]
+222 passed in 162.61s (0:02:42)
+PYTEST_RC=0
+$ python3 tools/check_hygiene.py
+note: godot/scripts/defense_obj.gd 306 lines > soft 250
+note: godot/scripts/defense_panel.gd 373 lines > soft 250
+note: godot/scripts/dummy_range.gd:77 sanctioned draw: randf((
+note: godot/scripts/game_state.gd 365 lines > soft 250
+note: godot/scripts/hero_combat.gd:125 sanctioned draw: randf((
+note: godot/scripts/hub.gd 290 lines > soft 250
+note: godot/scripts/hud.gd 328 lines > soft 250
+note: godot/scripts/mission.gd 400 lines > soft 250
+note: godot/sim/sim_headless.gd 317 lines > soft 250
+note: godot/sim/sim_loot.gd:47 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:60 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:64 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:68 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:76 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:86 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:88 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:103 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:119 sanctioned draw: randi((
+note: godot/sim/v6_tween_probe.gd 313 lines > soft 250
+note: tools/check_hygiene.py 268 lines > soft 250
+check_hygiene: 0 hit(s)
+HYGIENE_RC=0
+VERIFY_EXIT=0

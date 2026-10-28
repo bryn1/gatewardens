@@ -4,7 +4,7 @@ PROBE: sha256sum /home/claudecode/Games/gatewardens/build/Gatewardens.exe => ^44
 
 Date 2026-10-28 (UTC). Orchestrator-run pass (v1-GA W18 precedent pattern), VM120 via QGA.
 
-PROBE: grep -c POSTED_OK /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/v7-native-run.log => ^1$
+PROBE: grep -c POSTED_OK /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/v7-native-run.log => ^2$  # corrected in-place: the log carries the marker twice; the original ^1$ pin was a mis-count (DA-gate finding, 2026-10-28)
 PROBE: grep -c RTX /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/v7-native-run.log => ^1$
 PROBE: sha256sum /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/v112-frame-1.png => ^63b91ad8a9c2f8a8cc124d8d2505aed3a5014d52b667a118a6ca50176b0ec9ec
 PROBE: grep -c RESP_True /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/v7-native-run.log => ^1$

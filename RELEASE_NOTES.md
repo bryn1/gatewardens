@@ -9,9 +9,10 @@ prompts + sha256 manifests per asset in `.audits/20261027-1500-visual-target/`).
 
 **What shipped**
 
-- **Chunky unit sprites** — 3 heroes, 6 enemy types, all painted on-style
-  and wired through ONE sprite map (`sprite_bank.gd`); the last greybox
-  (warden_breaker enemy) retired.
+- **Chunky unit sprites** — 3 heroes and all 7 enemy types (grunts AND the
+  warden_breaker boss), all painted on-style and wired through ONE sprite map
+  (`sprite_bank.gd`); the last greybox (the boss) retired too — the primitive
+  path stays only as the null-fallback for future ids.
 - **T1→T3 tower art** — ballista, bombard and hailspire each visibly
   repaint on upgrade (tier skins wired through the shipped `upgrade()` call,
   path-pinned probes + live pixel proof).

@@ -60,7 +60,7 @@ Layout v2 (one dir per project; never a sibling naming scheme):
                                         # no sim_ prefix so the purity/parse scans skip them)
     scripts/ *.gd                       # scene layer — every dep injected as an argument
     scenes/ *.tscn                      # hub.tscn mission.tscn + component scenes + item_row.tscn (F2-12)
-    assets/                             # v1.1 (MC 11462): assets/v11/ = original stylized sprite bank served by scripts/sprite_bank.gd; greybox ArrayMesh/BoxMesh + material tints remain the fallback where the bank has no sheet (only warden_breaker)
+    assets/                             # v1.1 (MC 11462): assets/v11/ = original stylized sprite bank served by scripts/sprite_bank.gd; greybox ArrayMesh/BoxMesh + material tints remain the null-fallback for future ids only (no shipped id is greybox since the DA-fix boss sheet)
   static/                               # web-export output; gitignored (built artifacts never enter the repo — trail doctrine). "web export x2" = export-run REPRODUCIBILITY (two clean passes, identical served set), not artifact commitment.
   server/ server.py static_app.py       # GW's OWN static-only server (F3): both files written
                                         # for GW, static_app.py self-contained (own
@@ -176,9 +176,11 @@ buttons only (picker is a list of item_row instances — fits soft ceiling); gw_
 ### ONLY — visuals are built in code (core_obj/defense_obj/hero rig) BUT painted from
 ### v1.1 (MC 11462): scripts/sprite_bank.gd (the ONE id->sheet map, tier-aware) supplies
 ### original stylized art from assets/v11/ to hero_pawn/defense_obj/enemy_runner + the
-### world floor + core emblem; greybox primitives remain the null-fallback (one id:
-### warden_breaker). The 3090 generation pipeline LANDED at v1.1 (prompts + sha256
-### manifests per asset under .audits/20261027-1500-visual-target/gen/).
+### world floor + core emblem; greybox primitives remain ONLY as the null-fallback for
+### future ids — the last sheet (boss warden_breaker) landed at the DA-fix commit, so no
+### shipped id is greybox. The 3090 generation pipeline LANDED at v1.1 (prompt record
+### gen/manifest-prompts.tsv — 12/36 batch-1 prompts unrecordable, marked MISSING — plus
+### per-batch sha256 manifests under .audits/20261027-1500-visual-target/gen/).
 
 ### static/ server/ tests/ tools/
 - static/ — export target, gitignored (W12: built artifacts are evidence-side, never product-side; "web export x2" = two reproducible clean export passes, asserted served-file-set + index sha equality in W12 evidence).
