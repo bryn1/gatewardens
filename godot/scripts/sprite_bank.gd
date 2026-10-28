@@ -54,6 +54,13 @@ const TEXTURES := {
 	"fx_poof_death": preload("res://assets/v11/fx_poof_death.png"),
 	"fx_proj_bolt": preload("res://assets/v11/fx_proj_bolt.png"),
 	"fx_proj_ice": preload("res://assets/v11/fx_proj_ice.png"),
+	# V1 world pass (MC 11559): the framed arena board rides the SAME
+	# id->file map — mission_world.paint_arena is its only consumer (the
+	# ground material albedo, 1:1 over the whole plane). ground_path.png
+	# is deliberately NOT wired: NO lane mesh exists (lanes are waypoint
+	# DATA, C7), so painting it would author a second visual mechanism,
+	# not repaint a surface — the card's stated honest-cut row.
+	"ground_arena": preload("res://assets/v11/ground_arena.png"),
 }
 
 # V4 presentation sizes live HERE (the ui_tween.gd precedent): the I2-

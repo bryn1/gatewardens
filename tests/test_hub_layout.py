@@ -397,7 +397,7 @@ def test_mission_framing_planted_red_aimed_away_goes_red():
     # trip the frustum gate — an unbroken framing gate is no gate.
     planted = read_text(MISSION_TSCN).replace(
         "transform = Transform3D(1, 0, 0, 0, 0.667, 0.667, 0, -0.746, "
-        "0.746, 0, 58, 46)",
+        "0.746, 0, 56.33, 44.14)",
         "transform = Transform3D(1, 0, 0, 0, 0.995, -0.0995, 0, 0.0995, "
         "0.995, 0, 58, 46)")
     assert planted != read_text(MISSION_TSCN)

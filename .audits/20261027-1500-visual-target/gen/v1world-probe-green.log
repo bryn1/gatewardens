@@ -1,0 +1,40 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+V1W-FLOOR tex=res://assets/v11/ground_arena.png repeat=off modulate=(0.9, 0.9, 0.95, 1.0)
+V1W-AABB pos=(-80.0, 0.0, -80.0) size=(160.0, 0.0, 160.0) origin=0,0,0 unchanged=1
+V1W-CORE n=2 emblem=res://assets/v11/icon_core.png parented=1
+V1W-FRAME-PT lane_g1:wp0 px=377.2,390.5 margin=329.5
+V1W-FRAME-PT lane_g1:wp1 px=448.9,412.0 margin=308.0
+V1W-FRAME-PT lane_g1:wp2 px=542.6,423.4 margin=296.6
+V1W-FRAME-PT lane_g1:wp3 px=599.4,406.5 margin=313.5
+V1W-FRAME-PT lane_g1:wp4 px=640.0,390.5 margin=329.5
+V1W-FRAME-PT lane_g1:end px=640.0,390.5 margin=329.5
+V1W-FRAME-PT lane_g2:wp0 px=640.0,239.6 margin=239.6
+V1W-FRAME-PT lane_g2:wp1 px=661.1,282.1 margin=282.1
+V1W-FRAME-PT lane_g2:wp2 px=675.4,334.6 margin=334.6
+V1W-FRAME-PT lane_g2:wp3 px=659.0,370.5 margin=349.5
+V1W-FRAME-PT lane_g2:wp4 px=640.0,390.5 margin=329.5
+V1W-FRAME-PT lane_g2:end px=640.0,390.5 margin=329.5
+V1W-FRAME-PT lane_g3:wp0 px=950.2,606.4 margin=113.6
+V1W-FRAME-PT lane_g3:wp1 px=906.8,586.9 margin=133.1
+V1W-FRAME-PT lane_g3:wp2 px=874.2,568.4 margin=151.6
+V1W-FRAME-PT lane_g3:wp3 px=843.2,550.8 margin=169.2
+V1W-FRAME-PT lane_g3:end px=843.2,550.8 margin=169.2
+V1W-FRAME-PT lane_a1:wp0 px=370.2,380.1 margin=339.9
+V1W-FRAME-PT lane_a1:wp1 px=486.9,350.4 margin=350.4
+V1W-FRAME-PT lane_a1:wp2 px=575.0,359.9 margin=359.9
+V1W-FRAME-PT lane_a1:wp3 px=640.0,380.1 margin=339.9
+V1W-FRAME-PT lane_a1:end px=640.0,380.1 margin=339.9
+V1W-FRAME-PT lane_a2:wp0 px=640.0,229.1 margin=229.1
+V1W-FRAME-PT lane_a2:wp1 px=596.1,278.2 margin=278.2
+V1W-FRAME-PT lane_a2:wp2 px=603.1,332.4 margin=332.4
+V1W-FRAME-PT lane_a2:wp3 px=640.0,380.1 margin=339.9
+V1W-FRAME-PT lane_a2:end px=640.0,380.1 margin=339.9
+V1W-FRAME-PT spawn_a px=377.2,390.5 margin=329.5
+V1W-FRAME-PT spawn_b px=640.0,239.6 margin=239.6
+V1W-FRAME-PT spawn_c px=950.2,606.4 margin=113.6
+V1W-FRAME-PT core_main px=640.0,390.5 margin=329.5
+V1W-FRAME-PT sub_north px=843.2,550.8 margin=169.2
+V1W-FRAME-PT hero_space px=640.0,390.5 margin=329.5
+V1W-FRAME n=33 px_min=370.2,229.1 px_max=950.2,606.4 min_margin=113.6 worst=lane_g3:wp0 floor=60.0
+V1W-OK

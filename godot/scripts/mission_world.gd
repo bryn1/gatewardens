@@ -5,11 +5,51 @@
 # sub-death opens_lanes reading) and the core objects; refresh_cores
 # writes the C5-readable `cores` mirror the game_state snapshot reads
 # by name — one write site, still owned through the mission root.
+# V1 world pass (MC 11559) adds the two VISUAL mounts that ride this
+# build: the core emblem (make_core child) and the arena paint, which
+# build_cores calls once per mission build — NOT from mission.gd, whose
+# file sits at the 400-line hygiene ceiling; this is the map-build and
+# visual-mount file the brief names.
+# Zero step order / zero sim data touched — the lane rows, waypoints
+# and core records are byte-identical; git show proves it.
 extends RefCounted
 
 const CORE_OBJ := preload("res://scripts/core_obj.gd")
 const MESH_CORE := preload("res://assets/mesh_core.tres")
 const MAT_CORE := preload("res://assets/mat_core.tres")
+const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
+
+# V1 presentation sizes (the sprite_bank ICON_PX precedent: presentation
+# numbers live on the visual mount, pinned by sim/v1_world_probe.gd).
+# ARENA_MODULATE: the framed board reads ~10% darker with a cool cast
+# so the warm unit sprites + emblems stay readable on top of it.
+const ARENA_MODULATE := Color(0.9, 0.9, 0.95)
+# Emblem: the 3x4 core box tops out at y 2; a 6u wolf-crest centred at
+# y 4.5 rides the box (sub cores inherit their 0.5 node scale, so the
+# emblem follows core state — same single mount site for both kinds).
+const CORE_EMBLEM_H := 6.0
+const CORE_EMBLEM_Y := 4.5
+
+
+# V1 arena paint (MC 11559): the ground material albedo becomes the
+# framed arena board from the ONE sprite_bank map, 1:1 over the whole
+# plane (PlaneMesh UVs cover the plane; the board is NOT seamless so
+# repeat is OFF). The ground node's size/transform are never touched
+# (placement raycasts + lane paths depend on them) and mat_ground.tres
+# on disk stays the greybox — the override is a runtime duplicate.
+static func paint_arena(m) -> void:
+	var ground := m.get_node_or_null("Ground") as MeshInstance3D
+	if ground == null:
+		return                                   # greybox stays greybox
+	var mat := ground.material_override as StandardMaterial3D
+	var tex := SPRITE_BANK.texture_for("ground_arena")
+	if mat == null or tex == null:
+		return
+	mat = mat.duplicate()
+	mat.albedo_texture = tex
+	mat.albedo_color = ARENA_MODULATE
+	mat.texture_repeat = false   # 4.7.2: a BOOL property (VERIFIED via ClassDB dump); OFF keeps the framed board 1:1
+	ground.material_override = mat
 
 
 static func build_lanes(m) -> void:
@@ -34,6 +74,9 @@ static func build_cores(m) -> void:
 	for sub: Dictionary in cores_row.get("subs", []):
 		m.core_subs[String(sub["id"])] = make_core(
 				m, String(sub["id"]), "sub", sub, Vector3(0.5, 0.5, 0.5))
+	# V1 hook (DECLARED, MC 11559): painted ground SURFACE only — no sim
+	# field, no step order (W7/W10 visual-hook mount precedent).
+	paint_arena(m)
 
 
 static func make_core(m, id: String, kind: String, row: Dictionary, sc: Vector3):
@@ -50,6 +93,14 @@ static func make_core(m, id: String, kind: String, row: Dictionary, sc: Vector3)
 	node.material_override = MAT_CORE.duplicate()
 	node.scale = sc
 	node.position = rec.pos   # mission-local space (root at origin)
+	# V1 core emblem (MC 11559): the gold wolf-crest billboard rides the
+	# box (the box stays), parented to the core node itself so it walks
+	# with the core's scale/state. Null-safe like every sprite_bank
+	# consumer: no committed sheet, no child, no crash.
+	var emblem := SPRITE_BANK.make_sprite("icon_core", CORE_EMBLEM_H)
+	if emblem != null:
+		emblem.position = Vector3(0, CORE_EMBLEM_Y, 0)
+		node.add_child(emblem)
 	m.add_child(node)
 	rec.node = node
 	return rec
