@@ -395,9 +395,10 @@ def test_mission_camera_frames_the_whole_gatefall_playfield():
 def test_mission_framing_planted_red_aimed_away_goes_red():
     # Fixture trick (nothing written): a rig pitched near the sky must
     # trip the frustum gate — an unbroken framing gate is no gate.
+    # Pin #3 re-pin 1/1 documented, grant: owner rec 2026-10-28 (MC 11649).
     planted = read_text(MISSION_TSCN).replace(
-        "transform = Transform3D(1, 0, 0, 0, 0.667, 0.667, 0, -0.746, "
-        "0.746, 0, 56.33, 44.14)",
+        "transform = Transform3D(1, 0, 0, 0, 0.669, 0.743, 0, -0.743, "
+        "0.669, 0, 47.47, 42.79)",
         "transform = Transform3D(1, 0, 0, 0, 0.995, -0.0995, 0, 0.0995, "
         "0.995, 0, 58, 46)")
     assert planted != read_text(MISSION_TSCN)

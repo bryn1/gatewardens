@@ -1,0 +1,100 @@
+# v1.2 F6 camera rig D=64 / pitch-48 — wave log (MC card 11649, wave W4, V12-PLAN §F6)
+
+Tree base: origin/main 8dd56e1 (tip, suite 239 green). Owner grant (verbatim 2026-10-28):
+"rec on all 3" — ratifies the F6 recommendation = ONE documented re-pin of LOCKED pin #3
+(FINDINGS §5 row 3, .audits/20261028-0758-clean-code/FINDINGS.md) + ship the DA-re-derived rig.
+FINDINGS.md §5 body NOT edited (LOCKED) — the re-pin is recorded by the PIN LEDGER row appended
+to LEDGER.md in this card's commit.
+
+## CHANGE (the whole diff, 2 files)
+
+- godot/scenes/mission.tscn: CameraRig transform row ONLY ->
+  `Transform3D(1, 0, 0, 0, 0.669, 0.743, 0, -0.743, 0.669, 0, 47.47, 42.79)`
+  (the plan's literal; replaces the shipped non-orthonormal rows (0,0.667,0.667)/(0,-0.746,0.746)
+  with the exact Rx(48°) rotation — the plan's declared latent-sloppiness fix).
+  Sun/lighting rows (pin #4) and ext-resource rows (pin #1) untouched — `git diff` proves 1 line.
+- tests/test_hub_layout.py: pin #3 planted literal re-pinned ONCE to follow the new rig line +
+  ONE comment line naming this card. Precedent 32b8f3a moved only the literal; this card adds
+  the one declared comment line per the brief — reading stated here. Zero other edits
+  (`git diff` = 5 lines: 1 comment + literal swap; `_cam_from_tscn` regex is rig-agnostic — untouched).
+
+EFFECTIVE transform verified THROUGH THE ENGINE (not text shape), throwaway /tmp/f6_char_px.gd
+(v1_world_probe boot idiom, mission.tscn instantiated, real Camera3D, headless rc0):
+  CPX-RIG basis=[X: (1.0, 0.0, 0.0), Y: (0.0, 0.669, -0.743), Z: (0.0, 0.743, 0.669)]
+  origin=(0.0, 47.47, 42.79) fwd=(0.0, -0.743, -0.669)
+= plan literal exactly (row-major .tscn basis read confirmed against the OLD rig first:
+  fwd=(0,-0.667,-0.746) origin=(0,56.33,44.14), matching the shipped kit log).
+
+## (a) FULL SUITE AFTER RE-PIN
+
+  $ python3 -m pytest -q
+    239 passed in 186.31s (0:03:06)                                    ONE attempt
+PYTEST_EXIT=0 — no load-timeout leg hit (no honest re-run needed; box load ~14 during run,
+conftest SZ-1 900s margin held).
+
+## (b) v1_world_probe — UNCHANGED kit, declared run form (docs/ARCHITECTURE.md §Verification kits)
+
+  $ xvfb-run /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 \
+      --rendering-driver opengl3 --path godot -s res://sim/v1_world_probe.gd
+  PROBE_EXIT=0, stderr 0 bytes, rows:
+    V1W-FRAME n=33 px_min=337.6,194.0 px_max=1003.9,598.2 min_margin=121.8 worst=lane_g3:wp0 floor=60.0
+    V1W-OK
+  QUOTED ROW: n=33, min_margin=121.8 (>= 110 REQUIRED; >= shipped 113.6; plan predicted 121.9 /
+  DA re-derivation measured 121.8 — exact), binding point UNCHANGED = lane_g3:wp0.
+  FLOOR/AABB/CORE kit legs also green (V1W-OK = all legs).
+
+## (c) CHARACTER-SIZE LEG (plan F6) — painted px, engine, TWO captures (old rig vs new)
+
+Throwaway /tmp/f6_char_px.gd (NOT committed, scratch per workspace-convention .tmp discipline):
+BILL leg = what a 2 u CAMERA-FACING billboard (the characters' mechanism — Sprite3D billboard via
+face(), enemy_runner.gd:139 / hero pawns likewise) PAINTS at the hero battle space: offsets along
+the camera's own local Y at the hero's camera-space depth, projected by the shipped Camera3D's
+unproject_position (engine's own projection, shipped basis skew included). Run once per rig
+(mission.tscn temporarily reverted for the OLD capture, then restored — final tree verified by
+git diff above):
+  OLD rig (0,56.33,44.14): CPX-BILL px_a=640.00,383.92 px_b=640.00,397.06 bill_px=13.14
+  NEW rig (0,47.47,42.79): CPX-BILL px_a=640.00,352.40 px_b=640.00,367.08 bill_px=14.68
+  MEASURED GAIN = 14.68/13.14 = +11.7 % engine truth.
+Plan/model row for the record: the plan's +10.2 % is MODEL (70.45/D, D=64; shipped-model height
+13.3 px); the engine's shipped value is 13.14 px because the shipped basis is skewed (the plan's
+own Gate-A-vs-B "sloppy numerals" finding) — honest labelling: +10.2 % = the DA-derived model
+gain quoted in the commit message, +11.7 % = this card's measured old→new engine delta.
+CONTEXT leg (different quantity, kept for honesty): world-vertical 2 u segment at hero_space
+foreshortens with pitch: OLD vert_px=8.29 -> NEW vert_px=10.06 (+21.4 %) — NOT the character
+billboard quantity, never quoted as the gain.
+
+## (d) PLANTED-RED: the re-pinned literal bites (both sides)
+
+RED — OLD transform temporarily restored into mission.tscn (sed), re-pinned test run:
+  $ timeout 600 python3 -m pytest -q tests/test_hub_layout.py -k framing_planted
+    >       assert planted != read_text(MISSION_TSCN)
+    E       assert '[gd_scene ...' != '[gd_scene ...'
+    tests/test_hub_layout.py:404: AssertionError
+    FAILED tests/test_hub_layout.py::test_mission_framing_planted_red_aimed_away_goes_red
+    1 failed, 7 deselected in 0.09s
+  = the plan's DA P4-d claim re-shown: a stale literal CANNOT false-green — it RED-LOUDS at the
+  no-op replace assert the moment the scene and the literal disagree.
+GREEN — transform restored to the NEW rig (diff back to the card's 2-file state above):
+  $ timeout 600 python3 -m pytest -q tests/test_hub_layout.py -k framing_planted
+    1 passed, 7 deselected in 0.02s                                                   GREEN_EXIT=0
+
+## HYGIENE + FIXTURES (final tree)
+
+  $ python3 tools/check_hygiene.py   -> check_hygiene: 0 hit(s)   HYGIENE_EXIT=0
+  $ git diff --stat tests/fixtures/  -> (empty); git diff tests/fixtures/ | wc -c = 0
+No source file grew (test file 422 lines, test-tier ceiling 600; tscn is data).
+
+## SERVED-BROWSER + describe-image leg (plan F6 / MC 11509 D3)
+
+orchestrator — browser screenshot at 1280x720 + describe-image side-by-side vs the V1.1-b anchor
+(v7-mission.png: "characters read larger, whole arena + both cores + spawner markers still on
+screen") is the orchestrator's close leg, NOT this card's (per brief: declared "orchestrator" row).
+
+## PIN #3 RECORD
+
+Re-pinned ONCE (1/1), dated 2026-10-28, card 11649, grant verbatim "rec on all 3" (owner 2026-10-28).
+Recorded in-commit: LEDGER.md PIN LEDGER row appended (FINDINGS §5 body LOCKED, never edited).
+Precedent: the V1 nudge 32b8f3a moved it once (LEDGER:82) — that budget is spent; this is the
+documented second-and-final move under owner grant, any further move needs a NEW owner ruling.
+
+VERIFY_EXIT=0
