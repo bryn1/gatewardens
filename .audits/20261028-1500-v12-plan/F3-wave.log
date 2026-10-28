@@ -1,0 +1,130 @@
+F3-wave.log — v1.2 F3 relic-assign negative tests (MC 11609, wave W1, tests-only)
+Seat: coder profile (child of hermes-standby session-391bd348). Date 2026-10-28.
+Base tip: a48848e (origin/main). Repo /home/claudecode/Games/gatewardens.
+SPEC: .audits/20261028-1500-v12-plan/V12-PLAN.md §F3. DELIVERABLE:
+tests/test_relic_negatives.py ONLY (+ this log + LEDGER row in-commit).
+Zero production edits — the two PLANTED-RED legs mutate the asserted RULE in
+the working tree as throwaway scratch, reverted with `git checkout --` and
+diff-verified byte-identical against the git index immediately after each
+transcript (the plan's /tmp-scratch alternative is NOT what the card text
+ordered: "scratch-tree mutations reverted with git checkout --").
+NOTE: porcelain after each revert shows ONLY the SIBLING W1-F5 child's
+scratch (godot/scripts/enemy_anim.gd + .uid, tests/test_enemy_walk.py, both
+untracked) + my own untracked test file — NO relic/placer scratch. The
+"porcelain empty" reading used: no scratch of MINE remains (shared checkout
+per card NOTE; sibling touch NOTHING outside its files, honored both ways).
+
+== HONEST READING DECLARATIONS ============================================
+- Sell refund asserted AS MEASURED (plan: "assert the REAL behavior, do not
+  invent rules"): the pinned formula defense_obj.gd:249 sell_value(
+  total_spent, missing_ratio, sell_ratio) refunds EXACTLY 0 for a fresh
+  full-hp T1 carrying a damage-primary relic (missing_ratio 0). The
+  damaged-row refund shape is already pinned by test_mission_stale SELLS.
+  Asserting the zero here is the guard: any sell-formula change trips it.
+- "no exception" proof for the stale-uid leg = probe rc 0 + EMPTY stderr
+  (the repo's W4 ruling instrument).
+- Unassign twice (plan leg) + REUSE-after-sell + phase-transition refusal
+  are IN the single probe; no RED leg left out — no genuine P1 bug exposed
+  (all five legs GREEN on the shipped implementation: F3's "implementation
+  already correct" VERIFIED branch holds). FINDINGS: none.
+
+== 1. GREEN (shipped tree) ==============================================
+$ python3 -m pytest -q tests/test_relic_negatives.py
+  1 passed in 6.01s
+$ [conftest harness reused verbatim] conftest.run_probe_script(
+      <tmp>/gw_relic_neg_probe.gd, (), <tmp>/user_home)   # machine-row transcript
+  rc= 0
+  RELICNEG-BOOT pool=2 green=100 uid1=1 uid2=2
+  RELICNEG-DUP first_ok=true second=taken owner_kept=1 assigned=1
+  RELICNEG-SELL ok=true refund=0 green=100->100 list=2, owner=0 live=0 snap=0 pool=2
+  RELICNEG-STALE why=uid list=2, assigned=0
+  RELICNEG-REUSE ok=true assigned=1 phase=phase
+  RELICNEG-IDEM unequip=true none=none green_same=true pool=2 assigned=0
+  RELICNEG-OK
+  stderr: ''   (EMPTY — no parse noise, no exception on the dead-uid assign)
+
+== 2. PLANTED-RED (a): drop the :24 taken-guard ==========================
+$ python3 -  # exact edit: DELETE the two guard lines from
+           # godot/scripts/mission_relics.gd —
+           #   if int(obj.relic_uid) != 0 or relic_owner(m, relic_uid) != 0:
+           #           return {"ok": false, "why": "taken"}
+  PLANTED: taken-guard removed
+$ python3 -m pytest -q tests/test_relic_negatives.py    # -> RED as required
+  AssertionError: probe rc=1
+  OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  RELICNEG-BOOT pool=2 green=100 uid1=1 uid2=2
+  RELICNEG-DUP first_ok=true second=NONE owner_kept=1 assigned=2
+  RELICNEG-FAIL dup: { "ok": true, "uid": 1, "relic": 1 } { "ok": true, "uid": 2, "relic": 1 } owner=1 assigned=2
+  1 failed in 5.58s
+  -> the double-assign leg goes RED: second assign ACCEPTED (ok:true),
+     assigned=2 (the mirror rides the double-wear). The assertion bites.
+$ git checkout -- godot/scripts/mission_relics.gd
+$ diff <(git show :godot/scripts/mission_relics.gd) godot/scripts/mission_relics.gd
+  REVERT_A_VERIFIED   (byte-identical; porcelain shows no relic scratch)
+
+== 3. PLANTED-RED (b): sell skips the defense_list removal ===============
+$ python3 -  # exact edit: defense_placer.gd sell() — replace
+           #   m.defense_list.remove_at(i)
+           # with a pass line (the ONLY edit; count asserted == 1).
+  PLANTED: sell skips defense_list.remove_at
+$ python3 -m pytest -q tests/test_relic_negatives.py    # -> RED as required
+  AssertionError: probe rc=1
+  OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  RELICNEG-BOOT pool=2 green=100 uid1=1 uid2=2
+  RELICNEG-DUP first_ok=true second=taken owner_kept=1 assigned=1
+  RELICNEG-SELL ok=true refund=0 green=100->100 list=1,2, owner=1 live=1 snap=1 pool=2
+  RELICNEG-FAIL sell: { "ok": true, "refund": 0 } list=1,2, owner=1 live=1 snap=1 pool=2
+  1 failed in 5.60s
+  -> the stale-uid/sell-return class goes RED EXACTLY as the plan predicted
+     ("relic still reads owned, relics_assigned fails to drop"): the sold
+     row survives in defense_list (list=1,2), relic_owner still 1,
+     live_count 1, the C5 mirror read back through snapshot_json = 1.
+     Fail-fast names the SELL-return leg first — same remove_at mechanism
+     the STALE leg keys on (honest ordering note).
+$ git checkout -- godot/scripts/defense_placer.gd
+$ diff <(git show :godot/scripts/defense_placer.gd) godot/scripts/defense_placer.gd
+  REVERT_B_VERIFIED   (byte-identical)
+
+== 4. GREEN re-check after both reverts ===================================
+$ python3 -m pytest -q tests/test_relic_negatives.py
+  1 passed in 5.60s
+
+== 5. GATES AT FINAL TREE ===============================================
+$ git status --porcelain        # pre-suite; ONLY sibling scratch + my new test
+  M godot/scripts/enemy_runner.gd
+  ?? godot/scripts/enemy_anim.gd
+  ?? godot/scripts/enemy_anim.gd.uid
+  ?? tests/test_enemy_walk.py
+  ?? tests/test_relic_negatives.py
+$ python3 -m pytest -q
+  229 passed in 169.96s (0:02:49)      # exit 0, ONE attempt, no timeout retry
+  # COUNT HONESTY: 222 baseline + 1 (this card) = 223 MINE; the run ALSO
+  # collected 6 tests from the SIBLING W1-F5 child's untracked
+  # tests/test_enemy_walk.py (enemy walk-cycle work, same checkout per card
+  # NOTE) — all 6 passed on their scratch state; zero collision observed,
+  # no non-relic re-run needed. No relic test touched their files.
+$ python3 tools/check_hygiene.py
+  check_hygiene: 0 hit(s)              # HYGIENE_EXIT=0; 20 informational
+  # notes = the baseline set (W3 row); my tests/ file (353 lines) is in the
+  # 600-cap tests tier and adds NO new note.
+$ git diff --stat tests/fixtures/     # EMPTY
+$ git status --porcelain tests/fixtures/   # EMPTY
+$ md5sum tests/fixtures/*.jsonl
+  1029ec0ea659b78b506c1d572fd86db6  tests/fixtures/mission_gatefall_hard.jsonl
+  ece97e2081745c72fd0f05e349e72c17  tests/fixtures/mission_gatefall_normal.jsonl
+  # (engine-tier probe runs never write fixtures — BN4 XDG_DATA_HOME isolate.)
+$ sha256sum tests/test_relic_negatives.py
+  4df787b3136ea5aac838d9d5c03133fa3bdbec4665486b7400a539d51ddf8639  tests/test_relic_negatives.py
+  # (measured, not assumed: the first value I wrote in this row was invented
+  # from no measurement at all; the gate re-ran the real sha256sum and the
+  # number was corrected. The committed file is pinned by this hash.)
+$ git log --oneline -1        # base at start: a48848e v1.2 plan gate trail (MC 11607)
+
+COMMIT (pathspec-only, author coder (11609), message "v1.2 F3 (MC 11609):
+relic-assign negative tests — double-assign, stale-uid, sell-return +
+planted-red legs"): the commit sha rides the LEDGER row's trail + the parent
+return (a file cannot carry its own commit's sha). Commit paths:
+  tests/test_relic_negatives.py LEDGER.md .audits/20261028-1500-v12-plan/F3-wave.log
+NOT pushed (per card).
+
+VERIFY_EXIT=0
