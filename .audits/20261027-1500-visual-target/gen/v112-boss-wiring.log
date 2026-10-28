@@ -108,3 +108,78 @@ note: tools/check_hygiene.py 268 lines > soft 250
 check_hygiene: 0 hit(s)
 HYGIENE_RC=0
 VERIFY_EXIT=0
+
+== 6) BOSS BILLBOARD PIXEL PROOF (MC 11462 DA fix loop, leg 2) — kit godot/sim/v11_boss_shot.gd ==
+$ xvfb-run -a /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --rendering-driver opengl3 --path godot -s res://sim/v11_boss_shot.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.
+     at: set_use_vsync (platform/linuxbsd/x11/gl_manager_x11.cpp:372)
+OpenGL API 4.5 (Core Profile) Mesa 23.2.1-1ubuntu3.1~22.04.4 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 15.0.7, 256 bits)
+libpulse.so.0: cannot open shared object file: No such file or directory
+libpulse.so.0: cannot open shared object file: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5182:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5182:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1334:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5182:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5705:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM default
+ERROR: Condition "status < 0" is true. Returning: ERR_CANT_OPEN
+   at: init_output_device (drivers/alsa/audio_driver_alsa.cpp:97)
+WARNING: All audio drivers failed, falling back to the dummy driver.
+     at: initialize (servers/audio/audio_server.cpp:258)
+
+SPAWNED warden_breaker class=Sprite3D
+SHOT-OK /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/v112-boss-shot.png crop=/home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/v112-boss-zoom.png boss@(399.0384, 397.0398) x=143 y=141 tex=res://assets/v11/enemy_warden_breaker.png
+SHOT-OK-NEAR /home/claudecode/Games/gatewardens/.audits/20261027-1500-visual-target/gen/v112-boss-near.png
+SHOT-DONE
+KIT_RC=0
+2e44e7802940c12e9d41f576efe09d92d2cef494f16cc08f1c3657ee1b9e1258  v112-boss-shot.png
+4a572804ae5573a24b14b48a52096ab9ff6d121a6c7866129963458f84f2d2d2  v112-boss-zoom.png
+580b5a073143ca7445c68137a30110abd68035440c605bb57b1554d690670b4a  v112-boss-near.png
+BOSS-PIXELS painted
+
+== 7) FINAL re-run on the final tree (kit committed-pending, PNGs written) ==
+$ /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot -s res://sim/v11_sprite_probe.gd
+SPRITEBANK-TEX n=12 px=512
+SPRITEBANK-HEROES n=3
+SPRITEBANK-SWAP active=1 visible=deadeye
+SPRITEBANK-TOWERS n=3
+SPRITEBANK-TIER ballista=T2 hailspire=T3
+SPRITEBANK-GATEART blockade=sprite trap=sprite
+SPRITEBANK-ENEMIES n=6 boss_sheet=1
+SPRITEBANK-FLIP right=flipped left=plain
+SPRITEBANK-OK
+PROBE_RC=0
+$ python3 -m pytest -q
+........................................................................ [ 32%]
+........................................................................ [ 64%]
+........................................................................ [ 97%]
+......                                                                   [100%]
+222 passed in 163.17s (0:02:43)
+PYTEST_RC=0
+$ python3 tools/check_hygiene.py
+note: godot/scripts/defense_obj.gd 306 lines > soft 250
+note: godot/scripts/defense_panel.gd 373 lines > soft 250
+note: godot/scripts/dummy_range.gd:77 sanctioned draw: randf((
+note: godot/scripts/game_state.gd 365 lines > soft 250
+note: godot/scripts/hero_combat.gd:125 sanctioned draw: randf((
+note: godot/scripts/hub.gd 290 lines > soft 250
+note: godot/scripts/hud.gd 328 lines > soft 250
+note: godot/scripts/mission.gd 400 lines > soft 250
+note: godot/sim/sim_headless.gd 317 lines > soft 250
+note: godot/sim/sim_loot.gd:47 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:60 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:64 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:68 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:76 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:86 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:88 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:103 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:119 sanctioned draw: randi((
+note: godot/sim/v6_tween_probe.gd 313 lines > soft 250
+note: tools/check_hygiene.py 268 lines > soft 250
+check_hygiene: 0 hit(s)
+HYGIENE_RC=0
+VERIFY_EXIT=0

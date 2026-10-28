@@ -44,3 +44,16 @@ PROBE: grep -c CLEAN /home/claudecode/Games/gatewardens/.audits/20261027-1500-vi
    VERIFIED 60 fps for the native render path on RTX 2060.
 
 VERIFY_EXIT=0
+
+## DA-fix addendum (2026-10-28) — re-verified at the moved tag
+
+The DA gate found the boss claim false at the first tag; fix-forward shipped the real sheet
+(coder commits eccd5d6/fd5cd53). Tag v1.1 MOVED 1f85125 -> fd5cd53. Fresh exe built AT the new tip:
+sha256 f114ca86a9c04337d86f03c32f9cfdce2c63f85606a56fdf890981b7e158c106 (113,930,952 B, boss sheet
+strings INSIDE = 4). VM120 re-verified THIS exe: in-guest Get-FileHash == f114ca86 (byte-identical),
+movie-mode run POSTED_OK (wall 48.6s incl. boot+write), guest files self-removed (no tasks this pass).
+Release page asset replaced — GitHub digest sha256:f114ca86… VERIFIED. BOSS-PIXELS painted in-game:
+v112-boss-shot.png (default rig), v112-boss-zoom.png, v112-boss-near.png (kit-declared camera nudge;
+art matches the sheet, alpha clean) — kit godot/sim/v11_boss_shot.gd, probe leg path-pinned with
+planted-red (v112-boss-wiring.log). The pre-DA exe 44299c3d… rows above remain the historical record
+of the first pass; the release never served it after the move.

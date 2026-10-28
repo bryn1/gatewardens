@@ -17,7 +17,7 @@ PROBE: grep -c v1.1 /home/claudecode/Games/gatewardens/README.md => ^1$
 | V4 icon HUD | 8 badges on bank; 3 shop buttons pinned; green/wave/core emblems; labels byte-identical | 11549 knut-VERIFIED | v4_icon_probe 7 rows + v5fx_f180 visible |
 | V5 combat FX | tracers/sparks/poofs via visual-only observer, sim diff ZERO files | 11552 knut-VERIFIED | v5_fx_probe 9 rows (848/318/5) + f270 zoom |
 | V6 menu tweens | shared ui_tween helper, tab slide+fade, hover/press, at-rest stable | 11530 knut-VERIFIED | v6_tween_probe 9 rows + planted-red |
-| V7 60fps served+exe | fresh exe on RTX 2060, movie 1280x720@60fps 10.00s + served pixels + side-by-side | this file (orchestrator pass) | V7-native-served-evidence.md |
+| V7 60fps served+exe | fresh exe on RTX 2060, movie 1280x720@60fps 10.00s + served pixels + side-by-side; DA-fix re-run: new exe (f114ca86) byte-identical on VM120 + movie POSTED_OK + boss billboard pixel-proven | this file (orchestrator pass) + DA-fix addendum in V7 file | V7-native-served-evidence.md, v112-boss-near.png |
 
 Doctrine rows: art 3090-authorized, clean-room (style reference only; prompt record
 gen/manifest-prompts.tsv — 24/36 assets with recovered prompts, the 12 batch-1 assets predate sidecar
@@ -27,10 +27,11 @@ warden_breaker boss sheet closed the last holdout); gates: 222 pytest + hygiene 
 byte-identical ON EVERY child close (orchestrator re-ran each); MC 11277 release rows met AT
 the tag (notes artifact + README current + grep-to-zero sweep).
 
-Ship artifacts: tag v1.1 -> 1f85125, release
+Ship artifacts: tag v1.1 -> fd5cd53 (MOVED from 1f85125 by the DA-fix loop; LEDGER row records the move), release
 https://github.com/bryn1/gatewardens/releases/tag/v1.1 with Gatewardens.exe (sha256
-44299c3dfa095d6b24dad370ba4d3a0ea4439708b0eeaa6ca65dd59ef01e71c4) — byte-identical transfer +
-live run + RESP=True + native 60fps movie VERIFIED on VM120 (seat restored CLEAN, shared-session
+f114ca86a9c04337d86f03c32f9cfdce2c63f85606a56fdf890981b7e158c106; pre-DA build 44299c3d… superseded at the tag move) — byte-identical transfer (both builds) +
+live run + RESP=True + native 60fps movie VERIFIED on VM120 (re-run at the DA-fix tip, F114CA86 in-guest) +
+BOSS-PIXELS painted in-game (v112-boss-near.png, kit-declared nudge) (seat restored CLEAN, shared-session
 findings disclosed in V7 evidence). Honest limits shipped with the release (poof colour
 separation, outgoing-tab hard cut, 3-button bar, zoom gate, headless-rAF instrument note) — see
 RELEASE_NOTES v1.1 section.
