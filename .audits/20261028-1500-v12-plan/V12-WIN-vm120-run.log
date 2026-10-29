@@ -1,0 +1,14 @@
+VM120 (Win11 Home 26300, RTX 2060) REAL-WINDOWS runtime for v1.2 (tag c95798b, exe sha 6b62c1f9...), 2026-10-29 02:10-02:35Z,
+via QEMU GA + session-1 scheduled tasks (W18 recipe reused verbatim: GET/POST HTTP :8137, /ru work /it + FILE wrapper,
+Schedule.Service COM Run(0) — schtasks /run dead per skill):
+- exe transferred over private LAN HTTP; in-guest Get-FileHash 6B62C1F9...2E0D == artifact sha (byte-identical)
+- verbose boot --quit-after 600: "Godot Engine v4.7.2.stable.official.ed1daf0bf" + "OpenGL API 3.3.0 NVIDIA 610.88 ...
+  NVIDIA GeForce RTX 2060" + WASAPI 48kHz audio init + Main.tscn/hub.tscn loads + clean exit (full boot.log 4539 B)
+- persistent run session 1: tasklist "Gatewardens.exe <pid> Console 1"; window-mode MoveWindow/SetForegroundWindow attempt
+  (window occluded by helper consoles — honest note); FULLSCREEN run then rendered natively: screenshot v12-native-hub.png
+  shows "GATEWARDENS — HUB | gold 100 | bank 0 | deck 3" + War Table buttons painted by the game (sha 693b4c60...)
+- fullscreen gwshot leg HUNG once (task stuck Running, refire after /end succeeded — recorded, not chased; P4 note)
+- cleanup VERIFIED (shared-seat): process killed, both tasks deleted (query ERROR), gw* files in ProgramData deleted,
+  gwv12 temp dir removed, absence re-checked post-sweep; owner desktop state untouched otherwise; roster: NO install
+  (portable exe run from %TEMP%, removed) — no roster row needed
+VERIFY_EXIT=0
