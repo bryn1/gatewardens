@@ -1,0 +1,123 @@
+# G6-wave.log — v1.2.1 W1 G6: floating damage numbers incl. KILL BLOW (MC 11691)
+
+Seat: coder (11691) · base tip e272b9e (fa131fc + G1 c782197 + plan sheet e272b9e)
+SPEC: .audits/20261029-2100-v121-plan/V121-PLAN.md §G6 (Rev 2 — kill-blow shape (b)
+binding) + §C-1..C-7. Contract legs quoted per §4-G6.
+
+## Scope (pathspec-only; siblings' hud.gd/mission_smoke.gd work untouched)
+
+- NEW godot/scripts/world_text.gd (+ .uid from --import): Label3D factory, the
+  DECLARED first use of the one world-text mechanism (plan §0 grep row: Label3D
+  zero times before). Presentation-only; numbers (TEXT_PX/OUTLINE_PX) live in the
+  ungoverned file per I2/C-4.
+- godot/scripts/fx_director.gd (260 LOC, ceiling 400): at each existing per-frame
+  drops[iid] (the _observe_enemies diff — REUSED, no second diff mechanism) also
+  spawn the number via world_text at the SAME point (spark still fires — one
+  event one position); numbers COUNT toward MAX_FX=64 (_attach_fx shared cap);
+  past-cap drops nothing, never queue-starves. KILL BLOW: _tracked erase branch
+  (death vs breacher discrimination :130-131 as the plan verified) renders final
+  number == snap["hp"] — DECLARED LOWER BOUND (overkill never observed);
+  snap["hp"]<=0 (never-seen-alive) renders nothing; breacher renders nothing.
+- NEW tests/test_damage_numbers.py: engine probe (tmp_path R5, boots real mission
+  under -s, drives ONLY the ONE damage site: defense_obj.tick tower route,
+  HeroRig.combat.tick+Digit1 hero route, runner.damage itself + runner.step drain)
+  + source-truth legs + Label3D-mechanism confinement leg.
+
+## Reuse check (second-mechanism law)
+
+G6 REUSES the existing hp-drop diff (`drops[iid]` already computed) and the
+sprite_bank factory doctrine; NEW file is exactly the plan-declared one
+(Label3D appeared ZERO times in godot/ — first use DECLARED). make_sprite is NOT
+reused for text (sprite is texture-backed; Label3D is the other text primitive
+the plan names). No second fx list/cap: _attach_fx is the shared bookkeeping for
+both spawn kinds.
+
+## Engine rows (probe, base+my-files worktree, rc=0, stderr EMPTY)
+
+  N6-MOUNT mounted=1
+  N6-VAL-TOW track_labels=0 drop=14.4 label=14 sparks=1 numbers=1
+  N6-VAL-HERO track_labels=0 drop=49.0 label=49 sparks=1 numbers=1
+  N6-CAP live_max=64 labels_live=48 drop_frames=60
+  N6-KILL-TOW track_labels=0 label=5 poofs=1 numbers=1
+  N6-KILL-HERO track_labels=0 label=5 poofs=1 numbers=1
+  N6-NEG-BREACH labels=0 poofs=0 numbers=0 reached=1
+  N6-NEG-UNSEEN labels=0 poofs=0 numbers=0 dead=1
+  N6-OK
+
+Legs (§4-G6, all asserted in pytest against values RE-DERIVED from JSON):
+- VALUE == applied at the ONE damage site: VAL-TOW drop 14.4 == towers.json
+  ballista damage 12 x fire_rate 1.2 x delta 1.0 (sim_combat.tower_dps formula),
+  label "14" == str(int(drop)); VAL-HERO drop 49.0 == heroes.json deadeye
+  ability_power 35 x piercer dmg_scale 1.4 (no-crit floor), label "49". Both
+  routes terminate at enemy_runner.damage() (defense_obj :176, hero_combat :126 —
+  the plan's single-site inventory). Float round-trips the last ulp through hp —
+  agreement asserted at int().
+- HERO-HIT AND TOWER-HIT BOTH PRODUCE NUMBERS: sparks=1 numbers=1 on both legs.
+- ONE NUMBER PER DROP EVENT: counter deltas sparks==numbers on every drop leg.
+- CAP LEG (numbers counted): 8 fed entities x (spark+number)/fx_step(0.004);
+  live_max == 64 exactly WITH 48 numbers among live nodes, children never > 64,
+  60 drop-frames (~480 drop events) past the ceiling — dropped, never queued.
+- KILLING-BLOW legs (oversized both routes — floors asserted from the shipped
+  JSON: 14.4 > 5.0, 49.0 > 5.0): FINAL number == snap["hp"] == "5" (declared
+  LOWER BOUND; overkill unobservable), one poof, one number, nothing on the
+  tracking step (track_labels=0).
+- NEGATIVE legs: breacher (last-observed pos == lane end, hp>0, drained as
+  reached=1) renders NO final number and NO poof; hp<=0-never-seen-alive
+  (killed before any fx_step saw it, dead=1) renders nothing.
+
+## Planted-red x2 (transcripts — a check that never went red is not a check)
+
+(1) format-amount halved (`str(int(drop)) -> str(int(drop * 0.5))`):
+    1 failed, 2 passed
+    E       AssertionError: {'drop': '14.4', 'label': '7', 'numbers': '1', 'sparks': '1', ...}
+    E       assert '7' == '14'                                (value leg RED; drop
+    itself stays 14.4 — only the FORMAT moved, exactly the leg this row names)
+(2) final-number branch removed (erase branch: poof only):
+    probe rows: N6-KILL-TOW ... label= ... numbers=0 / KILL-HERO same
+    N6-FAIL KILL-TOW: expected exactly one live number, got []
+    N6-FAIL KILL-HERO: expected exactly one live number, got []
+    1 failed, 2 passed                                                  (kill leg RED — LOUD)
+Then restored: `3 passed` (green transcript above = restored tree).
+
+## Contract/gate rows (all at MY tree: worktree at base e272b9e + ONLY my files)
+
+- Full suite: 243 passed + 3 (mine) = 246 green in 2 runs (`pytest tests/ -q`);
+  >= 241 bar met. NOTE: scaffold/served legs need the web export build in
+  static/ (untracked build-side artifact per test_served.py's own docstring);
+  a FRESH worktree without it shows test_served module-skip + test_scaffold
+  404 — pre-existing environment shape, NOT this card. Main tree (has the
+  export build) runs them green.
+- Hygiene: `python3 tools/check_hygiene.py` -> `check_hygiene: 0 hit(s)` rc 0
+  (world_text.gd 31 LOC, fx_director.gd 260 LOC — no reason lines needed).
+- Fixtures: `git diff --stat -- tests/fixtures/` EMPTY, status clean.
+- Source-truth leg (observer doctrine — ZERO writes to mission/runner state):
+  MUT_RE (add_/spend_/consume_/set_/equip/place_) + WRITE_RE (m./mission./
+  state./game_state. x=) on blank_code(fx_director.gd, world_text.gd):
+  `fx_director.gd mutators: 0 state_writes: 0` / `world_text.gd mutators: 0
+  state_writes: 0`; `ent["hp"] =` / `ent["pos"] =` = 0 (the two raw-grep hits
+  are prev["hp"]/prev["pos"] — the observer's OWN snapshot dict, pre-existing
+  bookkeeping, header-documented). Pinned as pytest legs too.
+- mission.gd / enemy_runner.gd / phase_controller.gd / defense_obj.gd:
+  `git diff HEAD --stat` EMPTY (mission.gd stays at its ceiling; no sim file
+  touched at all).
+- Label3D confinement: blank-scan of godot/ *.gd -> Label3D in
+  scripts/world_text.gd ONLY (test_label3d_lives_only_in_world_text).
+- Sim determinism: readability fx are READ-ONLY observers (C-3); golden fixture
+  legs green in the suite run above.
+
+## Declared readings
+
+- Kill-blow number == snap["hp"] LOWER BOUND (plan §G6 Rev 2 verbatim semantics);
+  str(int(...)) truncation shared with drop numbers.
+- NUMBER_LIFE 0.5 s / FX_H_NUMBER 0.9 u: presentation consts in fx_director
+  (ungoverned, the V5 home for fx numbers); font px live in world_text.
+- Busy-wave number starvation under the shared MAX_FX cap: DECLARED (DA A5) —
+  rides the release known-limits line, not a defect.
+- Verification tree: siblings' W1 work is live UNCOMMITTED in the shared main
+  tree (mid-work hud.gd parse error observed during this card), so every gate
+  above ran in /tmp/g6-verify = base tip + my 4 files only (git worktree,
+  detached). Removed after verification.
+
+LEDGER-ROW: G6 (MC 11691) DONE 2026-10-29 — floating damage numbers via fx observer + world_text (Label3D, first use DECLARED): per-drop number == observed hp drop (both routes, ONE damage site), KILL BLOW renders snap["hp"] (declared lower bound; <=0-never-seen and breacher render nothing), numbers share MAX_FX=64; world_text.gd NEW, fx_director 217->260 LOC, tests/test_damage_numbers.py 3 legs GREEN + planted-red x2 RED-then-green, suite 246 green, hygiene 0, fixtures empty, zero sim writes.
+
+VERIFY_EXIT=0

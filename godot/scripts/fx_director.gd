@@ -27,8 +27,23 @@
 #   fx_proj_ice, bombard = fx_proj_bolt — the bomb T3 sheet is a LATER
 #   VISUAL-TARGET row; the bolt standing in for both is the brief's
 #   declared reading, not an oversight.
-# - DAMAGE -> SPARK: any tracked entity whose hp DROPPED between frames
-#   gets one spark (hero hits qualify too — the row is damage-driven).
+# - DAMAGE -> SPARK + NUMBER: any tracked entity whose hp DROPPED
+#   between frames gets one spark AND one short-lived damage number
+#   (v1.2.1 G6, MC 11691) at the SAME point — one event, one position;
+#   hero hits qualify too — the row is damage-driven. Numbers ride the
+#   same MAX_FX cap as every other fx (drop past the cap, never queued;
+#   on busy waves numbers can be starved by tracers/sparks — declared,
+#   DA A5, rides the release known-limits line).
+# - KILL BLOW (G6): mission.step applies ALL damage before the runner
+#   drains hp<=0 inside the SAME tick, so the killing amount is NEVER
+#   observable — on the DEATH-disappearance branch below the director
+#   instead renders the FINAL number == snap["hp"], its own
+#   last-observed hp (no sim write, no new read). Declared semantics
+#   (V121-PLAN §G6 Rev 2 / DA A1): a LOWER BOUND of the killing blow
+#   (overkill unobservable); non-death drops stay exact. The
+#   snap["hp"]<=0 sub-case (never observed alive) renders nothing, and
+#   a breacher (at lane end, hp>0) renders nothing — the SAME death
+#   discrimination the poof already uses.
 # - DESPAWN -> POOF: the brief's "vanished with hp<=0" is realized as
 #   the observationally equivalent half of the despawn split: the
 #   runner drains dead AND arrived entities inside the same mission
@@ -46,6 +61,7 @@
 extends Node3D
 
 const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
+const WORLD_TEXT := preload("res://scripts/world_text.gd")
 
 # Tower data id -> projectile fx id (declared reading in the header;
 # unlisted firing ids ride the bolt default).
@@ -56,13 +72,17 @@ const PROJ_FOR := {
 }
 const PROJ_DEFAULT := "fx_proj_bolt"
 
-const MAX_FX := 64            # live fx node cap (header: drop NEW past it)
+const MAX_FX := 64            # live fx node cap (header: drop NEW past
+                              # it; G6 numbers COUNT toward it)
 const TRACER_LIFE := 0.2      # seconds, brief's 0.15-0.25 window
 const SPARK_LIFE := 0.2
 const POOF_LIFE := 0.3
+const NUMBER_LIFE := 0.5      # numbers outlive the spark so the value
+                              # stays readable (G6)
 const FX_H_SPARK := 1.2       # world-unit heights (512px sheets:
 const FX_H_POOF := 2.2        # Sprite3D maps 100px to 1u at scale 1)
 const FX_H_PROJ := 1.0
+const FX_H_NUMBER := 0.9      # world_text scales its line to this
 const FX_LIFT := Vector3(0.0, 1.0, 0.0)   # paint above the ground line
 const HP_EPS := 1e-6          # float margin on "hp changed at all"
 const FIRE_FRAC := 0.5        # observed drop / sim-applied dps*delta
@@ -73,6 +93,7 @@ const REACH_EPS := 0.5        # "at the lane's final waypoint" radius
 var spawned_tracers := 0
 var spawned_sparks := 0
 var spawned_poofs := 0
+var spawned_numbers := 0      # damage drops + kill-blow finals (G6)
 var live_max := 0             # high-water mark of live fx nodes
 
 var _tracked := {}            # entity node instance-id -> snapshot dict
@@ -111,8 +132,10 @@ func _observe_enemies(runner) -> Dictionary:
 		var pos: Vector3 = ent["pos"]
 		var prev: Variant = _tracked.get(iid)
 		if prev != null and hp < float(prev["hp"]) - HP_EPS:
-			drops[iid] = float(prev["hp"]) - hp
+			var drop := float(prev["hp"]) - hp
+			drops[iid] = drop
 			_spawn_spark(pos)
+			_spawn_number(pos, str(int(drop)))   # == the OBSERVED drop
 		if prev == null:
 			var wps: Array = (ent["lane"] as Dictionary).get("wps", [])
 			_tracked[iid] = {"hp": hp, "pos": pos,
@@ -130,6 +153,11 @@ func _observe_enemies(runner) -> Dictionary:
 		if float(snap["hp"]) <= 0.0 \
 				or (snap["pos"] as Vector3).distance_to(end) > REACH_EPS:
 			_spawn_poof(snap["pos"])
+			if float(snap["hp"]) > 0.0:
+				_spawn_number(snap["pos"], str(int(snap["hp"])))
+				# kill blow: last-observed hp == declared LOWER BOUND
+				# of the killing blow (header); the <=0 sub-case (never
+				# observed alive) renders nothing — honest.
 		_tracked.erase(iid)
 	return drops
 
@@ -181,11 +209,12 @@ func _spawn_poof(at: Vector3) -> void:
 		spawned_poofs += 1
 
 
-# The ONE fx spawn site here; the billboard itself comes from
-# sprite_bank.make_sprite — the ONE factory (id->file map, V5 card
-# row 3; camera-facing; the 100px=1u scale formula lives there only,
-# D-1 reuse MC 11575 W1).
-# {} = nothing spawned (bank null OR the MAX_FX cap dropped it).
+# The fx spawn sites here: billboards come from sprite_bank.make_sprite
+# — the ONE sprite factory (id->file map, V5 card row 3; camera-facing;
+# the 100px=1u scale formula lives there only, D-1 reuse MC 11575 W1) —
+# and damage numbers from world_text.make_text, the DECLARED one
+# world-text mechanism (G6 header). {} / early return = nothing spawned
+# (bank null OR the MAX_FX cap dropped it — numbers count too).
 func _spawn_fx(fx_id: String, at: Vector3, life: float,
 		h: float) -> Dictionary:
 	if _fx.size() >= MAX_FX:
@@ -194,8 +223,23 @@ func _spawn_fx(fx_id: String, at: Vector3, life: float,
 	if s == null:
 		return {}               # bank: id has no committed sheet
 	s.position = at
-	add_child(s)
-	var e := {"node": s, "life": life}
+	return _attach_fx(s, life)
+
+
+func _spawn_number(at: Vector3, txt: String) -> void:
+	if _fx.size() >= MAX_FX:
+		return                  # numbers COUNT toward the same cap
+	_attach_fx(WORLD_TEXT.make_text(txt, at + FX_LIFT, FX_H_NUMBER),
+			NUMBER_LIFE)
+	spawned_numbers += 1
+
+
+# Shared lifetime bookkeeping: parent to THIS node (mission cleanup
+# frees the director and every fx with it — header, no leaks) and carry
+# the node's life on _fx.
+func _attach_fx(node: Node3D, life: float) -> Dictionary:
+	add_child(node)
+	var e := {"node": node, "life": life}
 	_fx.append(e)
 	return e
 
@@ -206,7 +250,7 @@ func _advance_fx(delta: float) -> void:
 	for i: int in range(_fx.size() - 1, -1, -1):
 		var e: Dictionary = _fx[i]
 		e["life"] = float(e["life"]) - delta
-		var node: Sprite3D = e["node"]
+		var node: Node3D = e["node"]      # Sprite3D or Label3D (G6)
 		if float(e["life"]) <= 0.0:
 			_fx.remove_at(i)
 			remove_child(node)
