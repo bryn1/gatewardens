@@ -1,0 +1,485 @@
+# V12 WINDOWS EXPORT BUILD (MC 11658) — run 2026-10-29T02:01:28Z
+# RECIPE (v1.1 W18, card 11437): tools/export_windows.sh = shipped preset "Windows Desktop" (godot/export_presets.cfg preset.1, embed_pck=true -> ONE self-contained Gatewardens.exe, no sidecar .pck / no *_p data dir), headless cross-generation, output build/Gatewardens.exe.
+# Evidence log line from v1.1: .audits/20261025-1045-clean-code/W18-evidence.md — Templates: ~/.local/share/godot/export_templates/4.7.2.stable/ (windows_release_x86_64.exe 109,268,480 B present) — SAME dir, binary Godot_v4.7.2-stable_linux.x86_64.
+# Task-mandated output redirect: /tmp/gw-v12-win/Gatewardens.exe (same mechanism as the W18 wrapper, export target on the evidence side).
+
+$ git worktree add /tmp/gw-v12-tag v1.2
+detached HEAD c95798b284c0d468a9c572cab7484aae68c3e947
+
+$ /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path /tmp/gw-v12-tag/godot --export-release "Windows Desktop" /tmp/gw-v12-win/Gatewardens.exe
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (62 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | GWBridge[39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | GWGameState[39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | GWSaveStore[39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | GWCompose[39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | SimCombat[39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | SimEconomy[39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | SimInventory[39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | SimLoot[39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | SimProgression[39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | GWTables[39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | SimWave[39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started Scanning actions... (36 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | enemy_ash_bandit.png[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | enemy_bone_lobber.png[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | enemy_cinder_wisp.png[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | enemy_gale_harpy.png[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | enemy_husk_brute.png[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | enemy_skitterling.png[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | enemy_skitterling_run.png[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | enemy_warden_breaker.png[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | fx_poof_death.png[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | fx_proj_bolt.png[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | fx_proj_ice.png[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | fx_spark_hit.png[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | ground_arena.png[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | ground_path.png[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | hero_deadeye.png[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | hero_embercaller.png[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | hero_warden.png[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | icon_ballista.png[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | icon_blockade.png[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | icon_bombard.png[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | icon_core.png[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | icon_green.png[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | icon_hailspire.png[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | icon_snare.png[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | icon_wave.png[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | tower_ballista_T1.png[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | tower_ballista_T2.png[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | tower_ballista_T3.png[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | tower_barbed_snare.png[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | tower_bombard_T1.png[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | tower_bombard_T2.png[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | tower_bombard_T3.png[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | tower_gate_blockade.png[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | tower_hailspire_T1.png[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | tower_hailspire_T2.png[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | tower_hailspire_T3.png[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (36 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   2% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   5% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   8% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  10% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  13% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  16% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  18% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  21% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  24% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  27% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  29% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  32% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  35% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  37% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  40% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  43% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  45% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  48% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  51% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  54% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  56% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  59% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  62% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  64% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  67% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  70% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  72% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  75% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  78% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  81% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  83% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  86% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  89% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  91% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  94% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing pre-reimport operations...[39m[0m
+[   0% ] [90m[1mreimport[22m | icon_blockade.png[39m[0m
+[   2% ] [90m[1mreimport[22m | icon_bombard.png[39m[0m
+[   5% ] [90m[1mreimport[22m | icon_core.png[39m[0m
+[   8% ] [90m[1mreimport[22m | icon_green.png[39m[0m
+[  10% ] [90m[1mreimport[22m | icon_hailspire.png[39m[0m
+[  13% ] [90m[1mreimport[22m | icon_snare.png[39m[0m
+[  16% ] [90m[1mreimport[22m | icon_wave.png[39m[0m
+[  18% ] [90m[1mreimport[22m | tower_ballista_T1.png[39m[0m
+[  21% ] [90m[1mreimport[22m | tower_ballista_T2.png[39m[0m
+[  24% ] [90m[1mreimport[22m | tower_ballista_T3.png[39m[0m
+[  27% ] [90m[1mreimport[22m | tower_barbed_snare.png[39m[0m
+[  29% ] [90m[1mreimport[22m | tower_bombard_T1.png[39m[0m
+[  32% ] [90m[1mreimport[22m | tower_bombard_T2.png[39m[0m
+[  35% ] [90m[1mreimport[22m | tower_bombard_T3.png[39m[0m
+[  37% ] [90m[1mreimport[22m | tower_gate_blockade.png[39m[0m
+[  40% ] [90m[1mreimport[22m | tower_hailspire_T1.png[39m[0m
+[  43% ] [90m[1mreimport[22m | tower_hailspire_T2.png[39m[0m
+[  45% ] [90m[1mreimport[22m | tower_hailspire_T3.png[39m[0m
+[  48% ] [90m[1mreimport[22m | enemy_ash_bandit.png[39m[0m
+[  51% ] [90m[1mreimport[22m | enemy_bone_lobber.png[39m[0m
+[  54% ] [90m[1mreimport[22m | enemy_cinder_wisp.png[39m[0m
+[  56% ] [90m[1mreimport[22m | enemy_gale_harpy.png[39m[0m
+[  59% ] [90m[1mreimport[22m | enemy_husk_brute.png[39m[0m
+[  62% ] [90m[1mreimport[22m | enemy_skitterling.png[39m[0m
+[  64% ] [90m[1mreimport[22m | enemy_skitterling_run.png[39m[0m
+[  67% ] [90m[1mreimport[22m | enemy_warden_breaker.png[39m[0m
+[  70% ] [90m[1mreimport[22m | fx_poof_death.png[39m[0m
+[  72% ] [90m[1mreimport[22m | fx_proj_bolt.png[39m[0m
+[  75% ] [90m[1mreimport[22m | fx_proj_ice.png[39m[0m
+[  78% ] [90m[1mreimport[22m | fx_spark_hit.png[39m[0m
+[  81% ] [90m[1mreimport[22m | ground_arena.png[39m[0m
+[  83% ] [90m[1mreimport[22m | ground_path.png[39m[0m
+[  86% ] [90m[1mreimport[22m | hero_deadeye.png[39m[0m
+[  89% ] [90m[1mreimport[22m | hero_embercaller.png[39m[0m
+[  91% ] [90m[1mreimport[22m | hero_warden.png[39m[0m
+[  94% ] [90m[1mreimport[22m | icon_ballista.png[39m[0m
+[  97% ] [90m[1mreimport[22m | Finalizing Asset Import...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (36 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing post-reimport operations...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1msavepack[22m | Started Packing (102 steps)[39m[0m
+[   1% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/enemy_ash_bandit.png-837adafd87af9f2cc5333c87f1f900ff.ctex[39m[0m
+[   1% ] [90m[1msavepack[22m | Storing File: res://assets/v11/enemy_ash_bandit.png.import[39m[0m
+[   1% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/enemy_bone_lobber.png-203e48c4a3f350a1f081315e3cf3491c.ctex[39m[0m
+[   1% ] [90m[1msavepack[22m | Storing File: res://assets/v11/enemy_bone_lobber.png.import[39m[0m
+[   2% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/enemy_cinder_wisp.png-513dce9e62d28078fcbe8374bb26e138.ctex[39m[0m
+[   2% ] [90m[1msavepack[22m | Storing File: res://assets/v11/enemy_cinder_wisp.png.import[39m[0m
+[   3% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/enemy_gale_harpy.png-b0f9d9f8e016298734871c1386b0adbc.ctex[39m[0m
+[   3% ] [90m[1msavepack[22m | Storing File: res://assets/v11/enemy_gale_harpy.png.import[39m[0m
+[   4% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/enemy_husk_brute.png-ac9df15e0bceb43cf74df67a5fcd48bc.ctex[39m[0m
+[   4% ] [90m[1msavepack[22m | Storing File: res://assets/v11/enemy_husk_brute.png.import[39m[0m
+[   4% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/enemy_skitterling.png-867049af94983d34b61c0d476f8936a9.ctex[39m[0m
+[   4% ] [90m[1msavepack[22m | Storing File: res://assets/v11/enemy_skitterling.png.import[39m[0m
+[   5% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/enemy_skitterling_run.png-8eab09a5e71012b6bb42c2b94bd55fe6.ctex[39m[0m
+[   5% ] [90m[1msavepack[22m | Storing File: res://assets/v11/enemy_skitterling_run.png.import[39m[0m
+[   6% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/enemy_warden_breaker.png-9aa99e6f6ed0e71b8af25f8b12df6701.ctex[39m[0m
+[   6% ] [90m[1msavepack[22m | Storing File: res://assets/v11/enemy_warden_breaker.png.import[39m[0m
+[   7% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/fx_poof_death.png-6d4f92ed6f2c79dd6c61c9c8cfea74df.ctex[39m[0m
+[   7% ] [90m[1msavepack[22m | Storing File: res://assets/v11/fx_poof_death.png.import[39m[0m
+[   7% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/fx_proj_bolt.png-01209bdedf762968441b36f32d149971.ctex[39m[0m
+[   7% ] [90m[1msavepack[22m | Storing File: res://assets/v11/fx_proj_bolt.png.import[39m[0m
+[   8% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/fx_proj_ice.png-08199bf2b77c2c61fd95ce10f5b32030.ctex[39m[0m
+[   8% ] [90m[1msavepack[22m | Storing File: res://assets/v11/fx_proj_ice.png.import[39m[0m
+[   9% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/fx_spark_hit.png-7f610e32896abe5cc8d8d8fdfa8471a5.ctex[39m[0m
+[   9% ] [90m[1msavepack[22m | Storing File: res://assets/v11/fx_spark_hit.png.import[39m[0m
+[  10% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/ground_arena.png-3ed2739914c635751be3254823577347.ctex[39m[0m
+[  10% ] [90m[1msavepack[22m | Storing File: res://assets/v11/ground_arena.png.import[39m[0m
+[  10% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/ground_path.png-c395edafaca94bdfa49f4d07960c1074.ctex[39m[0m
+[  10% ] [90m[1msavepack[22m | Storing File: res://assets/v11/ground_path.png.import[39m[0m
+[  11% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/hero_deadeye.png-3af23e0543bc631edb5a4c7b0f5f5970.ctex[39m[0m
+[  11% ] [90m[1msavepack[22m | Storing File: res://assets/v11/hero_deadeye.png.import[39m[0m
+[  12% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/hero_embercaller.png-26aaa7e787d5b43e7341668966b54f66.ctex[39m[0m
+[  12% ] [90m[1msavepack[22m | Storing File: res://assets/v11/hero_embercaller.png.import[39m[0m
+[  13% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/hero_warden.png-c96ab2096609d78a2e44f943711422bc.ctex[39m[0m
+[  13% ] [90m[1msavepack[22m | Storing File: res://assets/v11/hero_warden.png.import[39m[0m
+[  13% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/icon_ballista.png-4bfca4f84bf71b8ff53849229290bc4d.ctex[39m[0m
+[  13% ] [90m[1msavepack[22m | Storing File: res://assets/v11/icon_ballista.png.import[39m[0m
+[  14% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/icon_blockade.png-7652b5a1f49db3a4894f4189db3f913d.ctex[39m[0m
+[  14% ] [90m[1msavepack[22m | Storing File: res://assets/v11/icon_blockade.png.import[39m[0m
+[  15% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/icon_bombard.png-64b7c73a9c6992e775db6d2b45aea478.ctex[39m[0m
+[  15% ] [90m[1msavepack[22m | Storing File: res://assets/v11/icon_bombard.png.import[39m[0m
+[  16% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/icon_core.png-1c52de10abfdddccc95a0ec6f223dee2.ctex[39m[0m
+[  16% ] [90m[1msavepack[22m | Storing File: res://assets/v11/icon_core.png.import[39m[0m
+[  16% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/icon_green.png-a391bf8b508428b2f07443f9b33952fc.ctex[39m[0m
+[  16% ] [90m[1msavepack[22m | Storing File: res://assets/v11/icon_green.png.import[39m[0m
+[  17% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/icon_hailspire.png-53a9f229ee0c0734055016585786430d.ctex[39m[0m
+[  17% ] [90m[1msavepack[22m | Storing File: res://assets/v11/icon_hailspire.png.import[39m[0m
+[  18% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/icon_snare.png-11e9ccf7b910cd5d6d45f144a8dacbf7.ctex[39m[0m
+[  18% ] [90m[1msavepack[22m | Storing File: res://assets/v11/icon_snare.png.import[39m[0m
+[  19% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/icon_wave.png-2a5a60a96d8b15697ff7ef8f6e2be51f.ctex[39m[0m
+[  19% ] [90m[1msavepack[22m | Storing File: res://assets/v11/icon_wave.png.import[39m[0m
+[  19% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_ballista_T1.png-b1b1eda3a181fe7f655d03f971778828.ctex[39m[0m
+[  19% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_ballista_T1.png.import[39m[0m
+[  20% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_ballista_T2.png-fc4e90f2e5a28faa65a0e89a2f654745.ctex[39m[0m
+[  20% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_ballista_T2.png.import[39m[0m
+[  21% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_ballista_T3.png-bfc6cb6a257bec15038151e48e2945f4.ctex[39m[0m
+[  21% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_ballista_T3.png.import[39m[0m
+[  22% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_barbed_snare.png-591d1f72779731763b590019f9cbe06a.ctex[39m[0m
+[  22% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_barbed_snare.png.import[39m[0m
+[  22% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_bombard_T1.png-9a35979a7c1b1a21bfc34deb9e398d10.ctex[39m[0m
+[  22% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_bombard_T1.png.import[39m[0m
+[  23% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_bombard_T2.png-ecf12cd0a28000b0c720847831eb720e.ctex[39m[0m
+[  23% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_bombard_T2.png.import[39m[0m
+[  24% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_bombard_T3.png-2516d693c39041eca98e89a84dae5017.ctex[39m[0m
+[  24% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_bombard_T3.png.import[39m[0m
+[  25% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_gate_blockade.png-e0bddba1e4c27c205fe9773d46ece0ad.ctex[39m[0m
+[  25% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_gate_blockade.png.import[39m[0m
+[  25% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_hailspire_T1.png-f0994f23405a392a26b35dddfc9f9cba.ctex[39m[0m
+[  25% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_hailspire_T1.png.import[39m[0m
+[  26% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_hailspire_T2.png-da728f99d377ab162768f8652e50902c.ctex[39m[0m
+[  26% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_hailspire_T2.png.import[39m[0m
+[  27% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/tower_hailspire_T3.png-86308cce615c059966a69be91fc3a5a8.ctex[39m[0m
+[  27% ] [90m[1msavepack[22m | Storing File: res://assets/v11/tower_hailspire_T3.png.import[39m[0m
+[  28% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-526c27ccd8977c0fb493a15ffa31d1f3-mat_core.res[39m[0m
+[  28% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-026604657870ea543356dd520ff17de8-mat_defense_blockade.res[39m[0m
+[  29% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-cd3fa91ee387939b919ed7558f0003ac-mat_defense_tower.res[39m[0m
+[  30% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-c89f8fa7279ebb5ab205def3fed2006c-mat_defense_trap.res[39m[0m
+[  31% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-0dbacad481fbe1cbdb027d9832050804-mat_enemy_air.res[39m[0m
+[  31% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-dea34664cef83064a649df29ab723db5-mat_enemy_ground.res[39m[0m
+[  32% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-98259538e69d2fdb1367513903b71433-mat_ground.res[39m[0m
+[  33% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-cadd9f248880111ca30a1ee05c7eb613-mat_hero_deadeye.res[39m[0m
+[  33% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-63724a7cb19b5344dd63726bc6c86f12-mat_hero_embercaller.res[39m[0m
+[  33% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-d6add605a2114941090de6df0e60f164-mat_hero_warden.res[39m[0m
+[  34% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-77f28ba72d768da6a7c8426776ec8af1-mesh_box.res[39m[0m
+[  35% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-390ee338069c9fb776aca15549fa3424-mesh_capsule.res[39m[0m
+[  36% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-46b62d6805afce4595733d0f344d0614-mesh_core.res[39m[0m
+[  36% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-fe5435bb95882ad0b082df7ad3601fa9-mesh_plane.res[39m[0m
+[  37% ] [90m[1msavepack[22m | Storing File: res://data/maps/gatefall.json[39m[0m
+[  38% ] [90m[1msavepack[22m | Storing File: res://data/waves/waves_gatefall_hard.json[39m[0m
+[  39% ] [90m[1msavepack[22m | Storing File: res://data/waves/waves_gatefall_normal.json[39m[0m
+[  39% ] [90m[1msavepack[22m | Storing File: res://data/ascension.json[39m[0m
+[  40% ] [90m[1msavepack[22m | Storing File: res://data/balance.json[39m[0m
+[  41% ] [90m[1msavepack[22m | Storing File: res://data/blacksmith.json[39m[0m
+[  42% ] [90m[1msavepack[22m | Storing File: res://data/economy.json[39m[0m
+[  42% ] [90m[1msavepack[22m | Storing File: res://data/enemies.json[39m[0m
+[  43% ] [90m[1msavepack[22m | Storing File: res://data/heroes.json[39m[0m
+[  44% ] [90m[1msavepack[22m | Storing File: res://data/items.json[39m[0m
+[  45% ] [90m[1msavepack[22m | Storing File: res://data/mods.json[39m[0m
+[  45% ] [90m[1msavepack[22m | Storing File: res://data/rarity.json[39m[0m
+[  46% ] [90m[1msavepack[22m | Storing File: res://data/towers.json[39m[0m
+[  47% ] [90m[1msavepack[22m | Storing File: res://data/xp.json[39m[0m
+[  48% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-db074d98148aadb5a0e66ffbc6c5831e-hero_pawn.scn[39m[0m
+[  48% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-e0731ad8c38adae8469d64491c26f453-hub.scn[39m[0m
+[  49% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-38bf74ff262409a94a41206b2b776d33-hud.scn[39m[0m
+[  50% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-e12719954094eed7cc41a9f6b46ca6dd-item_row.scn[39m[0m
+[  51% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-f13ac9369109a6facfe3832ce1f0ecc4-mission.scn[39m[0m
+[  51% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-fcf955ed7d0d94972c4a2fda71fb69ae-mission_stub.scn[39m[0m
+[  52% ] [90m[1msavepack[22m | Storing File: res://scripts/ascension_ui.gdc[39m[0m
+[  53% ] [90m[1msavepack[22m | Storing File: res://scripts/bank_list.gdc[39m[0m
+[  54% ] [90m[1msavepack[22m | Storing File: res://scripts/blacksmith_ui.gdc[39m[0m
+[  54% ] [90m[1msavepack[22m | Storing File: res://scripts/bridge.gdc[39m[0m
+[  55% ] [90m[1msavepack[22m | Storing File: res://scripts/core_obj.gdc[39m[0m
+[  56% ] [90m[1msavepack[22m | Storing File: res://scripts/defense_obj.gdc[39m[0m
+[  57% ] [90m[1msavepack[22m | Storing File: res://scripts/defense_panel.gdc[39m[0m
+[  57% ] [90m[1msavepack[22m | Storing File: res://scripts/defense_placer.gdc[39m[0m
+[  58% ] [90m[1msavepack[22m | Storing File: res://scripts/dummy_range.gdc[39m[0m
+[  59% ] [90m[1msavepack[22m | Storing File: res://scripts/enemy_anim.gdc[39m[0m
+[  60% ] [90m[1msavepack[22m | Storing File: res://scripts/enemy_runner.gdc[39m[0m
+[  60% ] [90m[1msavepack[22m | Storing File: res://scripts/fx_director.gdc[39m[0m
+[  61% ] [90m[1msavepack[22m | Storing File: res://scripts/game_state.gdc[39m[0m
+[  62% ] [90m[1msavepack[22m | Storing File: res://scripts/gear_panel_ui.gdc[39m[0m
+[  63% ] [90m[1msavepack[22m | Storing File: res://scripts/hero_combat.gdc[39m[0m
+[  63% ] [90m[1msavepack[22m | Storing File: res://scripts/hero_controller.gdc[39m[0m
+[  64% ] [90m[1msavepack[22m | Storing File: res://scripts/hero_pawn.gdc[39m[0m
+[  65% ] [90m[1msavepack[22m | Storing File: res://scripts/hub.gdc[39m[0m
+[  66% ] [90m[1msavepack[22m | Storing File: res://scripts/hud.gdc[39m[0m
+[  66% ] [90m[1msavepack[22m | Storing File: res://scripts/item_row.gdc[39m[0m
+[  66% ] [90m[1msavepack[22m | Storing File: res://scripts/lane_path.gdc[39m[0m
+[  67% ] [90m[1msavepack[22m | Storing File: res://scripts/main.gdc[39m[0m
+[  68% ] [90m[1msavepack[22m | Storing File: res://scripts/mission.gdc[39m[0m
+[  68% ] [90m[1msavepack[22m | Storing File: res://scripts/mission_heroes.gdc[39m[0m
+[  69% ] [90m[1msavepack[22m | Storing File: res://scripts/mission_relics.gdc[39m[0m
+[  70% ] [90m[1msavepack[22m | Storing File: res://scripts/mission_world.gdc[39m[0m
+[  71% ] [90m[1msavepack[22m | Storing File: res://scripts/phase_controller.gdc[39m[0m
+[  71% ] [90m[1msavepack[22m | Storing File: res://scripts/save_store.gdc[39m[0m
+[  72% ] [90m[1msavepack[22m | Storing File: res://scripts/sprite_bank.gdc[39m[0m
+[  73% ] [90m[1msavepack[22m | Storing File: res://scripts/tinkerer_ui.gdc[39m[0m
+[  74% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_tween.gdc[39m[0m
+[  74% ] [90m[1msavepack[22m | Storing File: res://scripts/war_table.gdc[39m[0m
+[  75% ] [90m[1msavepack[22m | Storing File: res://sim/archive/v11_shot3.gdc[39m[0m
+[  76% ] [90m[1msavepack[22m | Storing File: res://sim/boot_probe.gdc[39m[0m
+[  77% ] [90m[1msavepack[22m | Storing File: res://sim/gw_compose.gdc[39m[0m
+[  77% ] [90m[1msavepack[22m | Storing File: res://sim/hub_probe.gdc[39m[0m
+[  78% ] [90m[1msavepack[22m | Storing File: res://sim/hub_probe_equip.gdc[39m[0m
+[  79% ] [90m[1msavepack[22m | Storing File: res://sim/hub_probe_mission.gdc[39m[0m
+[  80% ] [90m[1msavepack[22m | Storing File: res://sim/hub_probe_services.gdc[39m[0m
+[  80% ] [90m[1msavepack[22m | Storing File: res://sim/hub_probe_stations.gdc[39m[0m
+[  81% ] [90m[1msavepack[22m | Storing File: res://sim/mission_smoke.gdc[39m[0m
+[  82% ] [90m[1msavepack[22m | Storing File: res://sim/mission_smoke_flow.gdc[39m[0m
+[  83% ] [90m[1msavepack[22m | Storing File: res://sim/mission_smoke_swap.gdc[39m[0m
+[  83% ] [90m[1msavepack[22m | Storing File: res://sim/mission_smoke_w8.gdc[39m[0m
+[  84% ] [90m[1msavepack[22m | Storing File: res://sim/save_probe.gdc[39m[0m
+[  85% ] [90m[1msavepack[22m | Storing File: res://sim/sim_combat.gdc[39m[0m
+[  86% ] [90m[1msavepack[22m | Storing File: res://sim/sim_economy.gdc[39m[0m
+[  86% ] [90m[1msavepack[22m | Storing File: res://sim/sim_headless.gdc[39m[0m
+[  87% ] [90m[1msavepack[22m | Storing File: res://sim/sim_inventory.gdc[39m[0m
+[  88% ] [90m[1msavepack[22m | Storing File: res://sim/sim_loot.gdc[39m[0m
+[  89% ] [90m[1msavepack[22m | Storing File: res://sim/sim_parse_probe.gdc[39m[0m
+[  89% ] [90m[1msavepack[22m | Storing File: res://sim/sim_progression.gdc[39m[0m
+[  90% ] [90m[1msavepack[22m | Storing File: res://sim/sim_tables.gdc[39m[0m
+[  91% ] [90m[1msavepack[22m | Storing File: res://sim/sim_wave.gdc[39m[0m
+[  92% ] [90m[1msavepack[22m | Storing File: res://sim/v1_world_probe.gdc[39m[0m
+[  92% ] [90m[1msavepack[22m | Storing File: res://sim/v1_world_shot.gdc[39m[0m
+[  93% ] [90m[1msavepack[22m | Storing File: res://sim/v4_icon_probe.gdc[39m[0m
+[  94% ] [90m[1msavepack[22m | Storing File: res://sim/v5_fx_probe.gdc[39m[0m
+[  95% ] [90m[1msavepack[22m | Storing File: res://sim/v5_fx_shot.gdc[39m[0m
+[  95% ] [90m[1msavepack[22m | Storing File: res://sim/v6_tween_probe.gdc[39m[0m
+[  96% ] [90m[1msavepack[22m | Storing File: res://sim/v11_boss_shot.gdc[39m[0m
+[  97% ] [90m[1msavepack[22m | Storing File: res://sim/v11_sprite_probe.gdc[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-bcb0d2eb5949c52b6a65bfe9de3e985b-Main.scn[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mat_core.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mat_defense_blockade.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mat_defense_tower.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mat_defense_trap.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mat_enemy_air.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mat_enemy_ground.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mat_ground.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mat_hero_deadeye.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mat_hero_embercaller.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mat_hero_warden.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mesh_box.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mesh_capsule.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mesh_core.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/mesh_plane.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scenes/hero_pawn.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scenes/hub.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scenes/hud.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scenes/item_row.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scenes/mission.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scenes/mission_stub.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/ascension_ui.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/bank_list.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/blacksmith_ui.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/bridge.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/core_obj.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/defense_obj.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/defense_panel.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/defense_placer.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/dummy_range.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/enemy_anim.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/enemy_runner.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/fx_director.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/game_state.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/gear_panel_ui.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/hero_combat.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/hero_controller.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/hero_pawn.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/hub.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/hud.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/item_row.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/lane_path.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/main.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/mission.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/mission_heroes.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/mission_relics.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/mission_world.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/phase_controller.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/save_store.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/sprite_bank.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/tinkerer_ui.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_tween.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/war_table.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/archive/v11_shot3.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/boot_probe.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/gw_compose.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/hub_probe.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/hub_probe_equip.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/hub_probe_mission.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/hub_probe_services.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/hub_probe_stations.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/mission_smoke.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/mission_smoke_flow.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/mission_smoke_swap.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/mission_smoke_w8.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/save_probe.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/sim_combat.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/sim_economy.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/sim_headless.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/sim_inventory.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/sim_loot.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/sim_parse_probe.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/sim_progression.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/sim_tables.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/sim_wave.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/v1_world_probe.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/v1_world_shot.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/v4_icon_probe.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/v5_fx_probe.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/v5_fx_shot.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/v6_tween_probe.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/v11_boss_shot.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://sim/v11_sprite_probe.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://Main.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://.godot/global_script_class_cache.cfg[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://.godot/uid_cache.bin[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://project.binary[39m[0m
+[92m[ DONE ][39m [1msavepack[22m
+[0m
+EXPORT_RC=0
+
+$ ls -la /tmp/gw-v12-win/
+total 113224
+drwxr-xr-x    2 claudecode claudecode      4096 Oct 29 02:01 .
+drwxrwxrwt 2024 root       root         1990656 Oct 29 02:01 ..
+-rw-r--r--    1 claudecode claudecode 113936232 Oct 29 02:01 Gatewardens.exe
+
+$ find /tmp/gw-v12-win -type f -exec sha256sum {} + (every produced file)
+6b62c1f9230c2edb1869d3c1b9e3ff19b1854b37ce2f7f34a942d76d52262e0d  /tmp/gw-v12-win/Gatewardens.exe
+
+sizes (bytes):
+113936232	/tmp/gw-v12-win/Gatewardens.exe
+
+$ file /tmp/gw-v12-win/Gatewardens.exe
+/tmp/gw-v12-win/Gatewardens.exe: PE32+ executable (GUI) x86-64 (stripped to external PDB), for MS Windows
+
+# CHECKS: EXPORT_RC=0; stdout line 1 = Godot Engine v4.7.2.stable.official.ed1daf0bf (template-version line; template windows_release_x86_64.exe 109,268,480 B present at ~/.local/share/godot/export_templates/4.7.2.stable/, the dir W18 evidence named — no download performed, none needed).
+# ONE produced file (embed_pck single-file, no *_p data dir / no sidecar .pck — W18 recipe output layout VERIFIED).
+# exe sha256 6b62c1f9230c2edb1869d3c1b9e3ff19b1854b37ce2f7f34a942d76d52262e0d, 113,936,232 B (> 80 MB); file: PE32+ executable (GUI) x86-64 — PE SANITY VERIFIED.
+# VM120 WINDOWS RUN LEG: not in this card (separate step) — pending.
+VERIFY_EXIT=0
