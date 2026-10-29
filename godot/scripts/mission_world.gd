@@ -9,7 +9,8 @@
 # build: the core emblem (make_core child) and the arena paint, which
 # build_cores calls once per mission build — NOT from mission.gd, whose
 # file sits at the 400-line hygiene ceiling; this is the map-build and
-# visual-mount file the brief names.
+# visual-mount file the brief names. G1 (MC 11690) adds the third such
+# mount: the spawn-gate eye billboards, same build_cores hook.
 # Zero step order / zero sim data touched — the lane rows, waypoints
 # and core records are byte-identical; git show proves it.
 extends RefCounted
@@ -29,6 +30,12 @@ const ARENA_MODULATE := Color(0.9, 0.9, 0.95)
 # emblem follows core state — same single mount site for both kinds).
 const CORE_EMBLEM_H := 6.0
 const CORE_EMBLEM_Y := 4.5
+# G1 gate-eye markers (MC 11690, V121-PLAN G1): the 5u plaque rides the
+# spawner's map x/z at y 3 so it reads the gate mouth at the shipped
+# D=64 rig without occluding the 2u mobs walking out of it (the
+# CORE_EMBLEM_H precedent: the number lives on the visual mount).
+const GATE_EYE_H := 5.0
+const GATE_EYE_Y := 3.0
 
 
 # V1 arena paint (MC 11559): the ground material albedo becomes the
@@ -79,6 +86,32 @@ static func build_cores(m) -> void:
 	# V1 hook (DECLARED, MC 11559): painted ground SURFACE only — no sim
 	# field, no step order (W7/W10 visual-hook mount precedent).
 	paint_arena(m)
+	# G1 hook (DECLARED, MC 11690): gate-eye billboards at the spawner
+	# positions — same visual-mount home, zero sim data.
+	paint_spawn_gates(m)
+
+
+# G1 spawn-gate eyes (MC 11690, V121-PLAN G1): one billboard per
+# m.map_def["spawners"] row. The WINGED variant marks the gates that
+# carry an air lane — read from the RAW map lane rows' "spawner" key
+# (build_lanes drops that key, so this reads map_def directly, a public
+# read; gatefall: spawn_a/spawn_b carry lane_a1/a2, spawn_c plain).
+# Null-safe like every sprite_bank consumer: an un-sprited id mounts
+# nothing and no crash (the icon_core guard idiom).
+static func paint_spawn_gates(m) -> void:
+	var air: Dictionary = {}
+	for lane: Dictionary in m.map_def.get("lanes", []):
+		if String(lane.get("kind", "")) == "air":
+			air[String(lane.get("spawner", ""))] = true
+	for sid: String in m.map_def.get("spawners", {}):
+		var eye := SPRITE_BANK.make_sprite(
+				"icon_gate_eye_air" if air.has(sid) else "icon_gate_eye",
+				GATE_EYE_H)
+		if eye == null:
+			continue
+		var p: Array = m.map_def["spawners"][sid]
+		eye.position = Vector3(float(p[0]), GATE_EYE_Y, float(p[2]))
+		m.add_child(eye)
 
 
 static func make_core(m, id: String, kind: String, row: Dictionary, sc: Vector3):

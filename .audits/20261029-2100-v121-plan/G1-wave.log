@@ -1,0 +1,166 @@
+# G1-wave.log — v1.2.1 W1 G1: spawn-gate EYE billboards (MC 11690)
+# coder profile · 2026-10-29 · base tip fa131fc · repo /home/claudecode/Games/gatewardens
+# Siblings LIVE on disjoint files this wave (fx_director/world_text, hud).
+# LEDGER CONCURRENCY OVERRIDE (orchestrator ruling): LEDGER.md NOT touched;
+# the row rides as the LEDGER-ROW line at the bottom of this log.
+
+== SPEC RE-READS (V121-PLAN Rev 2, read in full this session) ==
+- §G1: eye billboard at EACH spawner pos (m.map_def["spawners"]); WINGED on
+  spawn_a/spawn_b (they carry air lanes lane_a1/a2), ground-only spawn_c
+  PLAIN (declared reading). Mechanism: make_sprite + emblem-mount idiom,
+  built from build_cores (paint_arena hook :81); NEW ids icon_gate_eye +
+  icon_gate_eye_air in sprite_bank.TEXTURES + 2 new original 3090 sheets.
+  Files: mission_world.gd, sprite_bank.gd, assets/v11 (2 pngs), new probe/test.
+- §C-1: mission.gd 400 = at ceiling, cards ADD ZERO LINES (file untouched —
+  git show proves); mission_world.gd 120 had room; new files <=250.
+- §C-3: visual mounts only, zero sim writes; fixtures diff EMPTY; suite >=239.
+- §C-4: I2 governs hud/defense_panel/defense_placer — NONE of my touched
+  files are governed; presentation consts live on the mount (file doctrine).
+- §C-6: engine legs per conftest.run_probe_script idiom; planted-red required.
+- My own re-reads at fa131fc: mission_world.gd:81 paint_arena call inside
+  build_cores (the hook home), :104 SPRITE_BANK.make_sprite("icon_core",...)
+  emblem child (the mount idiom); sprite_bank.gd make_sprite(id, world_h,
+  tier) camera-facing Sprite3D factory, null = greybox keeps, TEXTURES the
+  ONE id->file map; gatefall.json: 3 spawners spawn_a(-40,0,0) spawn_b(0,0,-40)
+  spawn_c(34,0,30), lanes lane_a1/a2 air carry spawner spawn_a/spawn_b,
+  lane_g3 (spawn_c) ground-only.
+
+== DESIGN (one mechanism, no second render path) ==
+- sprite_bank.TEXTURES gains icon_gate_eye + icon_gate_eye_air (2 entries,
+  preload of the committed sheets — same map every consumer asks first).
+- mission_world.paint_spawn_gates (NEW static, called ONCE from build_cores
+  beside paint_arena): derives the winged set from the RAW m.map_def lane
+  rows' "spawner" key (build_lanes drops that key; map_def is the public
+  read the plan names); one make_sprite(id, GATE_EYE_H) billboard per
+  spawner row at map x/z, y GATE_EYE_Y. Null-safe (un-sprited id mounts
+  nothing — icon_core guard idiom). GATE_EYE_H 5.0 / GATE_EYE_Y 3.0 live in
+  the mount file (CORE_EMBLEM_H precedent).
+- Shipped kit godot/sim/g1_gate_eye_probe.gd (v1_world_probe boot idiom;
+  rows G1E-EYES n=3 / G1E-MARK per-spawner pos+COMMITTED sheet path+billboard
+  / G1E-WING pinned set {spawn_a,spawn_b} / G1E-NEG spawn_c plain — bank-
+  never-oracle: every expectation is a pinned path/literal, not a re-derive).
+- tests/test_gate_eye.py: 4 legs — engine probe (rows asserted, stderr
+  EMPTY), sprite_bank source-truth, mount source-truth (ONE call in
+  build_cores, make_sprite body, no hand-rolled Sprite3D), gatefall data leg
+  (air carriers == {spawn_a,spawn_b}, spawn_c ground-only).
+
+== TREE HYGIENE NOTE (shared checkout, live siblings) ==
+- During the card the MAIN checkout carried UNCOMMITTED sibling edits
+  (godot/scripts/hud.gd mid-edit with a PARSE ERROR at :151, godot/sim/
+  mission_smoke.gd modified, tests/test_hud_coach.py untracked — G8's).
+  Those are NOT my paths. All tree-level gates were therefore measured at
+  a clean worktree: git worktree add /tmp/g1-verify fa131fc, plus ONLY my
+  files (copy list = the commit pathspec). The commit lands on the shared
+  branch pathspec-only; sibling state untouched.
+- PRE-EXISTING CLEAN-CHECKOUT GAP (finding row for the orchestrator, NOT
+  fixed — out of my card's scope): static/* is gitignored (.gitignore:7,
+  W12 evidence-side law), so tests/test_served.py's 5 legs do not COLLECT
+  and tests/test_scaffold.py::test_server_serves_placeholder_on_ephemeral_port
+  404s from a bare tip; the plan's "239 green" was measured with the
+  uncommitted static/ export present. I copied the ignored static/ export
+  into the verify tree to measure at the SAME conditions the 239 baseline
+  used (243 = 239 + my 4).
+
+== ART (R2 wall: TWO original sheets, ours-only — never any Dungeon Defenders asset) ==
+Pipeline REUSE (LEDGER rows "DA-fix loop ... 3090 generated an ORIGINAL boss
+sheet ... prompt sidecar recorded, transparent alpha" + gen/manifest-prompts
+.tsv sidecar rows): fleet imagegen tool on the vm100 3090 (Qwen-Image /
+Qwen-Image-Edit), background=transparent, library convention (provenance
+sidecar + INDEX row), then copy into godot/assets/v11/ at the batch 512px
+RGBA convention; style anchored on OUR committed icon_core.png sheet (same
+brown/gold/cyan family). GPU window closed after the batch (verifier resumed).
+
+SHEET 1 icon_gate_eye.png — source render
+  library/2026/10/gatewardens/icon_gate_eye-2.png (mode t2i, seed 753218885,
+  1024x1024, transparent; sidecar icon_gate_eye-2.png.json; INDEX row
+  2026-10-29, card gatewardens; license_class null = base model, ours)
+  prompt: "Original cartoon game emblem sprite, chunky toy fantasy style
+  with soft thick outlines, vibrant saturated colors, painted shading,
+  semi-chibi heroic game art, palette of dark warm brown, gold and glowing
+  cyan. Subject: a SPAWN-GATE EYE emblem — a perfectly round dark-brown
+  iron-and-wood gate plaque ringed with a chunky gold band, carrying ONE
+  big watchful fantasy rune-eye in the exact centre: almond-shaped white
+  sclera, glowing cyan iris, round dark pupil, friendly-not-scary, slightly
+  comical, symmetrical front view. IMPORTANT: nothing on the plaque except
+  the single central eye — no faces, no animal heads, no letters, no
+  symbols. Single centered emblem, tower-defense spawn-gate marker asset,
+  transparent game asset"
+  (take -1 existed: an edit-model pass referenced on icon_core LEAKED the
+  wolf-head motif — core-emblem confusion risk — rejected; the adopted -2
+  render is pure t2i. Honest prompt record for both.)
+SHEET 2 icon_gate_eye_air.png — source render
+  library/2026/10/gatewardens/icon_gate_eye_air-1.png (mode edit, ref = OUR
+  own icon_gate_eye-2.png, seed 87734471, 1024x1024, transparent; sidecar
+  + INDEX row)
+  prompt: "Keep this exact round wooden gate plaque with the glowing cyan
+  rune-eye in its centre completely unchanged, and add a pair of small
+  stylized golden feathered wings sprouting symmetrically from the left and
+  right sides of the plaque, spread upward and outward — an AIR-GATE winged
+  variant of the same tower-defense emblem, same chunky toy fantasy style,
+  soft thick outlines, painted shading, gold matching the plaque's gold
+  band. Single centered emblem, no background, transparent game asset"
+FIT + HASHES (repo copies, PIL LANCZOS 1024->512 RGBA, batch convention):
+  godot/assets/v11/icon_gate_eye.png      205745 B  sha256 4324cda2689cda1e55ca0f58ef5fc0c2b0b2dd15ebeb9f7369da9e1e542441e2
+  godot/assets/v11/icon_gate_eye_air.png  266560 B  sha256 3fae5d4ec6bec07f90b16d67ca48a8c03cc6f56628a9cac1f953fd60819064f2
+  manifest-batch6.tsv written beside the sheets (file/bytes/sha256_16 — the
+  batch5 idiom).
+IMPORT SIDECARS: Godot_v4.7.2 --headless --path godot --import rc0; the two
+png .import + probe .uid sidecars are BYTE-IDENTICAL between the main
+checkout and the verify worktree (determinism re-shown, diff -q all SAME).
+
+== GATES (all at /tmp/g1-verify = fa131fc + my files + static/ export parity) ==
+-- (1) parse checks, pinned 4.7.2 binary, --check-only per file:
+    res://scripts/mission_world.gd RC=0 stderr_bytes=0
+    res://scripts/sprite_bank.gd  RC=0 stderr_bytes=0
+    res://sim/g1_gate_eye_probe.gd RC=0 stderr_bytes=0
+
+-- (2) ENGINE PROBE GREEN (conftest.run_probe_script idiom, ensure_class_cache
+        + run_probe_script("res://sim/g1_gate_eye_probe.gd", (), data_home)):
+    GREEN_RC=0 STDERR_BYTES=0
+    Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+    G1E-EYES n=3
+    G1E-MARK spawn_a pos=(-40.0, 3.0, 0.0) tex=res://assets/v11/icon_gate_eye_air.png
+    G1E-MARK spawn_b pos=(0.0, 3.0, -40.0) tex=res://assets/v11/icon_gate_eye_air.png
+    G1E-MARK spawn_c pos=(34.0, 3.0, 30.0) tex=res://assets/v11/icon_gate_eye.png
+    G1E-WING want=spawn_a,spawn_b got=spawn_a,spawn_b
+    G1E-NEG spawn_c plain=1 air=0
+    G1E-OK
+    => exactly 3 gate-eye markers AT the map positions; winged ONLY on
+       spawn_a/b; NEGATIVE leg: spawn_c carries NO winged variant.
+
+-- (3) PLANTED-RED (winged branch inverted IN THE PROBE TREE ONLY:
+        "icon_gate_eye_air" if air.has(sid) -> "if not air.has(sid)"):
+    RED_RC=1 STDERR_BYTES=0
+    Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+    G1E-EYES n=3
+    G1E-MARK spawn_a pos=(-40.0, 3.0, 0.0) tex=res://assets/v11/icon_gate_eye.png
+    G1E-MARK spawn_b pos=(0.0, 3.0, -40.0) tex=res://assets/v11/icon_gate_eye.png
+    G1E-MARK spawn_c pos=(34.0, 3.0, 30.0) tex=res://assets/v11/icon_gate_eye_air.png
+    G1E-FAIL winged markers = 1 (want 2)
+    => the winged leg goes RED LOUD (a=b plain, c winged trips the WING row).
+    REVERTED (main-checkout copy re-installed, diff -q == main), green re-run
+    (steps 1-2 above) and the full suite below ran on the reverted tree.
+
+-- (4) FIXTURES: git diff --stat tests/fixtures/ EMPTY (before AND after the
+        full suite; git status tests/ shows only the untracked new test file).
+
+-- (5) HYGIENE: python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)"
+        rc0 (20 soft notes = the pre-existing baseline note set, byte-stable).
+        LOC: mission_world.gd 152 / sprite_bank.gd 138 / probe 143 /
+        test_gate_eye.py 125 — all <=250. mission.gd UNTOUCHED (0 added lines
+        — at the 400 ceiling; git show --stat of this commit proves its
+        absence).
+
+-- (6) FULL SUITE AT THE VERIFY TREE: python3 -m pytest -q ->
+        243 passed in 184.52s (0:03:04)   PYTEST_EXIT=0
+        (239 baseline legs at the plan's own measurement conditions +
+         4 new tests/test_gate_eye.py legs >= the 240 bar).
+
+== DEFERRED TO ORCHESTRATOR (per plan §C-6, this card's brief excludes them):
+served-browser + describe-image leg ("three gate markers visible at lane
+mouths, two read winged") is the orchestrator verification leg, like every
+W1 sibling's browser row.
+
+LEDGER-ROW: | BUILD G1 spawn-gate eye billboards (MC 11690 / wave W1, V121-PLAN G1) | DONE 2026-10-29 — TWO original 512px RGBA sheets (batch 6, 3090 generation, transparent alpha, prompts+shas in G1-wave.log; R2 wall clean: ours-only) join the ONE sprite_bank TEXTURES map as icon_gate_eye + icon_gate_eye_air; mission_world.paint_spawn_gates (NEW) mounts EXACTLY ONE camera-facing make_sprite billboard per m.map_def["spawners"] row (gatefall: n=3) at the map x/z, y 3 — called ONCE from build_cores beside paint_arena (mission.gd at the 400 ceiling adds ZERO lines, proven by --stat); the WINGED variant is DERIVED from the raw lane rows' spawner key (air carriers = spawn_a/spawn_b; spawn_c plain, declared). Kit godot/sim/g1_gate_eye_probe.gd (v1_world boot idiom): G1E-EYES n=3 + per-spawner MARK path/pos/billboard + pinned WING {a,b} + NEG spawn_c-plain — G1E-OK rc0 stderr EMPTY; planted-red winged-branch inversion -> G1E-FAIL "winged markers = 1 (want 2)" rc1, reverted, green. tests/test_gate_eye.py 4 legs (engine + bank/mount source-truth + gatefall data). Gates at an ISOLATED fa131fc+card tree (siblings' uncommitted W1 edits share this checkout — disjoint paths untouched): full pytest 243 green (239+4), hygiene 0 hits, fixtures byte-identical. Evidence .audits/20261029-2100-v121-plan/G1-wave.log (VERIFY_EXIT=0) |
+
+VERIFY_EXIT=0

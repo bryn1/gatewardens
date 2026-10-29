@@ -65,6 +65,13 @@ const TEXTURES := {
 	# DATA, C7), so painting it would author a second visual mechanism,
 	# not repaint a surface — the card's stated honest-cut row.
 	"ground_arena": preload("res://assets/v11/ground_arena.png"),
+	# G1 spawn-gate eyes (MC 11690, V121-PLAN G1): the gate-mouth marker
+	# pair rides the SAME id->file map — mission_world.paint_spawn_gates
+	# is its only consumer (billboards through make_sprite, no second
+	# render path). icon_gate_eye_air is the WINGED variant marking the
+	# gates that carry an air lane.
+	"icon_gate_eye": preload("res://assets/v11/icon_gate_eye.png"),
+	"icon_gate_eye_air": preload("res://assets/v11/icon_gate_eye_air.png"),
 }
 
 # V4 presentation sizes live HERE (the ui_tween.gd precedent): the I2-
