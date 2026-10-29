@@ -1,6 +1,6 @@
 # Gatewardens — Release Notes
 
-## v1.2 (quality-of-life) — 2026-10-28 (section lands at the shipped set; the tag push is the orchestrator's follow-on step)
+## v1.2 (quality-of-life) — 2026-10-29 (RELEASED: tag c95798b + GitHub Release with native Windows build, VM120-verified)
 
 The six-card QoL milestone on the GA base (V12-PLAN, owner ruling 2026-10-28
 verbatim "rec on all 3"): getting back to the hub and selling the banked loot
