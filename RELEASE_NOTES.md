@@ -1,5 +1,38 @@
 # Gatewardens — Release Notes
 
+## v1.2 (quality-of-life) — 2026-10-28 (section lands at the shipped set; the tag push is the orchestrator's follow-on step)
+
+The six-card QoL milestone on the GA base (V12-PLAN, owner ruling 2026-10-28
+verbatim "rec on all 3"): getting back to the hub and selling the banked loot
+stop being reload/manual chores, the shop reaches every tower family, enemies
+walk with motion, and the camera reads closer and steeper.
+
+**What shipped**
+
+- **Return to hub, END-ONLY (F1, MC 11623)** — a RETURN TO HUB button on BOTH
+  mission-end screens (victory AND defeat); no mid-mission exit control ships,
+  per the owner END-ONLY ruling; the reload route stays, the `_end_mission`
+  save commit is untouched.
+- **SELL ALL (F2, MC 11622)** — the gear panel sells every bank row for the
+  total quoted from rarity.json's `sell_value` ladder BEFORE anything is
+  applied: ONE confirm dialog, shown = paid (one mechanism — SimInventory
+  `bulk_sell` behind both the quote and the mutator).
+- **Relic-assign negative tests (F3, MC 11609)** — tests-only hardening that
+  closes the stale-uid-across-sell gap; zero product-code change.
+- **Shop family picker (F4, MC 11616)** — bombard + hailspire are selectable
+  in the build bar; every pick rides the ONE existing placement path
+  (`place_id` → the same gate sequence), all five icon badges now live.
+- **Procedural enemy walk (F5, MC 11610)** — a step-bob + roll sway from the
+  distance walked, VISUAL LAYER ONLY: sim rows, hitboxes and golden fixtures
+  byte-identical.
+- **Camera D=64 pitch-48 (F6, MC 11649)** — the rig moved to the re-derived
+  transform (characters +10.2%, all 33 frustum points hold with wider margin);
+  LOCKED pin #3 re-pinned ONCE per the owner's documented grant — any further
+  camera move needs a NEW owner ruling.
+
+**Suite**: 239 pytest green, `check_hygiene: 0 hit(s)`, golden fixtures
+byte-identical.
+
 ## v1.1 (visuals) — 2026-10-28
 
 The greybox is gone. v1.1 replaces placeholder art with an original
@@ -39,8 +72,14 @@ prompts + sha256 manifests per asset in `.audits/20261027-1500-visual-target/`).
   previous station hidden synchronously; deferring it would be a logic change).
 - The build bar ships three class buttons (family picker is a declared later
   row), so two of the five icon badges are registered but not yet visible.
+  *(FIXED v1.2 MC 11616, 2026-10-28: the family picker shipped — bombard +
+  hailspire are selectable in the build bar via the ONE existing placement
+  path; all five icon badges are now visible.)*
 - Deeper camera zoom than +3.55% is gated by the shipped frustum-margin test
-  — an owner decision, not a silent change.
+  — an owner decision, not a silent change. *(That decision was taken at
+  v1.2 F6, MC 11649: the rig moved to D=64/pitch-48 under the ONE documented
+  re-pin of LOCKED pin #3, owner grant 2026-10-28; any further move needs a
+  NEW owner ruling.)*
 - Served-web frame rate is honest-by-instrument: the native 60 FPS render
   path is VERIFIED (movie capture); headless-browser measurement is
   throttle-capped (~6 fps on a STATIC screen = the harness, not the game).
@@ -105,15 +144,24 @@ unsigned, no malware, click More info > Run anyway.
 
 ## Known limits (stated as they are)
 
-- **(a) No in-game return to hub after a mission.** `open_hub` is boot-only;
-  a page reload is the only route back. The mission-end save still commits
-  at `_end_mission` — nothing is lost by reloading.
-- **(b) A full bank has no bulk-sell.** One normal win banks ~150 items (the
-  golden fixture pins loot_events:148). The gear panel now SCROLLS into the
-  hero equip rows (W17g), but there is no item salvage service in the shipped
-  sim: what exists is the Blacksmith's Upgrade/Evolve/Reroll services (they
-  spend gold + materials), the mission-side defense Sell, and equip's
-  replace-to-bank return path for the item it replaces.
+- **(a) Return-to-hub after a mission is END-ONLY.** *(FIXED v1.2 MC 11623,
+  2026-10-28: the v1 claim "a page reload is the only route back" — `open_hub`
+  boot-only — is retired: a RETURN TO HUB button ships on both mission-end
+  screens, victory AND defeat, per the owner END-ONLY ruling 2026-10-28;
+  deliberately NO mid-mission exit control; the reload route stays.)* The
+  mission-end save still commits at `_end_mission` — nothing is lost by
+  reloading.
+- **(b) Bank loot now sells in bulk: SELL ALL behind one total-gold
+  confirm.** *(FIXED v1.2 MC 11622, 2026-10-28: the v1 claim that a full bank
+  had no bulk salvage is retired — the gear panel's SELL ALL sells every bank
+  row for the total quoted from rarity.json's `sell_value` ladder BEFORE it is
+  applied, ONE confirm dialog, shown = paid, per owner ruling 2026-10-28.)*
+  One normal win banks ~150 items (the golden fixture pins loot_events:148),
+  which is the pile this serves; the gear panel also SCROLLS into the hero
+  equip rows (W17g). The Blacksmith's Upgrade/Evolve/Reroll
+  services (they spend gold + materials), the mission-side defense Sell, and
+  equip's replace-to-bank return path for the item it replaces all stay
+  unchanged.
 - **(c) Reload-race risk right after the win banner.** Reloading within ~1s
   of the win banner CAN race the IndexedDB flush; a patient reload persists
   (measured both ways in the journey evidence).
@@ -143,7 +191,8 @@ unsigned, no malware, click More info > Run anyway.
   artifacts are never committed; the script regenerates them).
 - Serve: `python3 server/server.py` (honors `GW_PORT`, default **8124**) →
   open `http://<host>:8124/` in a browser.
-- Dev checks at this release: `python3 -m pytest -q` (222 green) and
+- Dev checks at this release: `python3 -m pytest -q` (239 green at v1.2; the
+  v1 GA tag counted 222) and
   `python3 tools/check_hygiene.py` (`check_hygiene: 0 hit(s)`).
 - Served controls (from the verified journey): mouse click = attack /
   interact, hold BOTH mouse buttons = the heavy combo, WASD = hero move,

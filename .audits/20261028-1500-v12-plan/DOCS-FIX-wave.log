@@ -1,0 +1,82 @@
+# DOCS-FIX-wave.log — v1.2 loop-cycle-1 DOC SYNC [type:code, coder (MC 11607)]
+Date 2026-10-29 (UTC). Base: gatewardens origin/main tip a117b57 (VERIFIED `git rev-parse HEAD`,
+clean tree at start). Spec: `.audits/202610281826-9924ad48/out/ARCH-verdict.md` (FIX-1..FIX-5) +
+`out/DA-verdict.md` (P1-1 blocking doc rows). Doctrine: retired claims EDITED IN PLACE,
+replace-not-delete — each survives only as a dated FIXED clause (W17g style), per the binding
+versioned-truth + contradicted-finding rules.
+
+## Edits landed (docs only — zero code, zero tests touched)
+
+docs/ARCHITECTURE.md:
+- FIX-1 (C4 :219): "Camera rig on the mission root retargets to the new pawn" -> static-rig truth
+  (mission.gd setup quote + hero_controller.gd; v1.2 F6 rig D=64/pitch-48 cited per LEDGER PIN row,
+  MC 11649). Second clause ("never re-parented") kept — verdict: it survived.
+- FIX-2: new scripts/enemy_anim.gd row between enemy_runner.gd and lane_path.gd (pure statics
+  phase_advance/bob_offset/sway_offset/walk_step, VISUAL-LAYER-ONLY, one call line enemy_runner:145)
+  + clause appended to the enemy_runner row ("hands step distance/walk phase to enemy_anim — visual
+  pose only"). NOT added to the I2 16-file governed set — verified check_hygiene.py GOVERNED_LITERALS
+  excludes it; the row states the V12-PLAN §F5 ungoverned-constants declaration (verdict: doc's
+  16-file list stays true as written).
+- FIX-3: rarity.json row gains sell_value:{<ladder_name>:int} (measured ladder worn:2..legendary:40);
+  sim_inventory row gains bulk_sell(bank:Array,sell_values:Dictionary)->Dictionary ({ok,gold,sold},
+  pinned {ok:false,why:"empty"}); game_state row gains sell_bank() mutator + sell_bank_quote()
+  (shown = paid, ONE bulk_sell mechanism behind both).
+- FIX-4 (:208 suite enumeration): + test_hub_layout.py (pin #3 re-pin note, owner grant 2026-10-28)
+  + the five v1.2 files (test_relic_negatives/test_enemy_walk/test_family_picker/test_bulk_sell/
+  test_return_hub) with one-clause legs each. BEYOND-NAMED (same row, logged): the old row tail
+  "test_hygiene.py (calls tools/check_hygiene.py)" asserted a file that does not exist (ls tests/)
+  and contradicted the doc's own I9 W16 truth — aligned to "hygiene gate rides tests/test_scaffold.py
+  (runs tools/check_hygiene.py as a suite leg — no separate test_hygiene.py, W16 truth)" (verified:
+  test_scaffold.py:27 references the gate).
+- FIX-5: main.gd row + end-only RETURN TO HUB (F1, both end screens, _return_to_hub deferred route,
+  reload route stays); gear_panel_ui row + SELL ALL behind ONE total-gold confirm (F2, shown = paid);
+  defense_panel row + build-bar family picker, place_id through the ONE gate sequence (F4).
+
+RELEASE_NOTES.md:
+- NEW v1.2 section (top, before v1.1): F1-F6 one-compact-row-each + 239/hygiene-0/fixtures suite row.
+  Lands as the v1.2 section now; tag push is the orchestrator's follow-on (DA: plan §F6 named the
+  RELEASE_NOTES row, 91837f7 never landed it).
+- Known limit (a) -> "Return-to-hub after a mission is END-ONLY" + FIXED v1.2 MC 11623 clause (the v1
+  reload-only claim survives only as the quoted superseded text inside the dated clause).
+- Known limit (b) -> bulk-sell-ships truth + FIXED v1.2 MC 11622 clause; W17g scroll truth kept.
+- v1.1 known-limits rows, grep-sweep hits (BEYOND the verdict's named lines, same defect class —
+  logged): "three class buttons / two badges not visible" + FIXED v1.2 MC 11616 clause; "+3.55%
+  frustum gate — an owner decision" annotated with the F6 grant (MC 11649) that took it.
+- "Dev checks at this release" line: 239 green at v1.2 (v1 GA tag 222 kept as history).
+- 222 figures INSIDE the dated v1/v1.1 sections left untouched — historical claims, true at their tag.
+
+README.md: status line -> v1.2 (QoL set named incl. the camera D=64/pitch-48 + ONE-re-pin note),
+239 pytest green; v1.1 pixel/native facts kept as the base.
+LEDGER.md:67: limitation (a) gains "[FIXED by v1.2 F1 card 11623: ... reload is no longer the only
+route; see BUILD v1.2 F1 row]" — same W17g style as the (b) clause on the same line.
+
+Tests: NO pin went red — pre-edit greps `grep -rn "no in-game return|retargets|222 " tests/` found
+zero test-source pins (only golden-fixture incidental numbers, untouched). No test edited.
+
+## Gates (all run this session, tree as edited; BEFORE lines taken from `git show HEAD:` = honest
+pre-edit state at a117b57)
+
+BEFORE (git HEAD:a117b57): ARCHITECTURE "retargets to the new pawn"=1, RELEASE_NOTES
+"no in-game return"=1, RELEASE_NOTES "no bulk-sell"=1, README "222 pytest"=1.
+
+$ grep -n "retargets to the new pawn" docs/ARCHITECTURE.md   -> 0 hits (rc=1)
+$ grep -in "no in-game return" RELEASE_NOTES.md              -> 0 hits (rc=1)
+$ grep -in "no bulk-sell" RELEASE_NOTES.md                   -> 0 hits (rc=1)
+$ grep -n "222 pytest" README.md                             -> 0 hits (rc=1)
+$ grep -rn "open_hub is boot-only|reload is the only route|only route back|no item salvage" docs/ARCHITECTURE.md RELEASE_NOTES.md README.md
+  -> 1 hit: RELEASE_NOTES.md:148 — the v1 claim QUOTED INSIDE the dated FIXED clause (the doctrine-
+     required surviving form; no current-limit statement remains).
+
+$ python3 -m pytest -q   (ONE honest run, no re-run needed)
+239 passed in 175.04s (0:02:55)
+
+$ python3 tools/check_hygiene.py | tail -1
+check_hygiene: 0 hit(s)
+
+$ git diff --stat tests/fixtures/
+(empty — FIXTURES_DIFF_EMPTY=0)
+
+Pin-change log: ZERO test pins changed (none existed on the retired strings — nothing weakened,
+nothing aligned).
+
+VERIFY_EXIT=0
