@@ -1,0 +1,195 @@
+# G3-wave.log — v1.2.1 W2 G3: build-phase wave telegraph billboards (MC 11696)
+# coder profile · 2026-10-30 · base tip 4771c4a · repo /home/claudecode/Games/gatewardens
+# Siblings LIVE on disjoint files this wave (G2 mission_world+lane_bands NEW;
+# G7 hero_pawn+sprite_bank).
+# LEDGER CONCURRENCY OVERRIDE (orchestrator ruling): LEDGER.md NOT touched;
+# the row rides as the LEDGER-ROW line at the bottom of this log.
+
+== SPEC RE-READS (V121-PLAN Rev 2, row G3 + §4 W2 + §3, read in full this session) ==
+- §G1/§G3 anchor row G3: during BUILD phase a small billboard per spawner —
+  enemy sheet icon (ids already in the bank) + Label3D count, for the upcoming
+  wave (m.wave row), grouped by lane->spawner via the RAW m.map_def lanes rows;
+  CLEARED on combat start. MECHANISM: fx_director OBSERVER idiom — new
+  wave_telegraph.gd, mission.tscn scene child (the FxDirector precedent,
+  mission.tscn:43), own _process, reads mission fields (m.wave/phase_kind/
+  waves_file/map_def), ZERO writes; counts via world_text.gd (G6's factory).
+  REPLACES nothing; HUD "Wave n/11" label stays (panel = when, billboards =
+  what/where). Files row: wave_telegraph.gd NEW + mission.tscn APPEND-ONLY
+  (new ext_resource + node + the wave_telegraph.gd.uid SIDECAR riding the
+  SAME commit + the load_steps bump; test_mission_clicks uid==sidecar pin and
+  stale-pair BAN are BINDING) + probe/test.
+- §4 W2: G2 ∥ G7 ∥ G3 disjoint (mission.tscn+wave_telegraph NEW is MINE);
+  G3 depends on G6 (world_text) — DONE, shipped at tip (world_text.gd 31 ln).
+- §3 C-1: mission.gd 400 = at ceiling — my commit adds ZERO lines (file
+  untouched; git show --stat proves its absence); new files <=250 (all mine:
+  144/212/256 — the test at 256 is test-file scope, ceiling 600).
+  §C-2 pin #4/#1: the mission.tscn edit APPENDS ext_resource + node only,
+  never reorders/re-pins (git diff below shows append-only; all prior rows
+  byte-unchanged). §C-3: zero sim writes; fixtures diff EMPTY; §C-4: none of
+  my files is I2-governed (presentation consts live on the mount, the
+  sprite_bank ICON_PX doctrine); §C-6: engine legs + planted-red REQUIRED.
+- READING USED (declared, per brief "state the reading you used"):
+  (a) "cleared at wave start on the EXISTING phase_changed('combat') edge"
+      is realized OBSERVER-STYLE as the plan row itself names: the file owns
+      _process and DIFFS the public fields; phase_changed fires "combat"
+      EXACTLY ONCE per wave start (§0 anchor, phase_controller.gd:82), so the
+      observer's phase_kind build->combat diff IS that edge's observable
+      effect — same event, no signal wiring (the fx header "no signal wiring"
+      line; G8 owns the wave's one connect). The diff is also boot-order-
+      proof (the G8/DA-A2 class): first observation paints/clears whatever
+      state it lands in.
+  (b) test_mission_clicks's `len(_ext_rows(...)) == 4` is the VERSIONED script
+      ext-row COUNT its own comment tracks ("V5 MC 11552: 3 -> 4" — bumped by
+      the fx_director mount card); the G3 mount makes FIVE script rows, so the
+      SAME card bumps "G3 MC 11696: 4 -> 5". The PIN rows (:31-32,:54 the
+      uid==sidecar walk + stale-pair ban) are UNTOUCHED and pass for the new
+      row unchanged. Bump phrased into the existing comment line so the file
+      stays at its 600-TEST ceiling (the hygiene metric is split("\n")).
+
+== READ SITES (READ-ONLY, cited) ==
+- Wave rows: SIM_WAVE.wave_comp(m.waves_file, w) — the sim's OWN wave-row read
+  (sim_wave.gd:11-14), THE same public read mission.start_wave drives
+  (mission.gd:305 `for row: Dictionary in SIM_WAVE.wave_comp(waves_file, i)`).
+  No raw waves_file[...] indexing (pytest leg bans it).
+- lane -> spawner/kind/height: RAW m.map_def lane rows ("spawner"/"kind"/
+  waypoints[0] y) — the §0 public read that still carries what build_lanes
+  drops (mission_world.gd:69-76); m.map_def["spawners"] for gate positions.
+- phase/wave: m.phase_kind, m.wave (mission.gd:60,59 — the plan row's named
+  field set). ZERO writes anywhere (pytest MUT_RE/WRITE_RE leg + the standing
+  planted-red detector).
+
+== DESIGN (one mechanism, no second render path) ==
+- wave_telegraph.gd (NEW, 144 ln): telegraph_step() after every mission.step
+  diffs (phase_kind, wave); build -> paint, non-build -> _clear(); paint
+  groups the wave rows by (spawner, enemy_id, kind) SUMMING counts, mounts
+  SPRITE_BANK.make_sprite(enemy_id, ICON_H) billboards (the ONE bank; all 7
+  shipped enemy ids already on TEXTURES — data leg pins the telegraph can
+  never silently drop one) + WORLD_TEXT.make_text(count) (G6's DECLARED
+  world-text mechanism; the Label3D-walk in test_damage_numbers stays green).
+  GROUND/AIR distinction: an entry rides its lane's spawn HEIGHT — the raw
+  waypoint[0].y (ground 0.0 / air 2.5) — so air previews float above the
+  ground stack at the same gate, mirroring the altitude their lane spawns at.
+  Entries are children of the telegraph node itself (fx cleanup doctrine);
+  probe reads `shown`/`shown_total` plain vars (fx counter idiom).
+- mission.tscn APPEND-ONLY: load_steps 8->9, ext row uid://7cf4beti21gb
+  (engine-generated sidecar — Godot --import rc0 produced wave_telegraph.gd
+  .uid, tscn row copied FROM the sidecar byte, never hand-typed), node
+  "WaveTelegraph" last. Probe .uid sidecar likewise engine-generated
+  (uid://bviv2foof0ddh).
+- Kit godot/sim/g3_wave_telegraph_probe.gd (212 ln, g1 boot idiom + G6/v5
+  lockstep): drives mission.step + telegraph_step across the REAL phase edges
+  (no field faked); 3 ballistae placed via the ONE m.place_defense crossing
+  during wave-0 build keep wave-0/1 leakers under the main core's lose line
+  (the probe exists to observe the TELEGRAPH, and placement itself is W17b's
+  pinned contract).
+
+== TREE HYGIENE NOTE (shared checkout, live siblings) ==
+- During the card the MAIN checkout carried UNCOMMITTED sibling edits (G2:
+  mission_world.gd M + lane_bands NEW; G7: hero_pawn.gd + sprite_bank.gd M +
+  test_hero_crest.py — disjoint paths, NOT mine, untouched). ALL tree-level
+  gates were therefore measured at a clean worktree: `git worktree add
+  /tmp/g3-verify 4771c4a` plus ONLY my files (copy list = the commit pathspec)
+  + the ignored static/ export copied for parity with the plan's 239-baseline
+  conditions (G1-wave.log records this pre-existing clean-checkout gap).
+  Note found while setting that up: the committed static/.gitkeep makes a
+  naive `cp -r static` NEST static/static/* — flattened before measuring.
+  diff -q PROVED every card file byte-identical main vs verify tree before
+  and after the gates. The commit lands on the shared branch pathspec-only;
+  sibling state untouched.
+
+== GATES (all at /tmp/g3-verify = 4771c4a + my files + static/ parity) ==
+-- (1) parse checks, pinned 4.7.2 binary, --check-only per file:
+    res://scripts/wave_telegraph.gd      RC=0 stderr_bytes=0
+    res://sim/g3_wave_telegraph_probe.gd RC=0 stderr_bytes=0
+    (godot --headless --path godot --import RC=0 stderr 0 B — the source of
+     both .uid sidecars.)
+
+-- (2) ENGINE PROBE GREEN (conftest.run_probe_script idiom, data_home tmp):
+    GREEN_RC=0 STDERR_BYTES=0
+    Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+    G3T-MOUNT script=res://scripts/wave_telegraph.gd
+    G3T-W0-ENT n=0
+    G3T-W0-MARK spawner=spawn_a id=skitterling kind=ground count=4 y=6.5
+    G3T-CLEAR children=0 entries=0
+    G3T-NEG alive=1 markers=0
+    G3T-W1-MARK spawner=spawn_a id=skitterling kind=ground count=5 y=6.5
+    G3T-W1-MARK spawner=spawn_c id=ash_bandit kind=ground count=3 y=6.5
+    G3T-W1-NEG spawn_b=0
+    G3T-W2-MARK spawner=spawn_a id=cinder_wisp kind=air count=3 y=9.0
+    G3T-W2-MARK spawner=spawn_a id=skitterling kind=ground count=6 y=6.5
+    G3T-W2-MARK spawner=spawn_c id=ash_bandit kind=ground count=4 y=6.5
+    G3T-AIR spawn_a air_y=9.0 ground_y=6.5 above=1
+    G3T-OK
+    => build-w0: markers PRESENT per spawner with next-wave counts
+       (wave row 0: skitterling x4 at lane_g1 -> spawn_a=4, ENT n=0 proves
+       the PRE-FIRST-SPAWN leg); the REAL combat edge: markers GONE
+       (children=0 entries=0); NEG: combat runs on with an entity ALIVE
+       (alive=1) and STILL zero markers — the clear is the edge, not an
+       empty frame; wave-1 build: counts UPDATED, exactly the wave-2 rows
+       (skitterling 5 spawn_a, ash_bandit 3 spawn_c) with spawn_b absent
+       (NEG: row carries no spawn_b lane); wave-2 build: the air group
+       (cinder_wisp 3, y 9.0) rides ABOVE the ground group (y 6.5) at the
+       same gate. Every MARK line re-checked in pytest against
+       EXPECTATIONS RE-DERIVED FROM waves_gatefall_normal.json x
+       gatefall.json — zero count literals in the test.
+
+-- (3) PLANTED-RED (clear-on-combat REMOVED in the probe tree only:
+        "\t\t_clear()               # the combat edge" -> pass):
+    RED_RC=1 STDERR_BYTES=0
+    Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+    G3T-MOUNT script=res://scripts/wave_telegraph.gd
+    G3T-W0-ENT n=0
+    G3T-W0-MARK spawner=spawn_a id=skitterling kind=ground count=4 y=6.5
+    G3T-FAIL CLEAR markers survive the combat edge (children=2 entries=1)
+    => the combat-edge markers-GONE (NEG) leg goes RED LOUD. The SAME plant
+       also reddens two STANDING pytest legs on the planted tree:
+       FAILED tests/test_wave_telegraph.py::test_wave_telegraph_engine_probe
+       FAILED tests/test_wave_telegraph.py::test_planted_red_clear_removed_goes_red
+       2 failed, 4 passed   (the detector leg proves the planted shape is a
+       real single-site removal — a check that can go red, in-suite).
+    REVERTED (worktree copy re-installed from the main checkout, diff -q ==
+    main), green re-run (steps 1-2 above + the full suite below ran on the
+    reverted tree).
+
+-- (4) FIXTURES: git diff --stat tests/fixtures/ EMPTY (before AND after the
+        full suite; git status tests/fixtures/ 0 lines).
+
+-- (5) HYGIENE: python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)"
+        rc0 (21 soft notes = the baseline note set at this tip, byte-stable —
+        the 21st vs G1's 20 is fx_director crossing soft-250 with G6, not a
+        card file; NONE of my files is noted).
+        LOC: wave_telegraph.gd 144 / g3_wave_telegraph_probe.gd 212 /
+        test_wave_telegraph.py 256 (<=600 test scope) — mission.gd UNTOUCHED
+        (ZERO added lines, at the 400 ceiling; git show --stat of this commit
+        proves its absence). mission.tscn diff: header bump + 2 appended
+        blocks ONLY — all pre-existing rows byte-unchanged (git diff quoted:
+        `-` exactly one line, the load_steps header).
+
+-- (6) FULL SUITE AT THE VERIFY TREE: python3 -m pytest -q ->
+        258 passed in 173.08s (0:02:53)   PYTEST_EXIT=0
+        (252 baseline legs at this tip under the plan's own measurement
+         conditions + 6 new tests/test_wave_telegraph.py legs >= the 244
+         bar; test_mission_clicks GREEN with the versioned 4->5 bump and its
+         uid==sidecar + stale-pair pins byte-unchanged; the G1 probe and the
+         G6 Label3D-walk legs — the shipped neighbors my mount rides next to
+         — re-run green together: 22 passed for the four-file neighborhood
+         set.)
+
+-- (7) COMMIT-TREE RE-RUN (honesty row, same conditions): sibling G2
+        (MC 11694, disjoint files) landed between the measure above and this
+        card's commit — 60fef93 stacks on 6e98ab4. Full suite re-run at a
+        CLEAN worktree of the ACTUAL committed tree (`git worktree add
+        /tmp/g3-tip 60fef93` + static/ parity; G7's in-flight hero_pawn/
+        sprite_bank edits are uncommitted and excluded):
+        262 passed in 177.48s (0:02:57)   TIP_SUITE_RC=0
+        (258 above + G2's lane-bands legs; G3's 6 legs green on the shared
+         tip, mount and observers co-mounting untouched.)
+
+== DEFERRED TO ORCHESTRATOR (per plan §C-6, this card's brief excludes them):
+served-browser + describe-image leg ("small enemy icons with counts riding
+the gates during build, gone when combat starts") is the orchestrator
+verification leg, like every W1/W2 sibling's browser row.
+
+LEDGER-ROW: | BUILD G3 wave telegraph billboards (MC 11696 / wave W2, V121-PLAN G3) | DONE 2026-10-30 — wave_telegraph.gd (NEW 144 ln, fx_director OBSERVER idiom, mission.tscn scene child — the FxDirector precedent; mission.gd at the 400 ceiling adds ZERO lines, proven by --stat) previews the UPCOMING wave per spawner during BUILD: SPRITE_BANK.make_sprite enemy-sheet billboards (the ONE bank, ids already shipped — data leg: every enemy_id of both wave files rides TEXTURES) + world_text counts (G6's DECLARED mechanism), grouped lane->spawner through the RAW m.map_def rows, counts via SIM_WAVE.wave_comp (the sim's own read, the one mission.start_wave drives); GROUND/AIR split by the lane's own spawn y (ground 0.0 / air 2.5, raw data) — air previews ride above the ground stack; CLEARED on the combat edge (phase_changed fires it exactly once per wave start; detected as its observable field-effect — no signal wiring, fx doctrine), re-shown next build with UPDATED counts; ZERO writes (MUT_RE/WRITE_RE leg). mission.tscn APPEND-ONLY (ext row + node + engine-generated wave_telegraph.gd.uid sidecar uid://7cf4beti21gb + load_steps 8->9 — test_mission_clicks uid==sidecar pin + stale ban byte-unchanged, versioned script-row count bumped 4->5 per its own V5 3->4 precedent; diff shows append only). Kit godot/sim/g3_wave_telegraph_probe.gd (g1 boot + G6 lockstep, real edges crossed by driving mission.step; probe ballistae via the ONE place_defense crossing keep the sim winnable): G3T-MOUNT / W0-ENT n=0 PRE-FIRST-SPAWN / W0 per-spawner counts == row 0 / CLEAR children=0 entries=0 at the combat edge / NEG alive=1 markers=0 mid-combat / W1 UPDATED == wave-2 rows + spawn_b-absent NEG / W2 air 9.0 above ground 6.5 — G3T-OK rc0 stderr EMPTY; planted-red clear-removed -> G3T-FAIL "CLEAR markers survive the combat edge (children=2 entries=1)" rc1 (+ 2 standing pytest legs RED on the planted tree), reverted, green. tests/test_wave_telegraph.py 6 legs (engine + zero-write + one-mechanism + bank-coverage + mount/sidecar/load_steps + standing planted-red detector; counts re-derived from data, no literals). Gates at an ISOLATED 4771c4a+card worktree (siblings' uncommitted W2 edits share this checkout — disjoint paths untouched): full pytest 258 green (252+6 >= 244), re-run on the ACTUAL committed tip (stacked over sibling G2): 262 green, hygiene 0 hits, fixtures byte-identical. Evidence .audits/20261029-2100-v121-plan/G3-wave.log (VERIFY_EXIT=0) |
+
+VERIFY_EXIT=0
