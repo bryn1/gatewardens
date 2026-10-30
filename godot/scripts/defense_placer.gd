@@ -20,8 +20,29 @@
 # The panel talks to THIS file only (row: defense_panel is pure UI over
 # mission/defense_obj state); lifecycle actions resolve the uid onto the
 # defense record and route to the defense_obj method that owns its leg.
+#
+# G4 (v1.2.1, MC 11707 / V121-PLAN row G4): the range ring RIDES THE
+# GHOST — this file owns the aim/ghost state (G5), so its three ghost
+# chokepoints (set/cancel/cycle — the pinned ghost-API caller set) call
+# _sync_ring, the ONE ring driver: arm/cycle SHOW+RESIZE, and place /
+# RMB/Escape cancel / the W17e combat-lock all HIDE through cancel_ghost.
+# The radius is the towers.json tier-row range NUMBER of the armed row
+# (tier_range; GHOST_TIER — the confirm tier, the ghost's only tier);
+# range-0 rows (the five gate_blockade tier rows) render NO ring (Rev 2 /
+# DA A4.1). The armed ROW itself is observed off the mounted panel's
+# public armed_id (fx_director observer idiom, read-only — the panel's
+# "armed ⇔ ghost" invariant, G5-wave.log's caller-set census), so
+# defense_panel.gd needs ZERO drive lines for the ring (owned-paths
+# discipline); a placer with no mounted panel resolves no row and stays
+# ring-silent. Geometry + show/hide live in scripts/range_ring.gd.
 
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
+const RANGE_RING := preload("res://scripts/range_ring.gd")
+
+# G4 (MC 11707): the ghost's tier — the confirm tier. place_defense is
+# T1-only by the pinned build contract (mission.gd "if tier != 1"), and
+# _confirm places (armed_id, 1); the ghost therefore HAS no other tier.
+const GHOST_TIER := 1
 
 var m = null                    # mission root (injected, duck-typed)
 var tower_defs: Array = []      # towers.json rows (GWTables.rows door)
@@ -102,12 +123,16 @@ func buildable() -> Array:
 
 
 # Ghost confirm/cancel (pinned row): the ghost must sit on a free slot.
+# G4 (MC 11707): the three ghost chokepoints below are the ONE ring
+# driver — every transition runs _sync_ring (arm SHOWS, cancel HIDES).
 func set_ghost(slot: int) -> void:
 	ghost = slot if not occupied(slot) else -1
+	_sync_ring()
 
 
 func cancel_ghost() -> void:
 	ghost = -1
+	_sync_ring()
 
 
 # G5 (v1.2.1, MC 11700 / V121-PLAN §1 G5): the ghost CYCLE step over the
@@ -116,16 +141,78 @@ func cancel_ghost() -> void:
 # The panel's arrow relay rides this (cycle helper HERE, I2-clean);
 # placement itself stays the confirm route — place_id resolves the ghost
 # inside, this moves the AIM only (no second placement mechanism).
+# G4 (MC 11707): the early returns folded to ONE exit so the ring sync
+# rides every transition (the ghost/cycle semantics byte-equivalent).
 func cycle_ghost(dir: int) -> void:
 	var free: Array = buildable()
 	if free.is_empty():
 		ghost = -1
+	else:
+		var at: int = free.find(ghost)
+		if at < 0:
+			ghost = free[0]
+		else:
+			ghost = free[(at + dir + free.size()) % free.size()]
+	_sync_ring()
+
+
+# G4 (MC 11707 / V121-PLAN row G4): the tier-row RANGE NUMBER — the ring's
+# radius source and the DATA leg's sampled function. tower_id is the
+# towers.json DATA id (the row_for_id door), tier is 1-BASED (T1..T5, the
+# display convention defense_panel.selected_tier returns) — the tier entry
+# is tiers[tier - 1] (defense_obj.tier_row holds the 0-based twin). The
+# number is READ, never computed (I2). Unknown id, out-of-range tier or a
+# missing range = 0.0, which the ring reads as the declared NO-RING answer
+# — the five gate_blockade tier rows carry range 0 (Rev 2 / DA A4.1:
+# hidden, not a zero-radius dot).
+func tier_range(tower_id: String, tier: int) -> float:
+	var row := row_for_id(tower_id)
+	if row.is_empty():
+		return 0.0
+	var tiers: Array = row["tiers"]
+	if tier < 1 or tier > tiers.size():
+		return 0.0
+	return float((tiers[tier - 1] as Dictionary).get("range", 0.0))
+
+
+# G4: the armed ghost's ROW id, OBSERVED from the panel (declared reading:
+# the ghost is slot-only state; the armed family is the panel's G5-pinned
+# armed_id — its header's "armed ⇔ ghost" invariant, and the ONE arm
+# route _arm writes armed_id BEFORE it lands the ghost, so every ghost
+# transition already carries the row; place/RMB/Escape/combat-lock clear
+# it on the same cancel route that hides the ring). fx_director observer
+# idiom: public-field read, ZERO writes, no signal wiring. A standalone
+# placer with no mounted panel resolves no row -> no ring: the honest
+# shape (without an armed row there is no range to claim — harness
+# set_ghost legs stay ring-silent).
+func _armed_id() -> String:
+	if m == null:
+		return ""
+	var p = m.get_node_or_null(NodePath("DefensePanel"))
+	if p == null:
+		return ""
+	var armed: Variant = p.get("armed_id")
+	return String(armed) if armed != null else ""
+
+
+# G4: the ONE ring sync — called by the three ghost chokepoints above
+# (the set G5 pinned as the ghost API's whole external caller set, cited
+# in G5-wave.log: set = the arm route, cancel = confirm-success + RMB/
+# Escape + the W17e combat-lock, cycle = the arrow relay), so arm/cycle
+# SHOW+RESIZE and place/cancel/lock HIDE through this single site — no
+# second driver. Radius = tier_range of the armed row (GHOST_TIER: the
+# confirm tier, the ghost's only tier); range <= 0 or no armed row = hide
+# (the declared DA A4.1 treatment, one branch not a second mechanism).
+func _sync_ring() -> void:
+	if m == null:
 		return
-	var at: int = free.find(ghost)
-	if at < 0:
-		ghost = free[0]
+	var radius := 0.0
+	if ghost >= 0:
+		radius = tier_range(_armed_id(), GHOST_TIER)
+	if radius <= 0.0:
+		RANGE_RING.hide_ring(m)
 		return
-	ghost = free[(at + dir + free.size()) % free.size()]
+	RANGE_RING.show_ring(m, slots[ghost], radius)
 
 
 # place(class, tier) per the brief, plus an explicit-slot override for

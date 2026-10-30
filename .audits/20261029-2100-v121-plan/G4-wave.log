@@ -1,0 +1,148 @@
+# G4-wave.log — v1.2.1 G4: YELLOW range ring rides the armed ghost (MC 11707)
+# coder profile · 2026-10-30 · base tip d61cc5c · repo /home/claudecode/Games/gatewardens
+# LEDGER CONCURRENCY OVERRIDE (per brief): LEDGER.md NOT touched; the row
+# rides as the LEDGER-ROW line at the bottom of this log.
+
+== SPEC RE-READS (V121-PLAN Rev 2, row G4 + §4 G4 legs, read this session) ==
+- Row G4: flat translucent ground ring at the ARMED slot (armed family's T1
+  tier range); range values READ from towers.json tier rows (never literals —
+  placer/panel I2-governed); range<=0 rows render NO ring (the five
+  gate_blockade tier rows — Rev 2 / DA A4.1 BINDING). REPLACES: nothing
+  renders range today. Plan's Files row names placement_readout.gd "with G5"
+  + defense_panel.gd drive lines — G5 shipped WITHOUT the readout file, and
+  THIS brief's owned paths are defense_placer.gd + a NEW ring script + tests
+  + probe + log, so the mechanism lands as scripts/range_ring.gd driven from
+  the PLACER (which owns the aim/ghost state, G5) — the panel is OBSERVED,
+  never edited (declared below; the §4 G4 gate legs are unchanged).
+- §4 G4 gates: ring radius == towers.json tier range (DATA); HIDDEN with no
+  ghost/selection (negative); range-0 rows render NO ring, leg non-vacuous;
+  planted-red: tier index swap -> radius leg RED.
+
+== DECLARED READINGS ("state the reading you used") ==
+- GHOST-FIRST (the brief's named plan case). SELECTION FINDING, declared as
+  the brief requires: a real selection mechanism EXISTS in code —
+  defense_panel.selected_uid + select_defense, player-reachable through the
+  defense_rows_ui rows (W17c). The selected-defense RANGE leg is NOT shipped
+  here: the plan's OWN D4 row keeps the selection ring on the P2/P4 backlog,
+  its change sites live in defense_panel.gd (OUTSIDE this card's owned
+  paths), and it needs a ring-priority rule (armed AND selected at once)
+  beyond this card's DoD. The HIDDEN leg's "no ghost & no selection" still
+  holds as a NEGATIVE (proven with selected=0 pinned in both HIDE rows).
+- ONE MECHANISM: the placer's three ghost chokepoints (set_ghost /
+  cancel_ghost / cycle_ghost — the EXTERNAL caller set G5-wave.log pinned
+  verbatim: set = the arm route, cancel = confirm-success + RMB/Escape + the
+  W17e combat-lock, cycle = the arrow relay) all call the single _sync_ring.
+  arm/cycle SHOW+RESIZE; place-confirm, RMB/Escape cancel and combat-lock
+  HIDE — every one of those routes rides cancel_ghost, so the ring hides
+  through the SAME single site. No second driver exists anywhere.
+- ARMED ROW via OBSERVATION (not a panel edit): the ghost is slot-only
+  state; the armed family is the panel's G5-pinned armed_id, whose header
+  invariant is "armed ⇔ ghost" and whose ONE arm route _arm writes armed_id
+  BEFORE it lands the ghost (defense_panel.gd:263-266, cited read-only), so
+  every ghost transition already carries the row. _armed_id() OBSERVES it
+  off the mounted panel node (fx_director observer idiom: public-field read,
+  ZERO writes, no signal wiring). A placer with no mounted panel resolves
+  no row -> NO ring (honest: without an armed row there is no range to
+  claim; harness set_ghost legs stay ring-silent). Consequence:
+  defense_panel.gd carries ZERO ring lines — its G5 caller-set counts stay
+  byte-green (test_g5_build_confirm + test_mission_stale untouched and
+  green; a pytest leg re-pins "the panel carries no ring tokens").
+- RANGE-0 = HIDDEN, not a dot (Rev 2 / DA A4.1): tier_range returns the JSON
+  number; _sync_ring treats radius<=0 as hide_ring (one branch, not a second
+  mechanism). The ring node is lazy on the FIRST positive show — a
+  blockade-only session grows NO node at all ("renders NO ring" literally).
+- GHOST TIER: the ghost's tier is the CONFIRM tier, always T1 (pinned
+  mission.gd place_defense "if tier != 1" build contract; _confirm calls
+  place_id(armed_id, 1)). tier_range(id, tier) is still the 1-BASED T1..T5
+  door and the DATA leg samples ALL FIVE tiers of EVERY family.
+- GEOMETRY, the ArrayMesh lesson honored at MECHANISM level (MC 11698): the
+  ring is ONE unit TorusMesh — engine-managed PrimitiveMesh, the class
+  family the G2 fix proved rasterizes under GL Compatibility/web (G2's
+  runtime ArrayMesh measured 6 px in the web export) — and the node
+  TRANSFORM carries the range: scale.x == scale.z == the towers.json number
+  (unit outer_radius 1.0), scale.y flattens the tube to a ground ribbon.
+  After creation ONLY position/scale/visibility change. The CLASS probe row
+  is the machine-checkable WEB-PROOF PROXY (LB-CLASS idiom: mesh is
+  TorusMesh AND PrimitiveMesh + the pinned unshaded/alpha/RING_COLOR
+  material shape); the served-browser pixel re-check stays the
+  orchestrator's leg (pytest cannot run a browser).
+
+== FILES (owned paths = the whole diff; sim/JSON/fixtures UNTOUCHED) ==
+- godot/scripts/range_ring.gd        NEW  98 ln  (ring mechanism: show/hide,
+                                                  lazy unit-TorusMesh node)
+- godot/scripts/range_ring.gd.uid    NEW       (engine --import sidecar)
+- godot/scripts/defense_placer.gd    MOD 335 ln (+91/-4: tier_range,
+  _armed_id, _sync_ring + the three chokepoint calls, GHOST_TIER, header)
+- godot/sim/g4_range_ring_probe.gd   NEW 357 ln (real-relay kit, idiom =
+                                                  g5_real_relay_probe)
+- godot/sim/g4_range_ring_probe.gd.uid NEW     (engine --import sidecar)
+- tests/test_g4_range_ring.py        NEW 274 ln (test-file scope, <=600)
+- .audits/20261029-2100-v121-plan/G4-wave.log (this evidence)
+  (defense_panel.gd NOT in the diff — zero drive lines by design, above.)
+
+== GATE (1) DATA + (2) HIDDEN + (3) RANGE-0 + (4) LIFECYCLE — the kit ==
+godot/sim/g4_range_ring_probe.gd boots the REAL mission, mounts the REAL
+main.gd as the relay object and feeds SYNTHESIZED InputEvents (presses
+through the production button signals) — G5's real-relay idiom. GREEN run:
+
+$ godot --headless --path godot -s res://sim/g4_range_ring_probe.gd --
+G4-HIDE0 node=0 selected=0 ghost=-1 visible=0            <- HIDDEN neg leg
+G4-DATA ballista tier=1 want=16.0 scale=16.0 vis=1       <- DATA: both nums
+G4-CLASS mesh=TorusMesh prim=1 mat=1                     <- web-proof proxy
+G4-DATA bombard tier=1 want=12.0 scale=12.0 vis=1
+G4-DATA hailspire_tower tier=1 want=13.0 scale=13.0 vis=1
+G4-DATA barbed_snare tier=1 want=2.0 scale=2.0 vis=1
+G4-R0 gate_blockade ghost=0 visible=0 want=0.0 scale=0.0 <- RANGE-0 leg,
+                                                           ghost ARMED=nonvac
+G4-TIER ballista tier=1 want=16.0 got=16.0   (… 25 rows total, every family
+…                            x every tier T1..T5, want==got; abbreviated)
+G4-TIER ballista tier=5 want=20.0 got=20.0
+G4-TIERDIFF families=3                       <- swap-red premise (>=1 fam
+                                               whose T2 range differs)
+G4-CYCLE fwd=1 vis=1                         <- ring MOVES with the ghost
+G4-PLACE placed=1 vis=0 count=1              <- place HIDES
+G4-RMB vis=0 ghost=-1 armed=0                <- RMB cancel HIDES
+G4-LOCK vis=0 armed=0                        <- combat-lock HIDES
+G4-R0SWEEP zero_rows=5 armed_hidden=1 repaint=1
+G4-HIDE1 ghost=-1 selected=0 vis=0           <- HIDDEN neg leg, again
+G4-OK
+RC=0  stderr=0 bytes (EMPTY-stderr ruling)  G4-OK is the LAST row
+(completion-flag guarded — the G2 mid-abort lesson).
+
+DATA-leg integrity: the probe derives `want` from its OWN walk of
+tables.rows("towers") — never from placer.tier_range — so DATA compares
+implementation vs data, and the TIER leg samples the lookup vs the same
+independent walk. The HIDDEN leg prints node=0: the ring node does not even
+EXIST pre-arm (lazy creation) — nothing renders.
+
+== GATE (5) PLANTED-RED: tier index swap -> DATA leg RED ==
+swap tiers[tier - 1] -> tiers[tier] in defense_placer.tier_range, rerun:
+
+$ godot --headless --path godot -s res://sim/g4_range_ring_probe.gd --
+G4-HIDE0 node=0 selected=0 ghost=-1 visible=0
+G4-DATA ballista tier=1 want=16.0 scale=17.0 vis=1
+G4-FAIL DATA ballista: scale 17.0 != towers.json range 16.0
+RC=1  (T2's number painted at T1 — the DATA leg went RED, both numbers in
+the transcript; restored, rerun GREEN: G4-OK RC=0 stderr EMPTY, above.)
+
+Source-side red gate too (pytest, survives without the engine):
+test_planted_red_tier_swap_goes_red plants the same swap and the pinned
+lookup check MUST report it — green.
+
+== SUITE / HYGIENE / SCOPE ==
+- Full pytest: 283 passed (>= 278 REQUIRED; baseline tip was 276, this card
+  adds 7). Including the byte-green G5 caller-set pins, test_mission_stale,
+  test_family_picker and every pre-existing engine leg.
+- check_hygiene: 0 hit(s) — all my files: 98 / 335 / 357 / 274 (source hard
+  400, test 600, all under; defense_placer.gd at 335 keeps room and needs
+  NO ceiling-reason header). Governed-literal scan clean on
+  defense_placer.gd + defense_panel.gd (re-pinned by a card test);
+  range_ring.gd is the presentation builder (lane_bands/sprite_bank
+  ICON_PX doctrine — ungoverned by design, NOT added to GOVERNED_LITERALS).
+- Fixtures/sim/JSON untouched (git diff scope below); fixtures diff EMPTY.
+- git diff --stat (committed tree, owned paths ONLY):
+    godot/scripts/defense_placer.gd | 95 +++++++++++++++++++++++++++-----
+  plus the six NEW files (ring+uid, probe+uid, test, this log).
+
+LEDGER-ROW: v1.2.1 G4 (MC 11707): YELLOW range ring rides the armed ghost — flat ground unit-TorusMesh (PrimitiveMesh only, the G2 web lesson), radius == towers.json tier-row range READ via placer.tier_range (1-based T1..T5), ONE driver = the placer's three ghost chokepoints (arm/cycle show+resize; place/RMB/Escape/combat-lock hide through cancel_ghost), range-0 gate_blockade rows render NO ring (DA A4.1, non-vacuous negative), selection-mechanism EXISTS (panel.selected_uid) — selected-ring leg stays plan-D4 backlog, ghost-first shipped; kit g4_range_ring_probe (real relays) + 7 tests, suite 283 green, hygiene 0
+VERIFY_EXIT=0
