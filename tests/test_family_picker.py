@@ -18,7 +18,9 @@ runtime, test_defense_boundaries/test_mission_stale precedent):
 - VALID: select bombard via the SHIPPED selection entry (the panel
   button's own pressed signal — the same signal chain a browser click
   emits; GUI pickability of EVERY panel button is pinned by
-  test_mission_clicks' push_input legs, which collect all buttons) ->
+  test_mission_clicks' push_input legs, which collect all buttons);
+  G5 (MC 11700) RETARGET: the press ARMS the row, a MouseLeft confirm
+  places it ->
   defense_list row family=bombard via the SAME path ballista uses (the
   FP-CLASS row places ballista through place() and lands on the same
   chain), green delta EXACTLY the towers.json base_cost (160 bombard,
@@ -113,10 +115,14 @@ func _init() -> void:
 \t\treturn
 \t# VALID x2 (boundary half 1): press the SHIPPED buttons' own pressed
 \t# signal — the same chain a browser click emits (pickability of every
-\t# panel button is test_mission_clicks' pinned push_input legs).
+\t# panel button is test_mission_clicks' pinned push_input legs). G5
+\t# (MC 11700): the press now ARMS the row; the MouseLeft CONFIRM (via
+\t# handle_press — the exact route panel.poll drives) places it.
 \tbb.pressed.emit()
+\tpanel.handle_press("MouseLeft")
 \t_place_row(m, 1, "bombard")
 \thh.pressed.emit()
+\tpanel.handle_press("MouseLeft")
 \t_place_row(m, 2, "hailspire_tower")
 \t# INVALID: green is now short — the W17e poll-sync gates the buttons
 \t# OFF from CURRENT state (never from the pressed handlers)...
@@ -156,10 +162,13 @@ func _init() -> void:
 \tif bb.disabled or hh.disabled:
 \t\t_fail("poll did not re-enable the family buttons after income")
 \t\treturn
-\t# BOUNDARY half 2: alternate again — the RIGHT family EVERY time.
+\t# BOUNDARY half 2: alternate again — the RIGHT family EVERY time
+\t# (G5 flow: press arms, MouseLeft confirm places).
 \tbb.pressed.emit()
+\tpanel.handle_press("MouseLeft")
 \t_place_row(m, 3, "bombard")
 \thh.pressed.emit()
+\tpanel.handle_press("MouseLeft")
 \t_place_row(m, 4, "hailspire_tower")
 \t# Unknown id = the NEW "id" refusal (plan contract), no state change.
 \tvar g1 := int(m.green)
@@ -311,7 +320,14 @@ def test_one_gate_implementation_source_truth():
     sync_body = _body(panel, "func sync() -> void:")
     assert "picker_rows" in sync_body, \
         "family buttons' disabled state must ride the W17e poll sync"
+    # G5 (MC 11700) retarget: the picker PRESS now ARMS (no place); the
+    # place rides the ONE confirm route through place_id — still no
+    # second placement mechanism (plan §F4 replace-not-add, G5 §1).
     fam_body = _body(panel, "func _on_family_pressed(tower_id: String)")
-    assert "placer.place_id(tower_id, 1)" in fam_body \
+    assert "_arm(tower_id)" in fam_body and "place_id" not in fam_body \
         and ".disabled" not in fam_body, \
-        "the handler places through place_id and never touches enabled flags"
+        "the family press arms only — never places, never touches " \
+        "enabled flags"
+    confirm_body = _body(panel, "func _confirm() -> void:")
+    assert "placer.place_id(armed_id, 1)" in confirm_body, \
+        "the confirm must place the armed row through place_id"

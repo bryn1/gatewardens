@@ -110,6 +110,24 @@ func cancel_ghost() -> void:
 	ghost = -1
 
 
+# G5 (v1.2.1, MC 11700 / V121-PLAN §1 G5): the ghost CYCLE step over the
+# buildable slots — the ghost moves dir (-1/+1) through buildable() with
+# wrap; with no ghost on a buildable slot yet it lands on the first one.
+# The panel's arrow relay rides this (cycle helper HERE, I2-clean);
+# placement itself stays the confirm route — place_id resolves the ghost
+# inside, this moves the AIM only (no second placement mechanism).
+func cycle_ghost(dir: int) -> void:
+	var free: Array = buildable()
+	if free.is_empty():
+		ghost = -1
+		return
+	var at: int = free.find(ghost)
+	if at < 0:
+		ghost = free[0]
+		return
+	ghost = free[(at + dir + free.size()) % free.size()]
+
+
 # place(class, tier) per the brief, plus an explicit-slot override for
 # deterministic callers. F4 (MC 11616): the gates live ONCE in place_id
 # (replace-not-add) — this keeps its class semantics (first-row-wins) and
@@ -128,10 +146,13 @@ func place(class_id: String, tier: int, slot: int = -1) -> Dictionary:
 # id — the family picker's entry, and place()'s own delegate. With no
 # armed ghost the confirm falls to the FIRST free slot (greybox confirm
 # reading, the SAME resolution order the class buttons always used).
-# Validity that belongs to the placer (phase, known id, slot) is checked
-# here; cap + affordability + the spend are the mission application
-# site's answer (mission.place_defense — single site, I2/I4). Unknown id
-# is the NEW "id" refusal (plan contract row).
+# G5 (v1.2.1, MC 11700): panel confirms now arrive WITH an armed ghost;
+# the no-ghost fallback rides the KeyM-UNARMED legacy and the explicit/
+# harness callers — pinned standing behavior (plan Rev 2 / DA A4.3),
+# unchanged. Validity that belongs to the placer (phase, known id, slot)
+# is checked here; cap + affordability + the spend are the mission
+# application site's answer (mission.place_defense — single site, I2/I4).
+# Unknown id is the NEW "id" refusal (plan contract row).
 func place_id(tower_id: String, tier: int, slot: int = -1) -> Dictionary:
 	if String(m.phase_kind) != "build":
 		return {"ok": false, "why": "phase"}

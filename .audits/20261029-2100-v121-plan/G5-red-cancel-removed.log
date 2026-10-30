@@ -1,0 +1,7 @@
+E         G5B-ARM armed=1 ghost=0 count=0 green=300
+E         G5B-CYCLE size=11 fwd=1 back=0
+E         G5B-LMB count=1 green_drop=100 armed=0 ghost=-1
+E         G5B-LMB2 count=1
+E         G5B-FAIL RMB cancel leg broken (armed=true ghost=1 count=1)
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...drop=100 armed=0 ghost=-1\nG5B-LMB2 count=1\nG5B-FAIL RMB cancel leg broken (armed=true ghost=1 count=1)\n', stderr='').returncode
+1 failed in 5.70s

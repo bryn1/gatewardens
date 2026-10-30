@@ -1,0 +1,328 @@
+SUPERSEDED 2026-10-30 (MC 11700 v1.2.1 G5): DO NOT USE — live version: docs/ARCHITECTURE.md
+# Gatewardens — Architecture (PINNED design)
+
+> PINNED 2026-10-25 by hermes-standby (MC 11274.1). Source: `.audits/20261025-1033-dd2-decomposition/DESIGN-draft-c3.md`.
+> Gate history: round 1 FIX (16 findings) -> c2; round 2 FIX (13) -> c3; round 3 SHIP (DA-VERDICT-c3.md, fresh reviewer, empirical). This file is the living architecture — edit IN PLACE as the build diverges (versioned-truth: superseded copies go to .audits).
+
+
+SUPERSEDES: DESIGN-draft-c2.md (MC 11290, round 3 — final capped) — after the round-2 FIX verdict (DA-VERDICT-c2.md).
+
+Inputs: DA-VERDICT-c2.md (F8 residue + F2-1..F2-12; empirical probes `.tmp/shell_test/` and
+`.tmp/rng_test/` of this dir), LEDGER.md A1–A10 + §c3 rulings (13 orchestrator rulings, BINDING —
+applied mechanically here, not relitigated), DA-VERDICT.md (F1–F16; dispositioned FIXED except the
+F8 residue by DA-VERDICT-c2), DD2-MECHANICS.md, hollow_dawn_3d + vampire_survivor source facts.
+Round-1 rulings carried unchanged: **R1** wiki formulas (repair = base_cost × 0.75 × missing_ratio;
+sell = total_spent × 0.75 × missing_ratio) · **R2** relics-for-towers stays in v1 · **R3** NO
+autoloads anywhere; constructor/parameter injection, `-s` runs work by construction · **R4** one map
+(Gatefall); pets/Stables named deferred; A10 owns its row. Every round-1 F-fix mechanism stays in
+this doc's body (Modules/Contracts/Invariants); the r2 ledger below is the change surface.
+Contract ids C1–C13 keep meaning.
+
+## Fix ledger r2
+
+| # | r2 ruling applied (LEDGER §c3 rulings — mechanical) | lands in c3 |
+|---|---|---|
+| F8 | Residue of round-1 F8 closed with the F2-8 ruling: the cooldown-tick scope moves from the fix ledger INTO the contract — only the ACTIVE hero's cooldowns tick; inactive/downed freeze unchanged across swaps | C4 (verbatim rule), hero_combat row, mission row |
+| F2-1 | Ban BARE `randf()`/`randi()`; REQUIRE receiver-qualified `rng.randf()`/`rng.randi()` as the sanctioned draw path — both rules stated | C12, I6, sim/ header, sim_loot/sim_inventory rows, test_purity + check_hygiene rows |
+| F2-2 | Fixture format pinned (seed line + scripted-input rows + expected-output rows, hollow_dawn analogue); main.gd carries the runtime RNG (OS-entropy seeded) and owns hub rolls (svc_reroll/tinkering receive it); victory-chest roll fires in mission step (6) loot BEFORE the C13 mission-end commit | C12 fixture encoding block, main.gd row, blacksmith_ui/tinkerer_ui/mission/loot_pickup rows, C13, test_sim_golden row |
+| F2-3 | web_shell.html IS the full Godot 4.7 web template page ($GODOT_* tokens + canvas + `new Engine`) with GW JS inlined — not head-JS-only; bridge/served tests assert the engine bootstrap | Placement plan (shell spec + skeleton), scaffold row, test_bridge_contract + test_served rows |
+| F2-4 | I1 says on its face: tripwire over a named-token list, NOT closure; any field add/rename in C5/C6/C8/C9 requires a design-review row; `egg` stays legal (deferred pets legit; premium-egg gating re-enters only via design review) | I1, deferral list |
+| F2-5 | One shared engine-free factory `GWCompose.build_graph(tables)` (sim/gw_compose.gd, class_name RefCounted, static) → `{state,save,bridge}`; main.gd `_ready` AND every `-s` probe call IT; sole-construction claim restated as sole-wiring-site | sim/gw_compose.gd row, main.gd row, sim_headless/save_probe/validate_probe rows, I6, C1, breakdown |
+| F2-6 | Materials join meta: GWGameState gains `materials:{id:int}`; C6 `[meta2]` gains `materials_json`; `add_material`/`consume_material` emit `mutated`; blacksmith/tinkerer costs pay gold+materials (DD2-MECHANICS §7) | game_state row, C6, blacksmith.json/enemies.json rows, sim_inventory row, loot_pickup row |
+| F2-7 | C5 gains `relics_assigned:int`; the served journey asserts the delta (+1 assign / −1 unassign) | C5, defense_panel row, served journey row |
+| F2-8 | The F8 residue named as its own finding: the cooldown-tick rule is pinned IN C4 — ONLY the active hero's cooldowns tick; inactive/downed cooldowns are frozen and survive swaps unchanged (same mechanism as the F8 row above — one rule, both ids) | C4, C12 step (2), hero_combat/mission rows |
+| F2-9 | Same-tick win/lose precedence: LOSE wins — win is evaluated first, the lose check runs after it in step (5) and overwrites on the same tick | C12 step (5), C4 |
+| F2-10 | Auto-swap "next healthy" = deck ARRAY order starting AFTER the fallen hero, wrap-around once; none healthy → all-down lose path | C4 |
+| F2-11 | `SimInventory.equip` returns `{ok,bank}`; a replaced item ALWAYS returns to the bank inside equip (contract, not UI) | sim_inventory row, C9, gear_panel_ui row |
+| F2-12 | Shared row widget named: `scenes/item_row.tscn` + `scripts/item_row.gd`; gear bank list AND relic picker instantiate it; hygiene ceilings re-checked for both panels | scripts/item_row.gd row, scenes list, gear_panel_ui/defense_panel rows, breakdown |
+
+## Placement plan
+
+Layout v2 (one dir per project; never a sibling naming scheme):
+
+```
+~/Games/gatewardens/                    # git root (exists)
+  README.md LEDGER.md                   # README gains the FREE-FOR-ALL row (A8) at pin time
+  docs/ARCHITECTURE.md                  # created at PIN time, mirrors this doc (Architect keeps true)
+  .audits/<YYYYMMDD-HHMM>-<slug>/       # every audit/verify/fix run (this run exists)
+  .tmp/                                 # scratch + export scratch (gitignored)
+  godot/                                # the Godot 4.7.2 project — NO [autoload] SECTION (C1)
+    project.godot Main.tscn export_presets.cfg
+    web_shell.html                      # FULL 4.7 engine web-template page + GW bridge JS
+                                        #   inlined (F2-3 — NOT a head-JS-only stub; spec below)
+    data/   *.json                      # ALL balance + feel numbers (Modules; the pytest target)
+      maps/gatefall.json
+      waves/waves_gatefall_normal.json waves_gatefall_hard.json
+    sim/    sim_*.gd gw_compose.gd      # pure logic: class_name RefCounted statics/instances,
+                                        # zero Node refs (F2-5); + harness scripts (sim_headless,
+                                        # save_probe, sim_parse_probe, boot_probe, mission_smoke
+                                        # + _w8/_flow/_swap legs, hub_probe + _equip/_services/
+                                        # _stations/_mission legs — W16 split; harness files carry
+                                        # no sim_ prefix so the purity/parse scans skip them)
+    scripts/ *.gd                       # scene layer — every dep injected as an argument
+    scenes/ *.tscn                      # hub.tscn mission.tscn + component scenes + item_row.tscn (F2-12)
+    assets/                             # v1.1 (MC 11462): assets/v11/ = original stylized sprite bank served by scripts/sprite_bank.gd; greybox ArrayMesh/BoxMesh + material tints remain the null-fallback for future ids only (no shipped id is greybox since the DA-fix boss sheet)
+  static/                               # web-export output; gitignored (built artifacts never enter the repo — trail doctrine). "web export x2" = export-run REPRODUCIBILITY (two clean passes, identical served set), not artifact commitment.
+  server/ server.py static_app.py       # GW's OWN static-only server (F3): both files written
+                                        # for GW, static_app.py self-contained (own
+                                        # send_error_json); NO api.py, NO db.py
+  tests/ conftest.py test_*.py fixtures/  # ensure_class_cache in conftest (F14); fixtures/*.jsonl
+tools/  check_hygiene.py                # ceilings + I1 tripwire + I2 literal gate + BARE-randf ban
+```
+
+**web_shell.html (F2-3, empirical):** the 4.x `html/custom_html_shell` is a WHOLE-PAGE replacement,
+not an include — a head-JS-only shell exports with NO error to a 125-byte index.html with no
+engine/canvas/loader (VERIFIED this gate: `.tmp/shell_test/shell_noplaceholder.html` →
+`out_noph/index.html`, 125 B), and Godot-3-style `{engine}`-in-comment placeholders are NOT
+substituted (`out_ok/index.html` kept them verbatim). GW's shell IS the engine's default 4.7 web
+template page with GW JS inlined: the working reference skeleton is the gate's probe
+`.tmp/shell_full.html` (5088 B → exports 5438 B, boots: `new Engine(GODOT_CONFIG)` + `<canvas id=
+"canvas">`) — the builder copies that template from the pinned 4.7.2 release templates and inlines
+the GW bridge JS. Required tokens the exporter fills: `$GODOT_PROJECT_NAME`, `$GODOT_SPLASH`,
+`$GODOT_SPLASH_CLASSES`, `$GODOT_SPLASH_COLOR`, `$GODOT_HEAD_INCLUDE` (left EMPTY — single-source,
+F9), `$GODOT_URL`, `$GODOT_CONFIG`, `$GODOT_THREADS_ENABLED`; the page carries `<canvas id="canvas">`
+and `const engine = new Engine(GODOT_CONFIG);`. test_bridge_contract asserts all of it (Contracts/tests).
+
+EXTENDED (not replaced): export preset = hollow_dawn preset.0 (Web, `variant/thread_support=false`,
+`export_path="../static/index.html"` — both VERIFIED in source cfgs) with
+`html/custom_html_shell="res://web_shell.html"` + head_include EMPTY (F9/F2-3). Bridge = VS bridge.gd
+key-relay mechanism (on_key/held/drain_presses/move_vector — VERIFIED), renamed gw, restructured
+`class_name GWBridge extends RefCounted` (VS's is a Node; main.gd forwards `_input`/web callbacks
+into it — R3). Snapshot push = VS main.gd:84 mechanism (`_js_eval("window.__gwSnapshot="+…)`,
+VERIFIED). Save atomicity = hollow_dawn `class_name DawnWell extends RefCounted` tmp+rename pattern
+(NOT an autoload). Golden fixtures = hollow_dawn committed-dump jsonl pattern (seed-pinned, byte-
+stable, input rows + expected rows with `checks`/`ok` — VERIFIED in tests/fixtures/; encoding
+pinned in C12). Number-gate tests = source-truth regex style + the JSON data layer.
+
+## Modules
+
+Hygiene: every .gd ≤ 250 soft / 400 hard (header comment may exceed); tests ≤ 600; data exempt.
+Re-checked after F2-12/F2-5: item_row.gd ≈ 80 lines; gear_panel_ui keeps section + slot logic only
+(row building lives in item_row.gd — fits soft ceiling); defense_panel keeps selection + tier/HP +
+buttons only (picker is a list of item_row instances — fits soft ceiling); gw_compose.gd ≈ 40 lines.
+
+### Data files (the balance + feel truth — pytest reads these with stdlib json, no engine)
+
+| file | JSON schema (top-level; rows are arrays of dicts) |
+|---|---|
+| data/economy.json | `{green:{cap:int, per_kill_default:int, per_wave:int}, upgrade_ratios:[0.5,1.0,1.5,2.0], repair_ratio:0.75, sell_ratio:0.75, blue:{refill_on_phase_start:true}, starter:{gold:int}}` — NO start_green/defense_cap, NO blue regen (F7: map owns those); `starter.gold` is the fresh-boot bank seeding (W13/MC 11274.1.22, commit 865b668 — asserted by test_economy_exact_shape) |
+| data/balance.json | `{max_alive:int, build_seconds_default:float, wave_delay:float, pickup_radius:float, respawn_core_ratio:float, feel:{gravity:float, jump_speed:float, move_accel:float, move_decel:float, facing_interp_rate:float, cam_follow_rate:float, cam_yaw_rate:float, death_fade:float}}` (F6) |
+| data/xp.json | `{hero_curve:[int;50], enemy_xp_base:{normal:int,fly:int,boss:int}, wave_xp:int}` |
+| data/heroes.json | rows `{id,name,archetype:"melee\|ranger\|mage", base:{health,damage,ability_power,crit_chance,crit_damage,speed,blue_max,blue_regen}, attacks:{primary:{dmg_scale,cooldown,range},secondary:{…}}, abilities:[{id,name,mana_cost,dmg_scale,aoe,cd}×4], defense_id}` — blue_max/blue_regen are the SOLE blue sources (F7) |
+| data/towers.json | rows `{id,class:"tower\|blockade\|trap",family:"arrow\|cannon\|frost",name,base_cost:int,tiers:[{hp,damage,fire_rate,range,effect}×5],trap_charges:int?}` |
+| data/enemies.json | rows `{id,name,hp:{normal,hard},damage,speed,fly:bool,xp,green,drop_table_id, material_drop:{id:String,chance:float}?}` — optional material_drop (F2-6 supply leg; rolled via rng.randf() in SimLoot.enemy_drops) |
+| data/rarity.json | `{ladder:["worn","sturdy","powerful","epic","mythical","legendary"], mod_slots:{worn:0,…,legendary:3}, drop_weights:{normal:{…},hard:{…}}, chest_tiers:[…], sell_value:{<ladder_name>:int}}` — `sell_value` NEW (v1.2 F2, MC 11622): the ONE bulk-sell price ladder (worn 2 → legendary 40), read only via `game_state._sell_values()` |
+| data/items.json | bases `{id,slot:"weapon\|armor\|ring\|relic",level_band,name,primary,pool_secondary:[…],roll_ranges:{atk_speed:[lo,hi],proj_count:[lo,hi]},shot_types:[…],mods_pool:[…]}` |
+| data/mods.json | rows `{id,name,rarity_min,effect:{stat,add?%,flat?}}` |
+| data/ascension.json | `{points_per_level:int, tree:{offense:[{id,max,per_point:{stat,val}}],defense:[…],utility:[…]}}` |
+| data/blacksmith.json | `{materials:[{id,name}], upgrade:{gold_by_rarity:{…}, materials:{<mat_id>:int,…}}, evolve:{gold:int, materials:{…}}, reroll:{gold:int}, tinkering:{gold:int, materials:{…}}}` — SOLE source of material ids + service costs (F2-6; DD2-MECHANICS §7: upgrades consume tier materials + gold) |
+| data/maps/gatefall.json | C7 shape — SOLE source of start_green + defense_cap (F7) |
+| data/waves/waves_gatefall_normal.json / _hard.json | C8 shape (11 entries; index 10 boss) |
+
+### sim/ — pure logic (class_name + extends RefCounted; NO Node/Engine refs; NO BARE randf()/randi() — receiver-qualified `rng.randf(`/`rng.randi(` is the REQUIRED sanctioned draw path, C12/I6/F2-1)
+
+| file | concern | exposed interface (exact) |
+|---|---|---|
+| sim/sim_tables.gd | `class_name GWTables extends RefCounted` — load + hold data JSON | `func load_dir(dir:String)`; `func table(name:String)->Dictionary`; `func map(id:String)->Dictionary` (= `table("maps/"+id)`, a REAL method per F16); `func rows(stem:String)->Array` — the ONE array-file door (heroes/enemies/items/mods/towers; W16 dedupe: every former per-file raw-copy door rides this). NO `validate` static ever shipped (W16 truth pass): boot fail-fast is main.gd's FILE-level parse check, deep per-row validation is the pytest schema layer |
+| sim/gw_compose.gd | NEW (F2-5): the ONE wiring site — engine-free factory for the core objects | `class_name GWCompose extends RefCounted`; `static func build_graph(tables:GWTables)->Dictionary` → `{state:GWGameState, save:GWSaveStore, bridge:GWBridge}`; constructs all three AND performs the wiring (`state.mutated` → `save.write(state.to_save())`, C13). Called by main.gd `_ready` AND by every `-s` probe (sim_headless, save_probe, boot_probe, mission_smoke, hub_probe) — nothing else constructs/wires the trio |
+| sim/sim_economy.gd | green mana + build/upgrade/repair/sell math (R1) | `static func add_green(cur:int,amt:int,cap:int)->int`; `static func upgrade_cost(base:int,tier:int,ratios:Array)->int`; `static func repair_cost(base_cost:int,missing_ratio:float,ratio:float)->int` (roundi, min 1 if missing>0); `static func sell_value(total_spent:int,missing_ratio:float,ratio:float)->int` (roundi); `static func can_afford(green:int,cost:int)->bool` |
+| sim/sim_combat.gd | damage/ability formulas | `static func hero_hit(dmg:float,crit_chance:float,crit_mult:float,roll:float)->Dictionary`; `static func tick_blue(blue:float,regen:float,cap:float,dt:float)->float`; `static func ability_ready(blue:float,cost:float)->bool`; `static func tower_dps(tier_row:Dictionary)->float`; `static func dmg_to_core(dmg:float,armor:float)->float`; `static func extra_targets(primary:Dictionary,pool:Array,r:float,effect:String)->Array` (W15b: the ONE effect selector — pierce = same-lane ∩ radius-of-impact, splash = radius across lanes, other effects = no extras; WHO is hit only, I4) |
+| sim/sim_wave.gd | wave/phase sequencing decisions | `static func wave_comp(waves_file:Dictionary,i:int)->Array`; `static func is_boss(wave_row:Dictionary)->bool`; `static func build_seconds(wave_row:Dictionary,d:float)->float`; `static func total_waves(waves_file:Dictionary)->int` (== 11 asserted by test_waves) |
+| sim/sim_progression.gd | hero XP/level/ascension | `static func level_from_xp(curve:Array,xp:int)->int`; `static func xp_need(curve:Array,level:int)->int`; `static func asc_points(levels_total:int,per_level:int)->int`; `static func asc_modifier(tree:Dictionary,spent:Dictionary)->Dictionary` |
+| sim/sim_loot.gd | drop + chest rolls (declared weights only) | `static func roll_rarity(tables:Dictionary,diff:String,luck:float,rng:RandomNumberGenerator)->String`; `static func roll_item(base:Dictionary,rarity:String,tables,rng)->Dictionary`; `static func enemy_drops(row:Dictionary,tables,rng)->Array` (emits `{kind:"material",id}` rows on the optional `material_drop` — F2-6); `static func victory_chest(tier:int,tables,rng)->Array` — rng ALWAYS a parameter (C12); draws via `rng.randf()`/`rng.randi()` ONLY (F2-1) |
+| sim/sim_inventory.gd | bank/equip + blacksmith/tinkerer ops + relic math | `static func equip(bank:Array,hero:String,item:Dictionary)->Dictionary` returning `{ok:bool, bank:Array}` — the replaced item, if any, is ALWAYS returned into the returned bank BY equip (F2-11 contract, not UI); `static func svc_upgrade(item:Dictionary,tables,mats:Dictionary)->Dictionary` (returns `{ok,cost:{gold:int,materials:{id:int}}}`; mats = current material counts, F2-6); `static func svc_evolve(…)` / `static func svc_reroll(item,rng,tables)` / `static func tinkering(source,target,mod_i,tables,mats)` — same gold+materials cost shape per blacksmith.json; `static func mod_slots(rarity:String,ladder:Dictionary)->int`; `static func relic_bonuses(item:Dictionary)->Dictionary` (stat→add for the owning defense, C11); `static func bulk_sell(bank:Array,sell_values:Dictionary)->Dictionary` NEW (v1.2 F2, MC 11622) — the ONE bulk-total sum → `{ok,gold,sold}`; empty bank is the pinned refusal `{ok:false,why:"empty"}` (zero gold, zero sold) |
+| sim/sim_headless.gd | full-mission golden runner | `extends SceneTree`; `func _init()` — loads mission.tscn, constructs GWTables, calls **GWCompose.build_graph(tables)** (F2-5 — same wiring as the app), seeds ONE RNG from the fixture header line, drives `mission.step(1.0/60.0)` per C12, replays fixture `kind:"in"` rows at their ticks, prints the run rows (extends hollow_dawn sim_headless "drives the real _step manually" pattern); fixtures regen only, never run by the number pytest |
+| sim/save_probe.gd | save round-trip probe | `extends SceneTree`; constructs GWTables + **GWCompose.build_graph(tables)** (F2-5) (user:// redirected via XDG_DATA_HOME on the desktop leg), runs mutators (incl. add_material), reloads, prints `{ok:bool,diff:…,ack:int}` JSONL |
+| sim/sim_parse_probe.gd | parse harness (W3a) | `extends SceneTree`; loads every `sim_*.gd` module for real under `-s`; rows `SIMPARSE-OK/FAIL/DONE`; EMPTY stderr is the verdict |
+| sim/boot_probe.gd | boot snapshot probe | `extends SceneTree`; boots the composed graph and prints `BOOT-PROBE-SNAP` + a C5-shaped snapshot row (state-derived) |
+| sim/mission_smoke.gd + _w8/_flow/_swap legs | mission-flow harness (W6; W16 split, MC 11274.1.28) | driver `extends SceneTree`; legs `extends RefCounted`, `static func run(driver, leg)`; boots the REAL mission.tscn under `-s` and drives setup()+step(); MISSION-SMOKE-* machine rows, E3 early-return discipline |
+| sim/hub_probe.gd + _equip/_services/_stations/_mission legs | hub/stations harness (W9; W16 split) | same leg pattern; seeds meta through C13 mutators only, drives every station leg through shipped entry points; thirteen HUB-PROBE-* machine rows incl. the W14 legs (ASC/RELIC + the P2-10 unknown-uid equip refusal, MC 11274.1.25 / commit 1067391) — tests/test_hub.py re-derives each number from data. `validate_probe` never existed (W16 truth pass): boot = main.gd file-level check, schema = pytest layer |
+
+### Verification kits (godot/sim/ — manual pixel/probe legs, deliberately NOT in the pytest suite)
+
+The `v*_probe`/`v*_shot` kits under sim/ are MANUAL legs: run by hand with the repo-canonical
+Godot binary (the one tests/conftest.py pins, GW_GODOT-overridable), evidence rows/PNGs land in
+the audit run's gen/ dir, and the LEDGER row for the card that (re-)ran them records it. The
+pixel kits stay OUT of CI on purpose (ruling MC 11575 W3, DC-1): wiring them in would make the
+suite depend on GPU-window-free PNG writing under a real GL display (xvfb + opengl3) — pixels
+are verified per card + by describe-image reads, not by the number tier.
+
+- `sim/v11_boss_shot.gd` — the boss BILLBOARD PIXEL proof (MC 11462 DA-fix): the ONLY leg that
+  proves the warden_breaker boss renders as a Sprite3D on its sheet path in a served frame
+  (asserts the spawned node IS a Sprite3D, captures gen/v112-boss-shot.png + v112-boss-zoom.png,
+  plus the close gen/v112-boss-near.png where the art itself reads). Run from the repo root:
+  `xvfb-run /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --rendering-driver opengl3 --path godot -s res://sim/v11_boss_shot.gd`
+- Superseded kits retire to `sim/archive/` — `git mv` keeps history, the first line carries the
+  `SUPERSEDED — DO NOT USE` label with the successor chain (versioned-truth law; NEVER delete).
+  `sim/archive/v11_shot3.gd` (MC 11462 first pixel proof, archived at clean-code W3): its unique
+  legs live verbatim in v5_fx_shot → v1_world_shot → v11_boss_shot.
+
+### scripts/ — scene layer (NO autoloads; every dependency arrives as a setup()/call argument — R3/C1)
+
+| file | concern | interface / note |
+|---|---|---|
+| scripts/game_state.gd | `class_name GWGameState extends RefCounted`: meta (hero levels/xp, ascension points+spend, gear bank, gold, **materials:{id:int}** — F2-6, mission completions, active deck) | `GWGameState.new(tables)`; mutators `add_hero_xp(id,xp)`, `spend_asc(tree,power,pts)->bool`, `bank_add(item)`, `equip(hero,slot,item)` (delegates to SimInventory.equip — replaced item returns to bank, F2-11), `add_gold(n)`, `spend_gold(n)->bool`, `add_material(id,n)`, `consume_material(id,n)->bool` (false when short; no partial spend), `set_deck(hero_ids)`, `complete_mission(key)`, `sell_bank()->Dictionary` NEW (v1.2 F2, MC 11622: on ok the cleared bank + the whole total ride the sanctioned `add_gold` emit — ONE C13 write; refusal `{ok:false,why:"empty"}` is not a state change — no write, no emit) + read-only `sell_bank_quote()->Dictionary` (v1.2 F2: the confirm-dialog total, the same `SimInventory.bulk_sell` sum the mutator applies — shown = paid, no second math); EVERY mutator emits signal `mutated` (C13 trigger); `func snapshot_json(mission:Variant)->String` (C5); `to_save()/from_save()` |
+| scripts/save_store.gd | `class_name GWSaveStore extends RefCounted`: ConfigFile user://, atomic tmp+rename + corrupt quarantine (DawnWell pattern) | `func write(d:Dictionary)->bool` — on success `write_seq += 1`; `var write_seq:int` (C13 ack source); `load_save()->Dictionary` |
+| scripts/bridge.gd | `class_name GWBridge extends RefCounted`: keyboard relay (VS bridge.gd mechanism EXTENDED: adds Digit4, KeyE, KeyN, F1–F3, mouse-button codes); NO Node/`_input` here | `on_key(code,down)`, `held:Dictionary`, `drain_presses()->Array`, `move_vector()->Vector2`; main.gd forwards desktop `_input` + web JS callbacks into it |
+| scripts/main.gd | APP ROOT + ROUTER Main.tscn (F2-5): `_ready` builds `tables=GWTables.new(DATA_DIR)` then a FILE-level boot fail-fast over STEMS (empty/unparsable JSON → print + `quit(1)`; deep validation = the pytest schema layer — no validate static, W16 truth), then `var graph = GWCompose.build_graph(tables)` (the app-side call of the ONE wiring site — construction/wiring of state/save/bridge lives in GWCompose, NOT here); owns the app RNG: `var rng := RandomNumberGenerator.new()` seeded from OS entropy at `_ready` — SOLE RNG owner at runtime (F2-2), handed to mission via setup and to blacksmith/tinkerer panels as a setup param; hub↔mission switching; on web pushes snapshot each frame via `_js_bridge.call("eval", "window.__gwSnapshot="+…, true)` (JavaScriptBridge singleton; VS main.gd:84 mechanism, renamed; no-op off-web); end-only RETURN TO HUB (v1.2 F1, MC 11623, owner ruling END-ONLY): the button mounts on BOTH mission-end screens (victory AND defeat) and routes through `_return_to_hub` (one route per end, deferred — DA F1 flush-edge guard) — NO mid-mission exit control ships; the reload route stays | hub panels receive the RNG through their setup() params — hub rolls (reroll/tinkering) have a named owner (F2-2) |
+| scripts/hub.gd | tavern scene: static room, NPC interaction zones (proximity → open panel) | `setup(tables, game_state, save_store, bridge, rng)` (injected from main) |
+| scripts/war_table.gd | mission select panel: map + difficulty, start | calls `main.start_mission(map_id, difficulty)` |
+| scripts/item_row.gd | NEW (F2-12): shared list-row widget — icon/name/rarity-tint/1-2 stat lines + selected highlight | `class`-less plain script on `scenes/item_row.tscn`; `func show_item(item:Dictionary, selected:bool)`; emits `picked(uid:int)`; the widget itself is instantiated ONLY by scripts/bank_list.gd — one row renderer, one fill loop |
+| scripts/bank_list.gd | NEW (W16, MC 11274.1.28): the ONE list-fill loop over shared item_row rows | `static func fill(box, tables, rows:Array, marked_uid:int, on_picked:Callable)`; used by gear_panel_ui (bank, pre-bucketed by slot), blacksmith_ui, tinkerer_ui (×2 pickers) and defense_panel (relic picker) — the four users' identical build loop now lives once (F2-12 restated) |
+| scripts/gear_panel_ui.gd | hub gear panel — bank list (4 slot-sections built from item_row instances, F2-12) + 3 hero cards with weapon/armor/ring slots; click bank item → click compatible slot → `GameState.equip(hero,slot,item)`; replace-return is NOT panel logic — SimInventory.equip owns it (F2-11); SELL ALL row (v1.2 F2, MC 11622) enters ONE confirm state showing the quoted total BEFORE anything is applied (quote `sell_bank_quote()`, apply `sell_bank()` on CONFIRM only — shown = paid; owner ruling 2026-10-28) | pure UI; all math in SimInventory; visible in C5 (`equipped`, `bank_count`); ≤ soft ceiling: row building lives in item_row.gd (F2-12) |
+| scripts/blacksmith_ui.gd | Upgrade/Evolve/Reroll panel — ALL logic in SimInventory, pure UI; shows + pays gold+materials via GameState mutators (F2-6) | `setup(tables, game_state, rng)` — rng param from main powers `svc_reroll` (F2-2); button → `SimInventory.svc_*(…, game_state.materials)` → GameState (consume_material + bank update) |
+| scripts/tinkerer_ui.gd | mod-transfer panel (source/target pick); pays gold+materials (F2-6) | `setup(tables, game_state, rng)` (F2-2); wraps `SimInventory.tinkering` |
+| scripts/dummy_range.gd | training dummies: invulnerable dummy + live DPS readout | uses real mission combat on a mini-spawn |
+| scripts/mission.gd | mission root: the C12 funnel + injected deps + C5-readable fields; the build legs live in the collaborators below (W16 split) and every public crossing stays HERE | `setup(tables, game_state, save_store, bridge, map_id, difficulty, rng)` (rng from main at runtime / fixture-seeded in the harness, F2-2); `func step(delta)` = the C12 funnel (step (6) also fires the victory-chest roll on the win tick, before the C13 commit — F2-2); `_process(d)` calls `step(d)` ONLY; `place_defense/assign_relic/unassign_relic/revive_downed` (the relic pair delegates to mission_relics; the body byte-identical) |
+| scripts/mission_world.gd | NEW (W16 split of mission.gd): C7 map build + C5 core mirror | `static func build_lanes/build_cores/make_core/refresh_cores(m)` — bodies byte-identical; the `cores` mirror write site stays the only one |
+| scripts/mission_heroes.gd | NEW (W16 split): mission-local hero table build + C4 swap legs | `static func build_heroes/revive/try_swap/auto_swap/select/all_down(m)` — the ONE asc_modifier consumer write + the C4 swap clamp live here; mission routes the pinned SWAP_KEYS and phase_controller's revival through them |
+| scripts/mission_relics.gd | NEW (W16 split): the C11 relic-pool crossing | `static func assign/unassign/defense_by_uid/pool_row/relic_owner/live_count(m)` — build-phase-only gates, refusals and the C5 count site, byte-identical to the W14 body |
+| scripts/phase_controller.gd | build↔combat alternation; blue refill at combat start; green award at wave end; build-phase-start downed-hero revival (C4) | `step(delta)`; signals `phase_changed(kind)`, `wave_done(index)`; state machine only, numbers from economy/balance |
+| scripts/hero_controller.gd | CharacterBody3D move/jump, hot-swap (F1–F3) with C4 semantics | feel params from `balance.feel` + heroes row, read at setup (F6); reads Bridge only; rig stays on mission |
+| scripts/hero_pawn.gd | SHIPPED (W7, MC 11274.1.14 / card 11321; row added W16; VISUALS REPLACED v1.1 MC 11462): the ONE pawn scene parameterized by hero id — visual asks scripts/sprite_bank.gd texture_for(hero id) for the original sprite billboard (null → original primitive+tint fallback) | scenes/hero_pawn.tscn + scripts/hero_pawn.gd + assets/v11/hero_*.png via sprite_bank.gd; per-hero tint mats mat_hero_<id>.tres kept for the fallback + flash idiom (heroes.json declares no color field - the fixed palette is the declared reading); hero_controller builds one per deck hero |
+| scripts/hero_combat.gd | two attacks + 4 abilities; spends blue; damage via SimCombat | NO numeric balance literals (I2); cooldowns in mission `hero_state` (C4) — ticks ONLY for the ACTIVE hero, inactive/downed arrays frozen (F2-8) |
+| scripts/enemy_runner.gd | lane path follow (ground/air), attack core/melee, death → green+xp+drops | `spawn(row,lane,tables,rng)`; lane walk only — gravity never applied on-lanes (air lanes = waypoint y, F16); projectiles ownerless (C4); hands step distance/walk phase to enemy_anim — visual pose only (v1.2 F5, MC 11610) |
+| scripts/enemy_anim.gd | NEW (v1.2 F5, MC 11610): the procedural enemy walk pose — VISUAL LAYER ONLY (the pose NEVER writes `ent["pos"]` — golden fixtures + hitboxes byte-identical, the test file's ent-pos single-write pin) | pure statics `phase_advance(prev,distance)`, `bob_offset(phase)`, `sway_offset(phase)`, `walk_step(node,base,distance)`; ONE call line in enemy_runner (:145, preload-bound); phase accumulates with DISTANCE walked, bob = |sin(phase)|·amp on y + small roll sway on the billboard; NOT in the I2 16-file governed set — its pose constants are the declared ungoverned constants of V12-PLAN §F5 (adding it to I2 would be a design change to that row) |
+| scripts/lane_path.gd | waypoint walker (shared by enemy_runner) | `static func advance(pos:Vector3, wps:Array[Vector3], speed:float, dt:float)->Dictionary` (`{pos,wp_index,arrived}`); y comes from the map waypoints, never rewritten (F16) |
+| scripts/core_obj.gd | main/sub core health bar, game-over/open-lane-on-death | `take_damage(d)`; sub-core death opens lane ids (C7) |
+| scripts/defense_placer.gd | build-phase placement: ghost, validity (range/overlap), confirm/cancel, cost via SimEconomy | validity from injected tables; calls mission.place_defense |
+| scripts/defense_obj.gd | placed defense: tier hp/damage, repair, sell, target+fire (SimCombat), trap charges, relic bonus applied (C11) | tracks `total_spent:int` (green spent on place+upgrades ONLY — C3 sell base); class-dispatch dict {tower,blockade,trap}; W15b effect leg: tier-row effect "pierce"/"splash" adds targets via SimCombat.extra_targets at the single dps site (WHO, never the math) |
+| scripts/defense_panel.gd | in-mission build-phase selection panel — Upgrade/Repair/Sell buttons (C3) + relic slot → relic picker = a list of item_row instances over the mission relic pool (F2-12; C11); build-bar FAMILY PICKER (v1.2 F4, MC 11616): the non-winner towers.json rows (bombard, hailspire) render beside the class winners, each pick places THAT family's T1 via `placer.place_id` — the ONE existing gate sequence, no second mechanism | pure UI over mission/defense_obj state; ≤ soft ceiling: row building lives in item_row.gd (F2-12); assignment leg observable via C5 `relics_assigned` (F2-7) |
+| scripts/hud.gd | HP/blue/green bars, wave/phase label, defense count, loot toast | renders injected state only, no logic |
+| (no own file) | the loot pipeline SHIPPED inside mission.gd as `step_loot` (C12 slot (6)) + the HUD loot toast, W11 (MC 11274.1.19 / card 11326) — no scripts/loot_pickup.gd was ever needed | drops ride the step-(4) death funnel (SimLoot.enemy_drops, rng from the mission's rng param, C12/F2-2); item drops mirror into `m.loot_events` (pinned C9 shape) and the HUD renders the newest as a toast; victory chest fires in step (6) on the win tick via `SimLoot.victory_chest(tier,tables,rng)` — rolled items enter the bank through `bank_add` mutators BEFORE the C13 mission-end commit (F2-2); material rows route through `add_material` in `_end_mission` |
+
+### Scenes (shipped): scenes/mission.tscn, scenes/hub.tscn, scenes/hud.tscn,
+### scenes/item_row.tscn (F2-12), scenes/hero_pawn.tscn, scenes/mission_stub.tscn.
+### enemy/defense/core/ghost/pawn_<archetype>/dummy scenes from the c3 plan are LATER-WAVES
+### ONLY — visuals are built in code (core_obj/defense_obj/hero rig) BUT painted from
+### v1.1 (MC 11462): scripts/sprite_bank.gd (the ONE id->sheet map, tier-aware) supplies
+### original stylized art from assets/v11/ to hero_pawn/defense_obj/enemy_runner + the
+### world floor + core emblem; greybox primitives remain ONLY as the null-fallback for
+### future ids — the last sheet (boss warden_breaker) landed at the DA-fix commit, so no
+### shipped id is greybox. The 3090 generation pipeline LANDED at v1.1 (prompt record
+### gen/manifest-prompts.tsv — 12/36 batch-1 prompts unrecordable, marked MISSING — plus
+### per-batch sha256 manifests under .audits/20261027-1500-visual-target/gen/).
+
+### static/ server/ tests/ tools/
+- static/ — export target, gitignored (W12: built artifacts are evidence-side, never product-side; "web export x2" = two reproducible clean export passes, asserted served-file-set + index sha equality in W12 evidence).
+- server/server.py — ThreadingHTTPServer, binds 127.0.0.1, port env `GW_PORT` (default 8124); routes EVERYTHING to static_app (no /api — GW's own file, F3).
+- server/static_app.py — GW's own static-only dispatcher: realpath jail, ext allowlist incl. .wasm/.pck, NUL-byte guard, own `send_error_json(handler, code, obj)` → 404 `{"error":"NOT_FOUND"}` (mechanism EXTENDED from VS static_app.py with its api import REPLACED by a local function, not a stub — F3).
+- tests/conftest.py — repo-root helper + `ensure_class_cache()` (F14): once per session `godot --headless --import godot/` before ANY `-s` run; engine tiers call it; number tests never touch the engine. The import primes the ASSET cache only — a clean-checkout `--headless --import` does NOT guarantee `class_name` resolution for new files (W3b empirical finding), so every cross-file reference in new code binds by `preload()` (W4 binding rule; Wave 5+ MUST bind by preload until editor-scan caching is proven here), and the `-s` parse-leg verdict is the run's EMPTY stderr: a broken script can load as a non-null resource, so the machine rows alone can false-green — stderr is the true parse signal (test_purity's parse leg asserts it). tests/test_data_schemas.py (JSON parses + required keys/types + blacksmith.json material ids ⊆ declared materials[] and enemies material_drop ids declared, no engine — the DEEP schema validator for the data; boot-time fail-fast is main.gd's file-level check, not a validate static, W16 truth), test_economy_numbers.py (ratios 50/100/150/200 base; repair = base×0.75×missing (min 1); sell = total_spent×0.75×missing — F12; cap), (wave-shape assertions ride test_data_schemas.py: both files, 11 entries, index 0..9 normal + index 10 boss, hard hp ≥ normal — wording matches C8; no separate test_waves.py exists, W16 truth), test_heroes.py (3 heroes, 4 abilities each cost blue, cap 50, ascension 3 trees), test_loot_structure.py (rarity ladder order, mod-slot map, NO banned FIELDS in ANY data file — the I1 structural guard — every weight table sums >0), test_bridge_contract.py (cfg `html/head_include == ""` + `custom_html_shell` = res://web_shell.html; GW names present in web_shell.html AND main.gd; VS names 0 hits in I8 scope; **F2-3 engine-bootstrap asserts: web_shell.html contains `$GODOT_URL` + `$GODOT_CONFIG` + `new Engine` + `<canvas`** — the dead-shell trap can never pass again), test_purity.py (sim/*.gd: no `extends Node|Engine|get_node`; no BARE `randf(`/`randi(` — a call site whose preceding char is not `.`; rolls appear receiver-qualified as `rng.randf(`/`rng.randi(` only — F2-1), test_sim_golden.py (fixtures per the C12 encoding: replay seed+in-rows, emitted out-rows byte-equal to the committed expected rows, every `ok:true`; planted-bad red run required per A9), test_persistence.py (save_probe desktop leg + `saved_ack` monotonic incl. a materials round-trip row, F5/F2-6), test_served.py (GW_PORT server serves static/index.html 200 + C10 shapes + **F2-3: served index.html contains `new Engine` and `<canvas`**), test_hub_layout.py (hub layout + camera-frustum gates; pin #3's rig literal RE-PINNED ONCE 2026-10-28 under the owner's documented grant — v1.2 F6/MC 11649, LEDGER PIN row: any further camera move needs a NEW owner ruling), v1.2 additions: test_relic_negatives.py (F3 tests-only leg: relic-assign refusals incl. stale uid ACROSS SELL), test_enemy_walk.py (F5: pure-math pose helpers + ent-pos single-write + one-call-line source pins), test_family_picker.py (F4: picker rows, place_id routing, the `m.place_defense(` == 1 source-truth pin), test_bulk_sell.py (F2: bulk_sell pure-static + sell_bank refusal-asserts-all-three + engine quote/apply legs, shown = paid), test_return_hub.py (F1: end-only RETURN TO HUB both end screens, MID leg = live tree scan + handler refusal — no mid-mission exit). The hygiene gate rides tests/test_scaffold.py (runs tools/check_hygiene.py as a suite leg — no separate test_hygiene.py, W16 truth per I9).
+- tools/check_hygiene.py — stdlib-only: .gd/.py line ceilings (≤250 soft / 400 hard; tests 600; a `# hygiene:` header never reaches past the ABSOLUTE 600 — W16 closed the exemption abuse); I1 tripwire (identifier-aware token match, F10 word list); **I2 structural-literal rule (W16)**: the 16 governed gameplay files (hero_combat, enemy_runner, defense_obj, phase_controller, hero_controller, hud, hub, gear_panel_ui, item_row, war_table, blacksmith_ui, tinkerer_ui, dummy_range, ascension_ui, defense_placer, defense_panel) carry no number literal outside STRUCT_VALS — the STRUCT_VALS set + the number regex have their ONE home HERE and tests/test_hub.py, tests/test_hud.py, tests/test_mission_smoke.py IMPORT them (no copies to drift); **BARE** `randf(`/`randi(` (call sites not preceded by `.`) = 0 hits in godot/sim/ + godot/scripts/ — receiver-qualified `rng.randf(`/`rng.randi(` is the REQUIRED sanctioned path and is NOT a hit (C12/F2-1); `[autoload]` = 0 hits in project.godot (C1).
+
+## Contracts
+
+C1 — Tables access: NO autoload identifiers exist (project.godot has no `[autoload]`; grep-forbidden). `GWTables` is constructed by the consumer that owns the process root (main.gd / each `-s` probe) and injected; the core trio is constructed ONLY inside `GWCompose.build_graph` (F2-5) and injected from its returned Dictionary. `tables.table(name)->Dictionary` (name = file stem; maps via `tables.map(id)` — a real method). Read-only doctrine: consumers never mutate a loaded table; sim never writes into one.
+
+C2 — mission.gd → lane/enemy spawn crossing: enemy spawn row `{enemy_id:String, count:int, lane:String, delay:float}` from C8; `enemy_runner` gets `hp = row.hp[difficulty]`; mission.gd holds no HP math.
+
+C3 — SimEconomy crossing (defense lifecycle, R1 pinned): place = `base_cost`; T(i)→T(i+1) = `upgrade_cost(base_cost, i, economy.upgrade_ratios)` = base×0.5/1.0/1.5/2.0; repair = `repair_cost(base_cost, missing_ratio, 0.75)` = roundi(base_cost×0.75×missing), min 1 when missing>0; sell = `sell_value(total_spent, missing_ratio, 0.75)` = roundi(total_spent×0.75×missing). `total_spent` = green spent on place+upgrades only (defense_obj tracks it). Green only; blue never appears in any signature (I3).
+
+C4 — hero mission-state crossing (extended per F8; scoped per F2-8/F2-9/F2-10): ONE mission-local blue pool (float); regen source = ACTIVE hero's `base.blue_regen` (sole source, F7), ticked via `tick_blue`; `refill_on_phase_start` handled ONLY in phase_controller (one path). On swap: clamp `blue = min(blue, new_hero.blue_max)`. Per-hero `hp/hp_max/cooldowns[4]/downed` live in mission-local `hero_state`, initialized from heroes.json at mission start, surviving swaps. **Cooldown tick scope (F2-8/F8, binding): step (2) decrements ONLY `hero_state[active_hero].cooldowns[i] -= delta`; inactive AND downed heroes' cooldown arrays are FROZEN — they neither tick nor reset, and survive every swap with their remaining time unchanged.** Downed hero: auto-swap to next healthy hero, where **next healthy = deck ARRAY order starting immediately AFTER the fallen hero, wrapping around at most once (F2-10); found-none → the all-down lose path fires in step (5)**. Downed heroes are unswappable until NEXT BUILD-PHASE START (revive full HP); all deck downed = `outcome="lose"`. **Same-tick win/lose (F2-9): step (5) evaluates win FIRST, then lose; a lose condition true on the same tick OVERWRITES a win already recorded — LOSE wins.** In-flight projectiles keep flying ownerlessly (snapshot damage at launch). The camera rig is STATIC on the mission root — swaps and pawn changes never touch it (F8; mission.gd setup: "the camera rig on this root is never touched", hero_controller.gd: NOTHING there ever touches it), and the rig is never re-parented with a pawn. The shipped transform is the v1.2 F6 rig D=64/pitch-48 (mission.tscn CameraRig row; LOCKED pin #3 re-pinned ONCE 2026-10-28 per owner grant — LEDGER PIN row, MC 11649).
+
+C5 — GW_STATE snapshot (window.__gwSnapshot, accessor `window.GW_STATE()`): `{schema:int, phase:"hub"|"mission", mission_id:String, difficulty:"normal"|"hard", wave:int, phase_kind:"build"|"combat", wave_remaining:int, alive:int, green:int, green_cap:int, blue:float, blue_max:float, hero_id:String, hero_hp:float, hero_hp_max:float, cores:{main:{hp:float,max:float}, subs:[{id:String,hp:float,max:float}]}, defenses:int, defense_cap:int, relics_assigned:int, deck:[{id:String,level:int}], asc_points:int, bank_count:int, gold:int, loot_pending:int, equipped:{hero_id:{weapon:String|null,armor:String|null,ring:String|null}}, outcome:"win"|"lose"|null, boss_hp:float|null, saved_ack:int, t:float}`. `relics_assigned` NEW (F2-7) = count of currently assigned mission relics; the journey asserts +1 after `assign_relic` and −1 after `unassign_relic`. `equipped`/`saved_ack` (F4/F5); `outcome`+`boss_hp` (F13); boss_hp non-null while wave index 10 is live. One snapshot per frame on web only; Playwright reads it.
+
+C6 — save file: ConfigFile `user://gatewardens.cfg`; sections `[meta]{schema_version:int, asc_earned:int, asc_spent_json:String}`, `[hero:<id>]{level:int, xp:int}`, `[bank]{items_json:String}` (Array of C9), `[meta2]{gold:int, deck_json:String, completed_json:String, materials_json:String}` (`materials_json` NEW, F2-6: JSON of the `{id:int}` material counts; `completed_json` = `{"gatefall_normal":true,…}`). Write: tmp+rename (DawnWell pattern); unreadable previous → `*.corrupt` copy kept. Browser reload restores hero levels, ascension, gear bank, materials (A7) — desktop round-trip via save_probe, browser leg via the A9 journey under C13.
+
+C7 — map file (data/maps/*.json): `{id,name,defense_cap:int,start_green:int, spawners:{id:[x,y,z]}, cores:{main:{hp:{normal:float,hard:float},pos:[x,y,z]}, subs:[{id:String,hp:{…},pos,opens_lanes:[lane_id]}]}, lanes:[{id:String,kind:"ground"|"air",spawner:String,waypoints:[[x,y,z],…], target:"main"|sub_id}]}`. SOLE source of start_green + defense_cap (F7). Waypoint y: air lanes = flight height, ground lanes = 0, as authored; lane_path never rewrites y (F16).
+
+C8 — wave file: `{map:String, difficulty:"normal"|"hard", waves:[{kind:"normal"|"boss", build_seconds:float, enemies:[{enemy_id,count,lane,delay}]}]}` — waves array has 11 entries: index 0..9 kind "normal" + index 10 kind "boss" (sole boss).
+
+C9 — item instance (bank, drops, GW bank_count): `{uid:int, base_id:String, slot:String, rarity:String, ilvl:int, primary:{stat:String,value:float}, secondary:{…}|null, atk_speed:float|null, shot_type:String|null, proj_count:int|null, mods:[{mod_id:String,rarity:String}], upgraded:int}`. Rolls ONLY from items.json roll_ranges/pools via SimLoot (declared weights; seeded rng per C12). **Equip crossing (F2-11): `SimInventory.equip(bank,hero,item)` returns `{ok:bool, bank:Array}` and a replaced item is ALWAYS returned into the returned bank by equip itself — every caller (gear panel, future auto-equip) gets the same replace semantics; no caller may reimplement it.**
+
+C10 — served contract: GET `/` → 200 text/html; `.wasm` → application/wasm; `.pck` → application/octet-stream; unknown/escaping path → 404 `{"error":"NOT_FOUND"}` (VS static contract shape implemented by GW's own static_app + its own send_error_json — F3; test_served pins it, incl. the F2-3 bootstrap asserts).
+
+C11 — relic-equip crossing (R2): at mission start, mission copies all bank rows with `slot=="relic"` into a mission-local relic pool (bank itself is NOT consumed — reload mid-mission loses only the mission). `mission.assign_relic(defense_uid, relic_uid)` / `unassign_relic(defense_uid)`: build phase ONLY, one relic per defense, one defense per relic (uids unique in pool). Defense stat bonus applied via `SimInventory.relic_bonuses(item)` on top of the tier row (defense_obj). Pool and assignments are mission-local; nothing about them enters C6; the COUNT is observable via C5 `relics_assigned` (F2-7).
+
+C12 — step-funnel crossing (F2; extended per F2-1/F2-2/F2-9): the mission root exposes `step(delta)`; fixed call order INSIDE step: (1) phase_controller.step (transitions, refill, wave-end green, revival), (2) hero (bridge input → hero_controller → hero_combat; ONLY the active hero's cooldowns tick — C4/F2-8), (3) defenses (target/fire/repair), (4) enemies (advance/attack/death→green+xp+drops), (5) mission bookkeeping (alive cap, win/lose detection — win evaluated FIRST, lose checked after and OVERWRITES on a same-tick tie, F2-9; → C5 outcome), (6) loot — and on the tick `outcome` becomes "win", step (6) fires the victory-chest roll `SimLoot.victory_chest(tier,tables,rng)` whose items enter the bank through `bank_add` mutators BEFORE any C13 mission-end commit (F2-2). `_process(d)` = `step(d)`, nothing more. **RNG ownership (F2-2): main.gd creates the app RNG (`RandomNumberGenerator` seeded from OS entropy) at `_ready` and is the sole RNG owner at runtime — the mission receives it via setup; hub panels (svc_reroll/tinkering) receive it as setup params. In the golden harness the harness seeds ONE `RandomNumberGenerator(fixture.seed)` and hands IT to `GWCompose.build_graph` consumers — same parameter-passing shape, determinism required only there.** **Draw rule (F2-1): every roll flows through the injected `RandomNumberGenerator` parameter via `rng.randf()`/`rng.randi()` (the sanctioned draw path, VERIFIED seeded+callable — `.tmp/rng_test`); BARE `randf()`/`randi()` (no receiver) = 0 hits in godot/sim/ + godot/scripts/ (check_hygiene + test_purity).** **Fixture encoding (F2-2, pinned; hollow_dawn committed-dump analogue VERIFIED at hollow_dawn_3d/tests/fixtures — seed-pinned, byte-stable jsonl of input rows + expected rows carrying `checks`/`ok`): `tests/fixtures/mission_<map>_<difficulty>.jsonl` — LINE 1 (header): `{"schema":int,"seed":int,"map":String,"difficulty":String}`; the remaining lines are, in file order, SCRIPTED-INPUT rows `{"kind":"in","tick":int,"act":"input|place|upgrade|repair|sell|assign|unassign|hotswap","args":{…}}` (applied before step for tick; "args" carries bridge key events or mission call args) and EXPECTED-OUTPUT rows `{"kind":"out","tick":int,"ev":String,…,"checks":{…},"ok":true}`; every line is one of the three kinds; sim_headless applies in-rows at their ticks, drives `step(1.0/60.0)`, emits out-rows, and test_sim_golden asserts byte-equality of emitted vs committed expected rows plus every `ok:true`; goldens regen only via `--regen` (never run by the number pytest).** At runtime the RNG shape is identical; determinism is not required there.
+
+C13 — save trigger/ack crossing (F5): triggers = every GWGameState mutator (signal `mutated` — incl. add_material/consume_material, F2-6) + the mission-end commit (XP/loot/gold written through mutators; the victory chest is bank_add'd in mission step (6) BEFORE this commit — F2-2) → the listener wired inside GWCompose.build_graph → `save_store.write(game_state.to_save())`; on success `write_seq` increments. C5 `saved_ack` mirrors `write_seq`. Playwright rule (A7/A9): perform the meta mutation → poll `GW_STATE().saved_ack` until it exceeds the pre-action value → only THEN reload; never reload on a timer. Known limit on the record: the ack proves the write through Godot's user:// API (IndexedDB-backed on web); browser eviction is outside app control — the A9 reload is the durable proof.
+
+## Invariants
+
+I1 Zero monetization (MUST HOLD 1/A8) — STRUCTURAL guard (the real defense): no key/timer/paid-currency FIELDS exist in C6/C8/C9/C5 and test_data_schemas + test_loot_structure assert no banned field names in any data file; + a TRIPWIRE grep (tools/check_hygiene.py) over godot/ server/ static/ data/: identifier-aware, case-insensitive, whole-token matching (identifiers split on camelCase/snake_case; prose via word-boundary forms): lockbox|purchase|cash_store|iap|paywall|wallet|monetize|buyback|gacha|premium|battle_pass|gem(s) (whole word only)|shop (whole identifier)|price|key_count|real_money|timer_unlock → 0 hits. **On its face (F2-4): this grep is a TRIPWIRE over a NAMED-TOKEN LIST, NOT a closure of the concept — tokens outside the list (boost, cache, vault, ticket, season, voucher, redeem, …) pass it by design; the durable gate is the schema guard, and ANY field added to or renamed in C5/C6/C8/C9 requires a design-review row in a new c-revision first.** `egg` is deliberately NOT banned: the deferred Stables/pet-egg system is legitimate gameplay (DD2-MECHANICS §9); premium-egg gating is monetization (§10 row 7) and can only re-enter through that design review (recorded — the tripwire is never quietly disabled to pass a legitimate feature). Named limits: prose strings can hide words; the tripwire is a tripwire — schema absence is the guard. README states FREE-FOR-ALL (A8).
+I2 Numbers-in-data (MUST HOLD 2, restated honestly per F6): balance VALUES live only in godot/data/*.json (number pytest reads JSON with stdlib json, NO engine). FEEL params live in balance.json `feel:{}` and are read at setup — governed scripts (the 16-file set named in the tools/check_hygiene.py row; W16 widened it to every gameplay/UI file and moved the ENFORCEMENT into the gate itself: `[i2-literal]` = a non-structural number literal in a governed file) carry remaining literals ⊆ {0,1,2,3,4,-1,0.5} (structural set: math constants, slot/ability arity, sentinel, halving — STRUCT_VALS, one home in check_hygiene.py). The gate CANNOT catch: string-encoded numbers ("3.5".to_float()), .tscn scene properties, ungoverned files, sim/-internal constants — stated limitation, not a claim of coverage. Widening the whitelist = a design change to this section, never a builder edit to check_hygiene.py.
+I3 Mana split: green spent ONLY by place/upgrade/repair/sell (SimEconomy sigs); blue spent ONLY by abilities (SimCombat/hero_combat). No function takes both pools.
+I4 Wave shape (A4): both wave files — waves array has 11 entries: index 0..9 kind "normal" + index 10 kind "boss" (wording identical in C8 and here). Wave-completion green + blue-refill + downed-hero revival happen ONLY in phase_controller (one grep-able site).
+I5 Persistence (MUST HOLD 4/A7): save→fresh process→load returns byte-equal meta dict incl. materials_json (save_probe golden); schema_version mismatch → fresh-start, never crash; every write bumps `write_seq` (C13) and the A9 browser leg waits for the ack change before reload.
+I6 Sim purity + determinism: sim/*.gd contain no `extends Node`, no `get_node`, no `Engine.get_singleton`, no BARE `randf(`/`randi(` (receiver-qualified `rng.randf(`/`rng.randi(` through the injected parameter is the REQUIRED draw path — F2-1) (test_purity + check_hygiene) — with zero autoloads anywhere, every scene loads under `-s` (F1 repro passes by construction), every roll flows through the seeded C12 RNG, and every `-s` probe wires the core trio through `GWCompose.build_graph` — the same wiring site the app runs (F2-5, so golden-vs-runtime cannot drift by construction).
+I7 Performance cap (MUST HOLD 5): mission spawner never exceeds `balance.max_alive` (=100); golden run proves alive ≤ 100 across a full mission; web preset keeps thread_support=false; greybox meshes only in v1 (v1.1 MC 11462 UPDATE: art ships as Sprite3D billboards via sprite_bank and FX nodes are hard-capped (64) inside the visual-only fx_director — no sim cost; hold-evidence = native 1280x720@60fps movie capture on RTX 2060 + the unchanged golden runs).
+I8 Bridge rename-complete (MUST HOLD 3), scope-pinned (F11): within `godot/ server/ static/ README.md docs/ARCHITECTURE.md` — `VS_STATE`/`__vsSnapshot`/`vsHost` = 0 hits; `GW_STATE`/`__gwSnapshot`/`gwHost` present in web_shell.html + main.gd; cfg `html/head_include` = "" and `custom_html_shell` = "res://web_shell.html" (single source, F9; shell is the full-template page per F2-3 — the F2-3 asserts live in test_bridge_contract/test_served, this grep stays the rename check). `.audits/**` IS EXPLICITLY EXEMPT from this grep (audit docs quote VS names by necessity).
+I9 Hygiene: tools/check_hygiene.py enforces the ceilings + tripwire + I2-literal + bare-rand rules on every .gd/.py in-repo; CI = the pytest suite itself (tests/test_scaffold.py runs the gate as a suite leg — no separate test_hygiene.py, W16 truth). BINDING bind rule (W3b child-caught finding, W4 ruling): new .gd cross-file references use `preload()`, never a bare `class_name` ref (clean-checkout `--headless --import` does not guarantee the class cache); the `-s` parse leg is green only on EMPTY stderr (a broken resource can load non-null — the true parse signal is stderr, not the probe's OK rows).
+
+## Rejected alternatives
+
+| rejected | why |
+|---|---|
+| Autoload singletons (Data/GameState/SaveStore/Bridge), as c1 had | REFUTED empirically (F1: `-s` compile-fail, `.tmp/autoload_test`) + ruling R3. Both source repos ship zero autoloads; composition root + injection is the inherited mechanism. |
+| Two composition roots (main.gd row + harness building its own trio), as c2 had | F2-5: the WIRING would exist twice and golden-vs-runtime drift by construction — the design's own #1 false-confidence class. `GWCompose.build_graph` is the ONE wiring site both call. |
+| Keeping a subset of VS api.py for send_error_json | A stub api.py is a dead module by VS attribution; GW static_app grows its OWN send_error_json (F3). Chose named own module over "kept subset". |
+| Generating the cfg head string from web_head.js | Two-file sync (generation script + committed cfg) is exactly the drift the gate found; `html/custom_html_shell` (key VERIFIED in both source cfgs) makes single-source structural. Also: hollow_dawn's cfg is NOT copied — it carries VS-branded dead leaderboard JS (F9). |
+| A head-JS-only custom shell | EMPIRICALLY DEAD (F2-3): exports with no error to a 125-byte page with no engine/canvas (`out_noph/index.html`, `.tmp/shell_test`), and the contract test passed it. The 4.x shell is a whole-page template — GW's shell IS the 4.7 template + inlined JS. |
+| Banning `randf(`/`randi(` as substrings (c2 wording) | F2-1: the required draw methods ARE rng.randf()/rng.randi() (VERIFIED `.tmp/rng_test`) — a substring ban goes RED on the correct implementation and invites gate-loosening (the I2 rot). Bare-call ban + required receiver qualification instead. |
+| An I1 allowlist/exemption mechanism | F2-4 ruling: the tripwire is honestly labeled a tripwire over named tokens; the schema-absence guard + design-review row on C5/C6/C8/C9 field changes is the gate. An allowlist adds a second mechanism beside the same question. |
+| Gold-only blacksmith (deleting materials from blacksmith.json) | F2-6 chose the other offered branch: DD2 truth (§7) is tier-material + gold service costs; materials join meta/C6 instead of the sink silently dying or a builder inventing an unschema'd second store (I5/A7). |
+| economy.json keeping start_green/defense_cap as "fallbacks" | A fallback is a second truth (F7). Dropped; the map file owns them; global `green.cap` stays in economy. |
+| Descoping relics-for-towers | Ruling R2: owner-approved A6 stays; fix = gear panel + C11, not descope. |
+| Per-mission tower XP trees + ability picks | CONTRADICTED ground truth (DD2-MECHANICS §4: flat-tier green-mana defenses). Also splits tower progression across mechanisms. |
+| 4-attribute hero stats (STR/DEX/INT/END) | CONTRADICTED (premise-check row 1); DD2 = damage/health/ability-power + crit/speed rolls. |
+| Loot-box-style reward rolls (keys, paid rerolls, pity, time-gated chests) | Rejected STRUCTURALLY: no keys/paid-currency/timer FIELDS exist in any schema (C5/C6/C8/C9); I1 guard + tripwire. A future paywall has nothing to hang on. |
+| Full 5 defense classes in v1 (Auras, Nodes deferred) | Auras need a buff-stacking ruleset; Nodes need multi-part placement linking — neither required by A3. Dispatch dict keeps the seam open; deferred, not redesigned-away. |
+| .tres for balance data | JSON = zero-dep read from pytest AND Godot with one loader (GWTables). One data format, one loader. |
+| Python re-implementation of the sim in tests | Tests assert DATA values + formula SHAPES + committed headless goldens; the golden runner is real game code under `-s`, never duplicated in Python. |
+| Leaderboard/server-side profile (VS api.py+db.py) | v1 single-player; A7 answered by user:// ConfigFile. Dropping api/db removes a DB mechanism rather than adding a second save path. |
+| Placement pads | DD2 truth = open placement with confirm/cancel (§4 INFERRED row); pads add a map-art dependency. |
+| A per-panel bespoke list row | F2-12: bank list and relic picker are the same list-build concern; two implementations = drift + the 250 pressure; one shared `item_row.tscn`/`item_row.gd`. |
+
+## Module task breakdown
+
+| module | depends_on | capabilities |
+|---|---|---|
+| repo scaffold: project.godot (NO [autoload]), web_shell.html (FULL 4.7 template page from the pinned release templates + GW bridge JS inlined — F2-3; reference skeleton `.tmp/shell_full.html`), export preset (custom_html_shell + empty head_include), server/server.py + server/static_app.py (F3), tools/check_hygiene.py (bare-rand rule per F2-1), tests/conftest.py (ensure_class_cache, F14) | — | infra |
+| data files (all of data/, incl. balance.json feel{} + per-hero blue rows + blacksmith.json materials + enemies material_drop) + schema tests (incl. validate_probe leg) | scaffold | code, test |
+| sim/sim_tables (GWTables: table/map/validate) + sim/gw_compose (F2-5) + sim_economy (F12 formulas) + economy tests | data | code, test |
+| sim/sim_combat, sim_wave, sim_progression (+ tests) | data | code, test |
+| sim/sim_loot, sim_inventory (incl. relic_bonuses, equip {ok,bank} F2-11, svc costs F2-6, rng-qualified draws F2-1) (+ tests) | data | code, test |
+| core objects: GWGameState (+snapshot_json+mutated signal +materials row set, F2-6), GWSaveStore (write_seq), GWBridge — RefCounted, constructor injection; wired only via GWCompose (F2-5) | sim_tables | code |
+| main.gd app root (calls GWCompose.build_graph + validate fail-fast + app RNG, F2-2, + JS snapshot push) + router + bridge-contract test (incl. F2-3 bootstrap asserts) | core objects | code, test |
+| mission scene: mission.gd (C12 step funnel incl. F2-9 precedence + F2-2 chest in step (6) + hero_state with F2-8 tick scope + relic pool), phase_controller, lane_path, core_obj, enemy_runner | sim tables, core objects | code |
+| defense system: defense_placer, defense_obj (total_spent tracking), defense_panel.gd (relic picker over item_row, F2-12; C5 relics_assigned leg, F2-7) | sim_economy, mission, sim_inventory | code, frontend |
+| hero: hero_controller (feel params, C4 swap incl. F2-10 next-healthy rule), hero_combat (F2-8 active-only cooldown tick), pawn scenes ×3 | sim_combat, bridge, items data | code, frontend |
+| HUD + hot-swap deck UI | mission, game_state | frontend |
+| hub + war_table + GEAR PANEL (gear_panel_ui + item_row over scenes/item_row.tscn, F2-12) + blacksmith_ui + tinkerer_ui (rng setup params, F2-2; materials payment, F2-6) + dummy_range | sim_inventory, game_state | code, frontend |
+| loot pipeline: loot_pickup (material routing, F2-6) + victory chest UI (roll already fired in step (6), F2-2 — chest UI displays, never rolls) | sim_loot, mission kill-funnel | code, frontend |
+| golden sim: sim_headless (C12 fixture encoding — seed line + kind:"in" replay + kind:"out" byte-equal, F2-2; calls GWCompose, F2-5) + fixtures + test_sim_golden (byte-equal + planted red) | mission, defense, hero, phase | code, test |
+| persistence: save_probe (build_graph call + materials leg) + test_persistence (ack leg + materials round-trip) + validate_probe leg (build_graph call) | save_store, game_state | code, test |
+| docs/release (A10 OWNING ROW): README FREE-FOR-ALL row, docs/ARCHITECTURE.md kept from this doc, release-notes template; doc-sync grep sweep at tag per MC 11277 doctrine | everything above | tech-writer |
+| served journey: static export ×2, test_served (incl. F2-3 `new Engine` + `<canvas` asserts), Playwright A9 journey — wave 10 + boss kill asserted via outcome/boss_hp (F13), place/upgrade, loot pickup, equip via gear panel (F2-11 return-to-bank asserted via bank_count), relic assign/unassign asserted via C5 relics_assigned ±1 (F2-7), save+reload under the C13 ack rule | everything above | infra, test, frontend |
+
+Deferral list (named, per F15/R4 — nothing of them ships; no seam is reserved):
+- **Stables / pet eggs → pets** (A6 "v1 stretch row"): DD2 pets are an egg-hatch + Empowerment-stat companion system (DD2-MECHANICS §9); it rides its own NPC, hatching service, rarity roll and stat pipeline — a full subsystem, deferred out of v1. `egg` stays a legal word (F2-4): the deferral is gameplay, not monetization.
+- **Auras + Nodes defense classes** (carried from c1's rejected table): deferred mechanics, dispatch seam in defense_obj stays open.
+- **Maps beyond Gatefall** (R4): lanes/waves are pure data (C7/C8), so map #2 is a data-only change post-v1.
+- **Materials from Victory Chests** (F2-6 supply leg ships enemy drops only): chest material rows are post-v1 data (rarity.json chest_tiers already extensible), not a schema gap.
+
+## RESULT
+
+Gatewardens v1 (c3) = the c2 mechanism set plus the 13 mechanical r2 rulings applied: one wiring site
+(GWCompose.build_graph, F2-5), a satisfiable rng draw rule (bare banned / receiver-qualified
+required, F2-1), a fully pinned golden fixture (seed line + scripted-in + expected-out rows, F2-2)
+with main.gd owning the runtime RNG and the victory-chest roll inside step (6) before the C13
+commit, a whole-template web shell with engine-bootstrap asserts (F2-3 — the empirically-dead
+125-byte path can no longer pass the contract test), the cooldown-tick scope IN C4 (F8/F2-8) with
+lose-first same-tick precedence (F2-9) and defined next-healthy order (F2-10), materials joined to
+meta/C6 with mutators (F2-6), relics_assigned making the journey's relic leg observable (F2-7),
+equip returning {ok,bank} with replace-to-bank as contract (F2-11), and the shared item_row widget
+holding both panels under the 250 ceiling (F2-12). Round-3 gate, diff EXACTLY these 13 touch-points:
+Fix ledger r2 rows ↔ their c3 homes: F8+F2-8 (C4 + hero_combat/mission rows), F2-1 (C12/I6/
+check_hygiene/test_purity/sim_loot), F2-2 (C12 fixture block + C13 + main/blacksmith/tinkerer/
+mission/loot_pickup rows), F2-3 (Placement shell spec + test_bridge_contract/test_served), F2-4 (I1
+named sentence + deferral egg line), F2-5 (gw_compose.gd row + main/headless/probes + C1/I6), F2-6
+(game_state/C6/blacksmith.json/enemies.json/sim_inventory/loot_pickup), F2-7 (C5 + journey), F2-10
+(C4), F2-11 (C9/sim_inventory), F2-12 (item_row rows + ceilings). Do NOT re-litigate: the F1–F16
+round-1 mechanisms (all dispositioned FIXED in DA-VERDICT-c2) and the 13 LEDGER §c3 rulings — they
+are closed orchestrator decisions applied mechanically here. Known limits on the record: I1 is a
+named-token tripwire + schema guard, not closure (I1 text); I2 blind spots (I2 text); the IDB
+user:// flush limit (C13 text); chest-material supply deferred (deferral list).
+
+# VERDICT: DONE

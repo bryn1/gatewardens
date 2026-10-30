@@ -21,7 +21,10 @@ mission under -s, push_input clicks (the browser-input pipeline).
 LEG REGAIN (models REPRO-B): place until the class button is disabled;
 regain green via the existing mission_smoke start_green lever (a
 mission.green write, NOT an action); next poll click place with NO other
-action -> MUST place + spend.
+action -> MUST place + spend. G5 (MC 11700) RETARGET: the click now only
+ARMS (GUI pipeline); the place rides the MouseLeft confirm through the
+bridge + one real step (5) — a DISABLED button swallows the arm, so both
+stale plants keep failing the SAME legs.
 LEG SELLS (models REPRO-A): with 3 rows, one browser-style attempt = click
 Row_1, then click Row_2 at its coords measured BEFORE the first click
 (pre-fix the select's rebuild churns Row_2 into an unsized control ->
@@ -98,6 +101,17 @@ class Monitor:
 	func _class_btn():
 		return _p().class_buttons["tower"] as Button
 
+	func _place_tower() -> void:
+		# G5 (MC 11700): the button click ARMS through the real GUI
+		# pipeline; the MouseLeft CONFIRM (bridge code + one real step
+		# (5) drain, the smoke KeyM idiom) places it. A DISABLED button
+		# swallows the click -> nothing armed -> the confirm places
+		# NOTHING: both stale plants keep failing the SAME legs.
+		_click(_class_btn().get_global_rect().get_center())
+		m.bridge.on_key("MouseLeft", true)
+		m.bridge.on_key("MouseLeft", false)
+		m.step(0.05)
+
 	func _row(uid: int):
 		return m.get_node("DefensePanel/Rows/Rows_defenses/Row_%d" % uid) \
 				as Control
@@ -106,16 +120,19 @@ class Monitor:
 		frames += 1
 		if frames == 2:
 			get_tree().root.size = Vector2i(1280, 720)   # served size
-		# PLANT stale_buttons: re-freeze AFTER the mission poll synced
-		# (mission._process runs first: tree order) -> sync-removed shape.
-		if planted == "stale_buttons" and frames >= 6:
+		# PLANT stale_buttons: re-freeze from the REGAIN frame AFTER the
+		# mission poll synced (mission._process runs first: tree order)
+		# -> sync-removed shape. G5 (MC 11700): starts at 7, the frame
+		# whose click the sync leg tests (the arm flow spends INSIDE
+		# _place_tower, so a frame-6 freeze would trip frame 6 itself).
+		if planted == "stale_buttons" and frames >= 7:
 			_class_btn().disabled = true
 		if frames == 4:
-			_click(_class_btn().get_global_rect().get_center())   # 300->200
+			_place_tower()                                   # 300->200
 		if frames == 5:
-			_click(_class_btn().get_global_rect().get_center())   # 200->100
+			_place_tower()                                   # 200->100
 		if frames == 6:
-			_click(_class_btn().get_global_rect().get_center())   # 100->0
+			_place_tower()                                   # 100->0
 			if not _class_btn().disabled:
 				_fail("class button not disabled after spend-to-zero")
 				return
@@ -130,8 +147,11 @@ class Monitor:
 					int(m.green), str(_class_btn().disabled),
 					int(m.defense_list.size())])
 		if frames == 7:
-			# LEG REGAIN: no action since the green write — click place.
-			_click(_class_btn().get_global_rect().get_center())
+			# LEG REGAIN: no action since the green write — the W17e
+			# sync must have RE-ENABLED the button (G5: a disabled one
+			# swallows the arm, so the confirm places nothing — the
+			# REPRO-B shape stays RED on the SAME leg).
+			_place_tower()
 			var placed: int = m.defense_list.size()
 			var spent: int = int(m.green)
 			print("GWSYNC-REGAIN placed=%d green=%d class_disabled=%s" \

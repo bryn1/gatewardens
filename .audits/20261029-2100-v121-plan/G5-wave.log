@@ -1,0 +1,104 @@
+# G5-wave.log — MC 11700 (v1.2.1 W3 G5): build-confirm UX (press=arm, click=place, RMB=cancel)
+Seat: coder (11700) · base tip f6f8bff (S split) · date 2026-10-30
+SPEC: .audits/20261029-2100-v121-plan/V121-PLAN.md row G5 + §4 G5 legs + §3 (Rev 2 binding).
+Baseline at parent tip: 266 pytest green. At MY tree: 271 green (below).
+
+## The change (one commit)
+
+- defense_panel.gd: PRESS map gains "MouseLeft":"confirm", "MouseRight":"cancel",
+  "Escape":"cancel" (Escape named by plan §1 G5 "MouseRight/Escape CANCEL").
+  Picker presses (_on_place_pressed/_on_family_pressed) now ARM: set the row +
+  placer.set_ghost(placer.first_free()) — NO placement (defense count unchanged,
+  the DoD negative leg). CONFIRM (MouseLeft, or KeyM WHILE ARMED — same route,
+  PRESS keeps KeyM "place"): placer.place_id(armed_id, 1) — the ONE gate
+  sequence onto the ONE m.place_defense site — then DISARM. KEYM UNARMED =
+  place_selected() legacy first-free instant place, UNCHANGED (Rev 2/DA A4.3;
+  mission_smoke .gd:126 + mission_smoke_w8:141 ride it untouched).
+  poll() pumps _ghost_arrows(): ArrowLeft/Right over the EXISTING held-key
+  relay (m.bridge.held — arrows are not DISCRETE_KEYS, no press codes exist;
+  read in the shipped poll pump, never polled), RISING EDGE one cycle per
+  press, calling the new placer.cycle_ghost over buildable().
+- defense_placer.gd: cycle_ghost(dir) — the ghost walks buildable() with wrap
+  (plan: "cycle helper, I2-clean"); place_id unchanged; its no-ghost first-free
+  fallback comment re-pinned to the G5 caller set (KeyM-unarmed + explicit).
+- Rows UI untouched: button press routing already lived in defense_panel.gd
+  after the S split (rows_ui wires pressed -> panel handlers); READ confirmed.
+
+### Readings used (declared)
+1. ARM ⇔ GHOST invariant: cycling is gated on armed, and every disarm clears
+   the ghost — so the KeyM-UNARMED legacy path provably always sees ghost -1
+   and lands first-free, literally unchanged. (Task BEHAVIOR exact-list pins
+   KeyM-unarmed as today's behavior; an unarmed arrow could otherwise steer
+   the legacy place — the invariant closes that.)
+2. A REFUSED confirm (green/cap/slot) stays ARMED — clearing the aim is
+   cancel's job, never a failed confirm's. The "places ONCE then disarms" leg
+   is the success shape (probe-pinned: count+1, green -cost EXACTLY, ghost -1;
+   a second MouseLeft places nothing).
+3. test_mission_stale.py (the W17e gate) ALSO rode press=place — same coupled
+   class as the plan's named retargets ("updated to the new flow IN THE SAME
+   card"): its clicks now arm + MouseLeft-confirm through the bridge
+   (_place_tower); both stale plants keep failing the SAME legs (stale_buttons
+   freeze moved to frame 7, the frame the sync leg tests, so red stays on
+   "starved while affordable").
+4. Retired-claim scope: the ARCHITECTURE family-picker row ("each pick places
+   THAT family's T1") is the claim G5 retires — rewritten same commit,
+   replace-not-delete; RELEASE_NOTES.md:122 (v1.2 history copy) belongs to the
+   §5 release-tail R card ("re-checked here"), NOT silently edited here.
+
+## Docs (versioned truth)
+- Pre-edit copy archived: .audits/20261029-2100-v121-plan/ARCHITECTURE-pre-g5.md
+  first line "SUPERSEDED 2026-10-30 (MC 11700 ...): DO NOT USE — live version:
+  docs/ARCHITECTURE.md"; live file edited IN PLACE (its own header rule).
+- Retired W17f claim grep-to-zero (quoted, gate metric):
+    $ grep -rn "each pick places" docs/
+    (no output)  -> count: 0
+
+## Contract greps (source-truth rows)
+    $ grep -rn "m\.place_defense(" godot/scripts/
+    godot/scripts/defense_placer.gd:169:  return m.place_defense(row, tier, slots[at])
+    count: 1   (stays 1; the sim kit/probes call _m./m.place_defense under
+    godot/sim/ — harness callers, never production callers, per the plan anchor)
+    $ grep -n "set_ghost(\|cancel_ghost(\|cycle_ghost(" godot/scripts/defense_panel.gd
+    257: placer.set_ghost(placer.first_free())      (1 — the ONE arm route)
+    270: placer.cancel_ghost()                       (confirm-success disarm)
+    276: placer.cancel_ghost()                       (RMB/Escape cancel)
+    294: placer.cycle_ghost(int(pair[1]))            (arrow relay)
+    -> ghost API callers: exactly its planned set (was ZERO external callers
+    at f6f8bff; the placer-side definitions are the other hits by design).
+
+## Gates
+1. ENGINE PROBE (new sim kit, g3/g1 boot idiom, EMPTY stderr, pinned seed
+   11700): godot/sim/g5_build_confirm_probe.gd via tests/test_g5_build_confirm.py
+   — legs (rows): ARM (armed=1, count 0, ghost=first buildable — the NEG leg),
+   CYCLE (fwd/back over placer.buildable(), size>=2), LMB (count=1,
+   green_drop=100 == towers.json base_cost, armed=0 ghost=-1) + LMB2 (second
+   press places nothing), RMB (armed=0 ghost=-1 count=1 — placed NOTHING),
+   KEYMA (armed KeyM places AT the ghost slot, disarms), KEYMU (unarmed KeyM
+   legacy first-free place, armed=0). G5B-OK rc0, stderr EMPTY.
+2. PLANTED-RED x2 (real .gd mutation + probe re-run; transcripts beside):
+   a) RMB cancel removed ("MouseRight": "cancel" deleted from PRESS) ->
+      G5B-FAIL RMB cancel leg broken (armed=true ghost=1 count=1)
+      -> G5-red-cancel-removed.log
+   b) arm also places (set_ghost -> place_id in _arm) ->
+      G5B-FAIL ARM leg: press placed/armed wrong (count 0->1 green 300->200 ...)
+      -> G5-red-arm-places.log
+   Both restored byte-identical (cmp), green re-run beside: 5 passed.
+   In-suite source-mutation reds (cancel-code removed / arm-places) also ship
+   as permanent tests (test_g5_planted_red_*).
+3. RETARGETED SAME COMMIT, green: tests/test_mission_clicks.py (PICK leg now
+   asserts arm-no-place count==0 + the in-probe MouseLeft confirm feeds the
+   SELECT legs; upgrade cost re-derived per planted family), tests/
+   test_family_picker.py (press+confirm flow; source-truth: family press arms
+   only, confirm places via place_id), tests/test_mission_stale.py (W17e probe
+   arms+confirms; planted reds keep their legs).
+4. FULL SUITE at my tree: 271 passed (266 baseline + 5 new G5; >= 268 bar).
+5. HYGIENE: tools/check_hygiene.py -> 0 hits (test_mission_clicks.py held AT
+   its 600 ceiling: growth offset by compression of the lines this card
+   rewrote — zero unrelated edits; defense_panel.gd 362 <= 400).
+6. SIM UNTOUCHED: git status godot/sim/ shows ONLY the new G5 kit (+.uid);
+   fixtures EMPTY diff; the golden suite ran green in the full pass.
+
+## LEDGER-ROW (for the single writer — DO NOT TOUCH LEDGER.md here)
+LEDGER-ROW: | BUILD v1.2.1 G5 build-confirm UX (MC 11700) | DONE — press = ARM ghost at first buildable slot (no place, count-negative leg pinned), Arrows cycle over placer.buildable() (held-key relay, rising edge), MouseLeft/armed-KeyM place ONCE via the ONE m.place_defense site then disarm, MouseRight/Escape cancel; KeyM-UNARMED legacy first-free place UNCHANGED (explicit/harness callers); W17f press=place copy retired in ARCHITECTURE (grep-to-zero, superseded copy archived), stale/clicks/family gates retargeted same commit; 271 pytest green, hygiene 0, sim/fixtures untouched |
+
+VERIFY_EXIT=0

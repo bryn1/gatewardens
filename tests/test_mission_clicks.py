@@ -1,4 +1,4 @@
-"""W17b+W17c mission-clicks gate (MC 11274.1.29/.30 / cards 11386-11387).
+"""W17b+W17c+G5 mission-clicks gate (MC 11274.1.29/.30 + 11700).
 
 Journey-found P1s, one false-green class: the harness had powers the
 player did not. W17b: the served panel was UNCLICKABLE — the CODE-BUILT
@@ -20,8 +20,8 @@ force the served size (root.size=Vector2i(1280,720) takes effect under
   (c) PICK — each Button center clicked through the engine's OWN
       Viewport GUI picking (root.push_input = the pipeline browser
       input enters on web; the Button emitting `pressed` IS the
-      receiver): enabled pick THEMSELVES, disabled receive NOTHING,
-      Class_* clicks PLANT defenses (state one bookkeeping step later);
+      receiver): enabled pick THEMSELVES, disabled receive NOTHING;
+      picker clicks ARM WITHOUT placing (G5); MouseLeft confirms one;
   (d) SELECT (W17c) — placed defenses get ROWS; a ROW click sets
       selected_uid and marks it "»"; Upgrade tiers +1 with an EXACT
       green drop; Sell clears the selection and removes the row.
@@ -228,8 +228,7 @@ class Monitor:
 		for b: Variant in btns:
 			var btn := b as Button
 			var before := fired.duplicate()
-			# Read enabled/disabled BEFORE the click: an enabled Class_*
-			# click places + refresh() re-gates affordability (declared).
+			# G5: an enabled picker click ARMS; sync() re-gates affordably.
 			var was_disabled := btn.disabled
 			_click((btn as Control).get_global_rect().get_center())
 			clicked += 1
@@ -255,14 +254,18 @@ class Monitor:
 				return
 
 	func _check_placed() -> void:
-		# step (5) mirrors defense_list into m.defenses ONE step after the
-		# click (mission.gd:258, VERIFIED). Served bug: zero defenses.
-		var placed := int(m.defenses)
-		print("GWMICE-PICK clicked=%d class_clicks=%d placed=%d" \
-				% [clicked, class_clicks, placed])
-		if class_clicks > 0 and placed < class_clicks:
-			_fail("clicks never reached the placer: class_clicks=%d " \
-					% class_clicks + "defenses=%d" % placed)
+		# G5 (MC 11700) RETARGET: picker clicks ARM, place NOTHING (DoD
+		# negative); a MouseLeft confirm plants the SELECT defense.
+		var p = m.get_node("DefensePanel")
+		print("GWMICE-PICK clicked=%d class_clicks=%d placed=%d" % [clicked, class_clicks, int(m.defenses)])
+		if class_clicks > 0 and (int(m.defenses) > 0 or not bool(p.armed)):
+			_fail("G5 arm leg: press placed or did not arm")
+			return
+		m.bridge.on_key("MouseLeft", true)
+		m.bridge.on_key("MouseLeft", false)
+		m.step(0.05)
+		if m.defense_list.size() != 1 or bool(p.armed):
+			_fail("G5 confirm leg: MouseLeft did not place once + disarm")
 			return
 
 	# (d) W17c SELECT (frames 7-10): ROW click SELECTS -> Upgrade -> Sell.
@@ -299,8 +302,7 @@ class Monitor:
 		up_cost = int(obj.next_upgrade_cost())
 		pre_tier = int(obj.tier)
 		pre_green = int(m.green)
-		print("GWMICE-UPL cost=%d green=%d tier=%d" % [up_cost,
-				pre_green, pre_tier])
+		print("GWMICE-UPL fam=%s cost=%d green=%d tier=%d" % [String(obj.trow["id"]), up_cost, pre_green, pre_tier])
 		if p.upgrade_btn.disabled:
 			_fail("Upgrade still disabled while a defense is selected")
 			return
@@ -381,11 +383,12 @@ def _only(out, tag):
     return r[0]
 
 
-def _upgrade_cost_t1():
-    """T1->T2 = base_cost * upgrade_ratios[0] (C3), mirrored FROM DATA."""
+def _upgrade_cost_t1(fam):
+    """T1->T2 = base_cost * upgrade_ratios[0] (C3), FROM DATA for the
+    G5-planted family (last enabled picker press)."""
     towers = json.loads(read_text(GODOT / "data/towers.json"))
     rows = towers["towers"] if isinstance(towers, dict) else towers
-    base = next(r["base_cost"] for r in rows if r["class"] == "tower")
+    base = next(r["base_cost"] for r in rows if r["id"] == fam)
     eco = json.loads(read_text(GODOT / "data/economy.json"))
     return int(base * eco["upgrade_ratios"][0])
 
@@ -430,13 +433,11 @@ def test_mission_clicks_engine_leg(tmp_path, class_cache):
             and br[0] + br[2] <= VIEW[0] and br[1] + br[3] <= VIEW[1], \
             "panel button %s off the served viewport: %s" % (bn, br)
 
-    # (c) pick: the enabled Class_* clicks PLANTED defenses (state).
+    # (c) pick (G5 RETARGET): picker clicks ARM, plant NOTHING (DoD NEG).
     picks = _rows(out, "GWMICE-PICK")
     assert len(picks) == 1, out
     pkv = dict(x.split("=", 1) for x in picks[0].split(" ")[1:])
-    assert int(pkv["class_clicks"]) >= 1, pkv
-    assert int(pkv["placed"]) >= int(pkv["class_clicks"]), \
-        "clicks reached buttons but the placer planted nothing: %s" % pkv
+    assert int(pkv["class_clicks"]) >= 1 and int(pkv["placed"]) == 0, pkv
 
     # (d) W17c SELECT: place -> ROW; the row click SELECTS (its "»" mark
     #     asserted in-probe); Upgrade tiers up with the EXACT data cost;
@@ -446,9 +447,8 @@ def test_mission_clicks_engine_leg(tmp_path, class_cache):
     u = _kv(_only(out, "GWMICE-UPL"))
     u2 = _kv(_only(out, "GWMICE-UPL2"))
     s2 = _kv(_only(out, "GWMICE-SEL2"))
-    assert int(u["cost"]) == _upgrade_cost_t1(), \
-        "upgrade cost off the shipped formula: %s != %d" % (
-            u["cost"], _upgrade_cost_t1())
+    assert int(u["cost"]) == _upgrade_cost_t1(u["fam"]), \
+        "upgrade cost off the shipped formula: %s" % u
     assert int(u2["tier"]) == int(u["tier"]) + 1, (u, u2)
     assert int(u2["green_drop"]) == int(u["cost"]), (u, u2)
     assert int(s2["selected"]) == 0, s2
