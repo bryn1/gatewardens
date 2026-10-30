@@ -1,0 +1,98 @@
+# R-wave.log — v1.2.1 R release tail (MC 11708 / coder / base tip 81ac3d6)
+
+Deliverable: RELEASE_NOTES.md v1.2.1 section (player-facing) + README current-at-tag
++ doc-sweep grep-to-zero + LEDGER verification rows. NO game code, NO LEDGER edits,
+NO tags (orchestrator tags at close).
+
+## Declared readings (per brief: state the reading used)
+
+- Task one-liner "wave telegraph glyphs with countdown at gates" is written as
+  SHIPPED: G3 shows per-gate previews of the UPCOMING WAVE — enemy portraits +
+  carrier counts, cleared at combat start (G3 LEDGER row / wave_telegraph.gd).
+  There is no countdown timer; the notes describe counts, not a timer.
+- Doc-sweep reading: LITERAL grep-to-zero was reached (below); no hit needed the
+  "clearly-scoped history" exemption — the one v1-era hit was REWRITTEN with an
+  inline SUPERSEDE marker (history preserved, phrasing retired — replace-not-delete).
+- S (defense_panel split, MC 11699) is zero-behavior internal work: no player-facing
+  notes line; the S-declared player-visible outcome (web bands/ring rendering) is
+  covered by the "Web build rendering fix" line (G2-fix MC 11698 + G4 web-proof 81ac3d6).
+- Suite figure in both docs = 283 = VERIFIED count at the final tree (below).
+
+## 1) RELEASE_NOTES.md — v1.2.1 section ADDED above the v1.2 section
+
+9 what-shipped lines (gate eyes + winged air variants; lane bands; wave telegraphs;
+bigger hero + name crest; coach banner w/ VERBATIM shipped copy strings, verified
+against hud.gd COACH_BUILD_W0/COACH_FIGHT_W0/COACH_TELEGRAPH_W1; damage numbers;
+press-to-arm/click-to-place/right-click-cancel flow; yellow range ring on the armed
+ghost; web-build rendering fix). Known-limits honest lines: V121-PLAN §5 Rev-2 MUSTs
+(MAX_FX=64 shared cap starvation — DA A5; kill-blow LOWER-BOUND hp-at-last-observation
+— DA A1) + declared findings (REACH_EPS 0.5u endpoint kill reads as breacher —
+fx_director.gd:89,:154; hero crest + telegraph digits small at 1280px; NO translucent
+ghost figure — ring marks the slot; static/ export gitignored by design — regenerate
+via tools/export_web.sh). "Not shipped this round (deferred by design)": D1 zoom /
+camera controls, D2 shimmer / painted-lane (plan §2). Zero-monetization line restated
+in the section (MC 11274.1 doctrine, owner ruling 2026-10-25). Dev-checks + served-
+controls rows refreshed to the v1.2.1 flow (F1-F3 swap, arm/cycle/confirm/cancel) —
+controls verified this session against bridge.gd DISCRETE_KEYS/MOVE_KEYS and
+defense_panel.gd PRESS map + _ghost_arrows (ArrowLeft/ArrowRight held-relay cycle).
+
+## 2) README.md — status row now v1.2.1
+
+Version claim "v1.2 (quality-of-life)" -> "v1.2.1 (readability)" with the nine-line
+feature list matching the notes; stale "(239 pytest green ...)" -> "(283 pytest green
+...)" = VERIFIED final-tree count. No stale first-free/press=place phrasing existed in
+README (pre-sweep below shows zero README hits). Windows + web-build lines untouched.
+
+## 3) DOC-SWEEP grep-to-zero (W17f first-free phrasing) — QUOTED
+
+PRE (at tip 81ac3d6, README.md docs/ RELEASE_NOTES.md):
+  RELEASE_NOTES.md:122:  slots (panel place falls to the first free slot, spread round-robin across
+  grep exit: 0        (patterns: "falls to first free" | "first free slot" | "each pick places")
+One hit total. docs/ARCHITECTURE.md carries only CURRENTLY-TRUE first-free phrasing
+(the KeyM-unarmed legacy fallback row + the W17f "RETIRED here" marker row, both
+G5/MC 11700 in-commit rewrites) — accurate, not touched.
+REWRITE (RELEASE_NOTES, v1 "Defenses" bullet): the v1 parenthetical rephrased to
+"at v1 the panel's place button dropped the tower onto the next open slot ... —
+SUPERSEDED at v1.2.1 MC 11700: a tower-button press now ARMS a build ghost you cycle
+and confirm, right-click cancels; the old instant route survives only as the
+M-with-nothing-armed legacy shortcut, never as the panel's behavior" — history
+kept, retired claim retired inline (never silently deleted).
+POST (final tree):
+  $ grep -rn -e "falls to first free" -e "first free slot" -e "each pick places" README.md docs/ RELEASE_NOTES.md
+  grep exit: 1        (ZERO hits — grep-to-zero VERIFIED)
+A wider sweep (grep -rniE "first[ -]free|each pick places|falls to") returned only the
+two currently-true ARCHITECTURE rows named above.
+
+## 4) LEDGER verification rows (grep-only; single writer — MISSING flagged, NOT added)
+
+PRESENT (7):
+  LEDGER.md:147 | BUILD G1 spawn-gate eye billboards (MC 11690 / wave W1, V121-PLAN G1) | DONE ...
+  LEDGER.md:148 | BUILD G6 floating damage numbers (MC 11691 / wave W1, V121-PLAN G6) | DONE ...
+  LEDGER.md:149 | BUILD v1.2.1 G8 first-session coach banner (MC 11692 / wave W1, V121-PLAN §G8) | DONE ...
+  LEDGER.md:150 | BUILD G2 lit lane bands (MC 11694 / wave W2, V121-PLAN G2) | DONE ...
+  LEDGER.md:151 | BUILD G3 wave telegraph billboards (MC 11696 / wave W2, V121-PLAN G3) | DONE ...
+  LEDGER.md:152 | BUILD G2-FIX lane bands paint in web (MC 11698 / V121-PLAN G2-FIX) | DONE ...
+  LEDGER.md:153 | BUILD v1.2.1 G5 build-confirm UX (MC 11700) | DONE ...
+MISSING (3) — FLAGGED for the single-writer orchestrator; commits exist, LEDGER rows do not:
+  G7 hero identity (MC 11695): commit 1b4d9e1 landed; W2-close 72ba60a message CLAIMS
+    "hero crest" but its LEDGER diff added ONLY G2/G3/G2-FIX rows (git show verified) -> MISSING
+  S  defense_panel split (MC 11699): commit f6f8bff touches NO LEDGER.md (git show --stat) -> MISSING
+  G4 range ring (MC 11707): commits 03a8114 + 81ac3d6; 81ac3d6 message says "LEDGER row"
+    but its --stat carries ONLY G4-wave.log + 2 pngs (git show verified) -> MISSING
+  (grep -c per card id: 11690/11694/11698/11696/11700/11691/11692 = 1 each;
+   11695/11699/11707 = 0 each; VERIFIED this session)
+
+## GATES (final docs tree, all re-run — not inferred)
+
+- python3 -m pytest -q  ->  283 passed in 180.60s  PYTEST_EXIT=0   (gate >=283 MET;
+  docs change touched no tested string — test_bridge_contract.py/check_hygiene.py read
+  README.md ONLY for banned VS bridge names, grep-verified; no test pins any README/
+  RELEASE_NOTES phrase -> no RED, no BLOCKED condition)
+- python3 tools/check_hygiene.py  ->  check_hygiene: 0 hit(s)
+- git diff --stat tests/fixtures/  ->  EMPTY (byte-pinned fixtures untouched)
+- git diff --stat  ->  README.md | 2 +-, RELEASE_NOTES.md | 102 +++++...  — OWNED PATHS ONLY
+  (plus this log, pathspec-committed)
+- Tag: NOT created (orchestrator tags at close — brief). LEDGER.md: NOT touched. No git config.
+  No push. Leaf: no spawn.
+
+VERIFY_EXIT=0

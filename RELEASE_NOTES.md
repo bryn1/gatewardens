@@ -1,5 +1,86 @@
 # Gatewardens — Release Notes
 
+## v1.2.1 (readability) — 2026-10-30 (RELEASED: tag v1.2.1 + GitHub Release)
+
+The readability wave: the battlefield now tells you at a glance where you are,
+where mobs come from, which paths they take, where you can build and what your
+click will do. Nine player-facing changes on the v1.2 base — no economy, sim or
+data changes (golden replays byte-identical), and zero monetization ships here
+or ever: **No shop. No loot boxes. No timers. No monetization, ever — by owner
+ruling 2026-10-25.**
+
+**What shipped**
+
+- **Spawn-gate eyes** — every one of Gatefall's three spawn gates now wears an
+  eye marker over its mouth, so you see where mobs come from without
+  memorizing the map. The two gates that also send flying enemies wear the
+  WINGED eye; the ground-only gate wears the plain one. Original art, painted
+  for this game.
+- **Lane bands** — a lit, translucent road is painted on the ground along
+  every ground lane from its gate toward the cores. Air lanes deliberately
+  carry no band on the floor: the winged eye above their gate is their cue.
+- **Wave telegraphs at the gates** — during each build phase, every gate that
+  will open shows a small billboard stack: the actual enemy portraits of the
+  upcoming wave and how many of each will march through that gate (air
+  carriers ride above the ground list). The previews clear the moment combat
+  starts, and return updated next build phase.
+- **Heroes read as heroes** — your active hero now renders bigger than the
+  small mobs it fights, and wears a name crest above its head: the hero's own
+  portrait and name. The crest follows the F1–F3 swap, so you always know
+  which hero is on the field.
+- **A coach banner that tells you what to do now** — on your first mission the
+  banner teaches while you play: at the opening build phase "BUILD: tower
+  buttons on the right panel — click arms, click again places"; during the
+  first fight "FIGHT: both mouse buttons hit, F1-F3 swap heroes"; at the next
+  build "NEXT WAVE: watch the gate billboards". After that it stays quiet, and
+  a victory or defeat banner always wins over the coach.
+- **Damage numbers on every hit** — every hit you land floats a number over
+  the enemy it touches, from your heroes AND from your towers, kill blow
+  included. (The kill-blow number has an honest limit — see Known limits.)
+- **Build flow you can see** — pressing a tower button no longer silently
+  drops a tower on a hidden slot. It ARMS the pick and a build ghost appears
+  on the first free build slot; ◀/▶ (arrow keys) cycle the ghost through the
+  open slots, a left-click (or M) confirms the placement, and a right-click
+  (or Esc) cancels the whole thing. The old keyboard shortcut is untouched:
+  M with nothing armed still places the classic way.
+- **Yellow range ring while building** — while a build ghost is armed, a
+  translucent yellow ring lies flat on the ground showing exactly how far the
+  armed tower's first-tier range reaches, read from the tower data. No ghost
+  armed, no ring; the Gate Blockade (which has no range) correctly shows
+  none.
+- **Web build rendering fix** — the lane bands and the range ring now actually
+  paint in the browser build: the web renderer could not draw the first
+  version of their geometry, and both were rebuilt on a mesh path that it
+  draws, pixel-verified in the served browser.
+
+**Known limits, stated as they are**
+
+- **The kill-blow number is a lower bound.** The game drains a dead enemy
+  before the visual layer ever sees the killing hit, so the final number is
+  the enemy's remaining hp at the last observation — equal to or less than
+  the blow that actually killed it (the overkill part is unobservable). Every
+  non-lethal number is exact.
+- **Damage numbers share one effects pool.** They ride the same 64-slot cap
+  as tracers and sparks, so on a very busy wave some numbers can be starved
+  out. A missing number does not mean the hit didn't land.
+- **A kill right at the core's door shows no final number.** An enemy taken
+  down within half a step of its lane's end reads to the eye as a breacher,
+  not a death, and breachers render no kill number by design.
+- **The hero crest and telegraph numbers are small at a 1280-px window** —
+  readable, not big. Scaling them is a later knob, not this round.
+- **The build ghost is a slot marker, not a translucent tower silhouette.**
+  The yellow range ring plus the slot marker show where the tower will stand;
+  a see-through tower figure is not shipped.
+- **`static/` (the browser build) is gitignored by design** — a fresh clone
+  has no web artifacts; regenerate them with `bash tools/export_web.sh`.
+- **Not shipped this round (deferred by design):** player zoom / camera
+  controls — the camera numbers are a locked pin and moving them needs a new
+  owner ruling — and the spawn-mouth shimmer / painted-lane treatments. The
+  gate eyes and lane bands ARE the v1.2.1 treatment.
+
+**Suite**: 283 pytest green, `check_hygiene: 0 hit(s)`, golden fixtures
+byte-identical.
+
 ## v1.2 (quality-of-life) — 2026-10-29 (RELEASED: tag c95798b + GitHub Release with native Windows build, VM120-verified)
 
 The six-card QoL milestone on the GA base (V12-PLAN, owner ruling 2026-10-28
@@ -119,8 +200,12 @@ unsigned, no malware, click More info > Run anyway.
   real win lever (see Known limits g).
 - **Defenses** — five data classes: Ballista, Bombard and Hailspire towers,
   the Gate Blockade, the Barbed Snare trap. Placement on lane-derived build
-  slots (panel place falls to the first free slot, spread round-robin across
-  the ground lanes); green economy from kills + wave completions; T1→T5
+  slots (at v1 the panel's place button dropped the tower onto the next open
+  slot, spread round-robin across the ground lanes — SUPERSEDED at v1.2.1
+  MC 11700: a tower-button press now ARMS a build ghost you cycle and
+  confirm, right-click cancels; the old instant route survives only as the
+  M-with-nothing-armed legacy shortcut, never as the panel's behavior);
+  green economy from kills + wave completions; T1→T5
   upgrades; repair/sell on the cited wiki formulas; per-map defense cap.
 - **Mission** — Gatefall with main + sub cores, ground + air lanes,
   alternating build/combat phases, 10 waves + a boss wave. NORMAL victory is
@@ -191,12 +276,15 @@ unsigned, no malware, click More info > Run anyway.
   artifacts are never committed; the script regenerates them).
 - Serve: `python3 server/server.py` (honors `GW_PORT`, default **8124**) →
   open `http://<host>:8124/` in a browser.
-- Dev checks at this release: `python3 -m pytest -q` (239 green at v1.2; the
-  v1 GA tag counted 222) and
+- Dev checks at this release: `python3 -m pytest -q` (283 green at v1.2.1;
+  239 at v1.2; the v1 GA tag counted 222) and
   `python3 tools/check_hygiene.py` (`check_hygiene: 0 hit(s)`).
-- Served controls (from the verified journey): mouse click = attack /
-  interact, hold BOTH mouse buttons = the heavy combo, WASD = hero move,
-  F2 = hero hot-swap, M / E / N = place / upgrade / sell selected defense.
+- Served controls (current at v1.2.1, from the verified journey): mouse click
+  = attack / interact, hold BOTH mouse buttons = the heavy combo, WASD = hero
+  move, F1–F3 = swap heroes; building: a tower-button press ARMS the ghost,
+  ◀/▶ (arrow keys) cycle the slot, left-click or M places, right-click or Esc
+  cancels (M with nothing armed keeps the legacy instant place),
+  E / N = upgrade / sell selected defense.
 
 ## What the claims stand on
 
