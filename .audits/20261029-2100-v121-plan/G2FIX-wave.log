@@ -1,0 +1,139 @@
+# G2FIX-wave.log — v1.2.1 G2-FIX: lane bands must PAINT in the web (GL Compatibility) build (MC 11698)
+# coder profile · 2026-10-30 · base tip 1b4d9e1 · repo /home/claudecode/Games/gatewardens
+# Siblings: NONE live now (brief). Gates measured AT MY TREE (shared checkout,
+# only my 3 owned files dirty — git status proves; no worktree isolation needed).
+# LEDGER CONCURRENCY OVERRIDE (orchestrator ruling, as W1/G2): LEDGER.md NOT
+# touched; the row rides as the LEDGER-ROW line at the bottom of this log.
+
+== DIAGNOSTIC RECORD (orchestrator-verified 2026-10-30 — TRUSTED, not re-derived; the
+   brief names these as binding inputs, the card is the MECHANISM change) ==
+- G2 (6e98ab4) built correct nodes headless (probe LB-OK, AABB sane, winding cross +Y
+  verified) yet painted NOTHING in the web export: strict cyan-tint pixel count ~1k
+  stray vs 143k ground px (w2-build.png; mission confirmed live via HUD vision-quotes).
+- Param probes all NO-CHANGE: BAND_Y 0.02->0.35 + CULL_DISABLED (w2-bandexp.png);
+  ARRAY_TEX_UV + ARRAY_NORMAL added (w2-bandexp2.png); BAND_COLOR opaque pure red —
+  6 px TOTAL on a VERIFIED build-phase frame (w2-bandexp3.png).
+- CONCLUSION (orchestrator): engine-built ArrayMesh via material_override does not
+  rasterize under GL-Compatibility/WebGL in this project, while Sprite3D/Label3D
+  children of the SAME parent DO paint. Fix = change the MECHANISM, not the params.
+- Precedent the fix rides: the arena ground is a PlaneMesh MeshInstance3D painted
+  through material_override (mission_world.paint_arena) and IT paints in the same
+  web build (the 143k ground px above ARE the painted ground).
+
+== CONTRACT PRESERVED (readings used, declared) ==
+- Exactly ONE top-level node named LaneBand_<lane> per GROUND lane (probe counts by
+  the BAND_PREFIX marker); the per-segment planes are CHILDREN inside it (allowed by
+  the brief: "child segments inside it"). AIR lanes unbanded. m.lanes READ-ONLY,
+  ZERO writes (write-regex leg green). mission.gd + mission_world.gd UNTOUCHED
+  (git diff --stat zero hunks — the mount call LANE_BANDS.paint_lane_bands(m) is
+  unchanged by design). BAND_Y stays 0.02, BAND_COLOR stays the plan's cyan alpha
+  0.30 unshaded — the fix is the mesh mechanism, not the presentation numbers.
+- Closed ground lanes keep their band (G2's declared reading, unchanged).
+- An all-degenerate lane mounts NO node (G2 parity: _strip_mesh==null mounted none).
+
+== DESIGN (one mechanism changed, everything else stands) ==
+- godot/scripts/lane_bands.gd (86 lines): paint_lane_bands(m) per ground lane mounts
+  a band Node3D named LaneBand_<id> carrying ONE MeshInstance3D per waypoint segment:
+  mesh = unit PlaneMesh (PrimitiveMesh — engine-managed geometry; default size 1x1,
+  the node scale carries dimensions), position = segment midpoint at y BAND_Y,
+  rotation.y = atan2(-d.z, d.x) (local +X walks the segment, +Z the lateral normal —
+  same orientation as G2's hand-built normal n=(-d.z,0,d.x)), scale = (segment
+  length, 1, BAND_WIDTH); material = the SAME pinned shape (unshaded +
+  TRANSPARENCY_ALPHA + BAND_COLOR), one instance per band, applied via
+  material_override (the arena-ground rasterize-proven path). Degenerate segment
+  (<0.001 u) returns null instead of a zero-scale/NaN-rotation node. ZERO writes on
+  m; m.map_def never read.
+- Kit godot/sim/g2_lane_band_probe.gd (232 lines, boot idiom unchanged): rows now
+  LB-BANDS n=3 ground=3 / LB-BAND <lid> segs=N mat=1 (band at origin + one
+  MeshInstance3D child per wp segment + pinned material per segment) / LB-CLASS <lid>
+  mesh=PlaneMesh prim=1 segs=N — THE WEB-PROOF PROXY rows (every segment mesh IS a
+  PlaneMesh AND a PrimitiveMesh; class name printed from get_class()) / LB-WPS
+  (endpoint pins: unit-plane ±X ends via to_global of each NODE land on the
+  segment's two wps within EPS 0.05 — wp-follow through the band NODE/segment
+  midpoints) / LB-NEG air=2 banded=0. Completion-flag idiom + planted-red
+  (suppress one ground band -> BANDS row RED) carried over from G2 unchanged.
+- tests/test_lane_bands.py (5 legs, was 4; net +1): engine probe rows incl. the
+  LB-CLASS proxy rows (segs per lane DERIVED from gatefall.json, not double-pinned);
+  mount source-truth (unchanged — mission_world still one call, no geometry);
+  builder source-truth updated (one Node3D band site, ONE MeshInstance3D segment
+  site, zero-writes regex, literal "ground" filter) + NEW test_builder_rides_
+  primitive_mesh_geometry_source_truth: PlaneMesh.new() built once, and NO retired-
+  mechanism token (ArrayMesh/add_surface_from_arrays/ARRAY_VERTEX/ARRAY_INDEX/
+  PackedVector3Array/PackedInt32Array) survives in CODE — the header comment naming
+  the retired mechanism is stripped before the scan (comments are stripped because
+  the header must be allowed to explain WHY the file reads the way it does; the
+  runtime LB-CLASS rows police real geometry). Data leg unchanged.
+- WEB-PROOF LEG declaration (per brief): served-browser pixel re-check: ORCHESTRATOR
+  (expected >20k band-tinted px on build-phase frame). The machine-checkable proxy
+  legs are the probe's LB-CLASS rows + the test's primitive-geometry source leg; if
+  the orchestrator's served-browser re-shoot does not cross the bar the card comes
+  back.
+
+== GATES (all at MY TREE = tip 1b4d9e1 + my 3 owned files; static/ present, parity with
+   the G2/G3/G7 baseline measurements) ==
+-- (1) parse checks, pinned 4.7.2 binary, --import cache then --check-only per file:
+    res://scripts/lane_bands.gd         RC=0 stderr_bytes=0
+    res://sim/g2_lane_band_probe.gd     RC=0 stderr_bytes=0
+    res://scripts/mission_world.gd      RC=0 stderr_bytes=0 (untouched, re-checked)
+
+-- (2) ENGINE PROBE GREEN (conftest.run_probe_script idiom, temp XDG data_home):
+    RC=0 STDERR_BYTES=0
+    Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+    LB-BANDS n=3 ground=3
+    LB-BAND lane_g1 segs=4 mat=1
+    LB-CLASS lane_g1 mesh=PlaneMesh prim=1 segs=4
+    LB-WPS lane_g1 wp=5 matched=5 eps=0.05
+    LB-BAND lane_g2 segs=4 mat=1
+    LB-CLASS lane_g2 mesh=PlaneMesh prim=1 segs=4
+    LB-WPS lane_g2 wp=5 matched=5 eps=0.05
+    LB-BAND lane_g3 segs=3 mat=1
+    LB-CLASS lane_g3 mesh=PlaneMesh prim=1 segs=3
+    LB-WPS lane_g3 wp=4 matched=4 eps=0.05
+    LB-NEG air=2 banded=0
+    LB-OK
+    => band node count == ground-lane count (3); one segment child per wp segment
+       (segs 4/4/3 = wps-1, derived from gatefall.json); every segment a PlaneMesh
+       PrimitiveMesh (CLASS rows, the web-rasterization proxy); every wp followed
+       within EPS 0.05 via NODE-midpoint-derived endpoints; NEG: air unbanded.
+
+-- (3) PLANTED-RED (IN THE PROBE TREE ONLY: the kind filter gained
+        `or lid == "lane_g1"` — one ground band suppressed):
+    RED_RC=1 STDERR_BYTES=0
+    Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+    LB-FAIL band nodes = 2 (want 3 ground-lane bands)
+    => the BANDS leg goes RED LOUD with an exact count complaint (G2 parity).
+    REVERTED in the same run (pre-plant bytes rewritten; git diff afterwards shows
+    only the intended G2-fix changes) and green re-run (2) + the full suite below.
+
+-- (4) FIXTURES: git diff --name-only tests/fixtures/ count 0 BEFORE the suite;
+        post-suite count re-checked 0 (row below).
+
+-- (5) HYGIENE: python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)" rc0
+        (21 soft notes = the pre-existing byte-stable baseline note set, ZERO notes
+        on my touched files). LOC: lane_bands.gd 86 / probe 232 /
+        test_lane_bands.py 203 — all <=250. mission.gd + mission_world.gd UNTOUCHED
+        (git diff --stat zero hunks; .uid sidecars unchanged — no new .gd files).
+
+-- (6) FULL SUITE AT MY TREE: python3 -m pytest -q ->
+        266 passed in 176.37s (0:02:56)   PYTEST_EXIT=0   [FINAL RE-RUN, green]
+        (>=266 bar: tip measured 265 at this tree (G7-wave.log :144) + net +1 from
+        test_builder_rides_primitive_mesh_geometry_source_truth; the first full run
+        collected 266 with the ONE false-green fix needed: the retired-mechanism
+        grep initially scanned the builder's HEADER COMMENT (which names ArrayMesh to
+        explain the fix) -> leg scoped to code-with-comments-stripped, lane legs
+        re-run 5/5 green, then the FULL SUITE re-run green above on the final tree.
+        FIXTURES POST-SUITE: git diff --name-only tests/fixtures/ count 0.)
+
+== WEB-PROOF PIXEL LEG — DECLARATION (per brief; pytest cannot run a browser) ==
+served-browser pixel re-check: ORCHESTRATOR (expected >20k band-tinted px on
+build-phase frame). Machine-checkable proxy legs IN this card: probe LB-CLASS rows
+print the live mesh class per segment (PlaneMesh + PrimitiveMesh asserted, FAIL
+otherwise) and the test's primitive-geometry source-truth leg bans the retired
+ArrayMesh mechanism from code. The orchestrator re-shoots the served build and
+appends the pixel count below before card close; if it fails, the card comes back.
+
+PENDING-ORCHESTRATOR-ROW: served-browser band-tint px on build-phase frame = <awaiting re-shoot>
+
+LEDGER-ROW: | BUILD G2-FIX lane bands paint in web (MC 11698 / V121-PLAN G2-FIX) | DONE 2026-10-30 — mechanism swapped from the web-dead runtime ArrayMesh (6 px pure red on a VERIFIED build-phase frame, w2-bandexp3; param probes no-change) to engine-managed PrimitiveMesh geometry: LaneBand_<id> Node3D per GROUND lane carries one MeshInstance3D per waypoint segment, each a unit PlaneMesh at the segment midpoint (y BAND_Y 0.02), rotated atan2(-d.z,d.x) to the segment, scaled (length, 1, BAND_WIDTH 1.6), material_override carrying the SAME pinned unshaded alpha-0.30 BAND_COLOR (the arena-ground rasterize-proven path); AIR lanes unbanded, m.lanes READ-ONLY zero writes, mission.gd/mission_world.gd ZERO lines (git diff empty); contract rows preserved + NEW LB-CLASS probe rows (mesh class printed per segment — the web-proof proxy) + new test leg banning the retired raw-array mechanism from code. Probe LB-OK rc0 stderr EMPTY; planted-red one-suppressed-ground-band -> LB-FAIL "band nodes = 2 (want 3)" rc1, reverted, green; full pytest 266 green at MY tree (265 tip + net 1), hygiene 0 hits, fixtures byte-identical before+after. WEB-PROOF: served-browser >20k band-tint px re-shoot = ORCHESTRATOR leg. Evidence .audits/20261029-2100-v121-plan/G2FIX-wave.log (VERIFY_EXIT=0) |
+
+VERIFY_EXIT=0

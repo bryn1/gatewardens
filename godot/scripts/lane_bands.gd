@@ -1,13 +1,28 @@
-# lane_bands — the G2 lit lane bands (MC 11694, V121-PLAN G2): one
-# translucent quad-strip MeshInstance3D per GROUND lane, painted along
-# the EXISTING waypoint polylines of m.lanes (build_lanes' records —
-# the only lane read; zero writes, zero sim state, no second lane model
-# and no duplicated lane geometry: the band is derived from the same
-# wps the sim walks). AIR lanes get NO band — the winged gate-eye of G1
-# is their declared cue. Mounted ONCE from mission_world.build_cores
-# (the paint_arena/G1 visual-hook precedent; mission.gd at its 400
-# ceiling adds ZERO lines). Presentation numbers live HERE, on the
-# builder (the sprite_bank ICON_PX doctrine: ungoverned file).
+# lane_bands — the G2 lit lane bands (MC 11694, V121-PLAN G2; G2-FIX
+# MC 11698): one top-level band Node3D per GROUND lane, carrying ONE
+# MeshInstance3D per waypoint SEGMENT whose mesh is a unit PlaneMesh
+# (PrimitiveMesh — engine-managed geometry). G2 (6e98ab4) built each
+# strip as a runtime ArrayMesh + material_override: the nodes built
+# correct headless (probe LB-OK, AABB sane, winding verified) yet the
+# mesh NEVER rasterized in the web export — opaque pure red measured
+# 6 px on a VERIFIED build-phase frame (w2-bandexp3) while Sprite3D/
+# Label3D children of the SAME parent painted. Params were not the
+# fault (BAND_Y/CULL/ARRAY_TEX_UV probes: zero change); the MECHANISM
+# was. Engine-managed PrimitiveMesh geometry rasterizes under GL
+# Compatibility — PlaneMesh is the class the arena ground rides, and
+# it paints through material_override in that same web build — so each
+# segment is now a unit PlaneMesh node at the segment midpoint
+# (y BAND_Y), rotated so its local +X walks the segment, scaled to
+# (segment length, 1, BAND_WIDTH). The CONTRACT is unchanged: exactly
+# ONE node named LaneBand_<lane> per ground lane of m.lanes
+# (build_lanes' records — the only lane read; zero writes, zero sim
+# state, no second lane model and no duplicated lane geometry: the
+# band rides the SAME wps the sim walks), segment nodes ride INSIDE
+# the band node, AIR lanes get NO band — the winged gate-eye of G1 is
+# their declared cue. Mounted ONCE from mission_world.build_cores (the
+# paint_arena/G1 visual-hook precedent; mission.gd at its 400 ceiling
+# adds ZERO lines). Presentation numbers live HERE, on the builder
+# (the sprite_bank ICON_PX doctrine: ungoverned file).
 extends RefCounted
 
 const BAND_PREFIX := "LaneBand_"   # node-name marker the probe counts by
@@ -24,50 +39,45 @@ static func paint_lane_bands(m) -> void:
 		var lane: Dictionary = m.lanes[lid]
 		if String(lane["kind"]) != "ground":
 			continue                       # air lanes: G1's winged eye
-		var strip := _strip_mesh(lane["wps"])
-		if strip == null:
-			continue                       # no drawable segment
-		var node := MeshInstance3D.new()
-		node.name = BAND_PREFIX + lid
-		node.mesh = strip
-		node.material_override = _band_material()
-		m.add_child(node)
+		var band := Node3D.new()
+		band.name = BAND_PREFIX + lid
+		var mat := _band_material()        # ONE material shape per band
+		var wps: Array[Vector3] = lane["wps"]
+		for i: int in wps.size() - 1:
+			var seg := _segment_node(wps[i], wps[i + 1], mat)
+			if seg == null:
+				continue                   # degenerate: draws nothing
+			band.add_child(seg)
+		if band.get_child_count() > 0:
+			m.add_child(band)              # an all-degenerate lane: no node
 
 
-# One quad per waypoint segment, joined at the shared wp (corners sit
-# at wp ± halfwidth along the segment normal — at the shallow map
-# angles this reads as one continuous strip). Upward-facing triangles;
-# a degenerate segment draws nothing rather than a NaN normal.
-static func _strip_mesh(wps: Array[Vector3]) -> ArrayMesh:
-	var verts := PackedVector3Array()
-	var idx := PackedInt32Array()
-	for i: int in wps.size() - 1:
-		var a: Vector3 = wps[i]
-		var b: Vector3 = wps[i + 1]
-		var d := Vector3(b.x - a.x, 0.0, b.z - a.z)
-		if d.length() < 0.001:
-			continue
-		var n := Vector3(-d.z, 0.0, d.x).normalized() * (BAND_WIDTH * 0.5)
-		var base := verts.size()
-		verts.append(Vector3(a.x + n.x, BAND_Y, a.z + n.z))
-		verts.append(Vector3(b.x + n.x, BAND_Y, b.z + n.z))
-		verts.append(Vector3(b.x - n.x, BAND_Y, b.z - n.z))
-		verts.append(Vector3(a.x - n.x, BAND_Y, a.z - n.z))
-		idx.append_array([base, base + 1, base + 2, base, base + 2, base + 3])
-	if verts.is_empty():
+# One waypoint segment as engine-managed geometry: a unit PlaneMesh
+# (default size 1x1 — the node scale carries the dimensions), at the
+# segment midpoint at y BAND_Y, rotated about Y so the plane's local
+# +X walks the segment direction and +Z the lateral normal, scaled to
+# (segment length, 1, BAND_WIDTH). A degenerate segment returns null
+# instead of a zero-scale / NaN-rotation node.
+static func _segment_node(a: Vector3, b: Vector3, mat: StandardMaterial3D) \
+		-> MeshInstance3D:
+	var d := Vector3(b.x - a.x, 0.0, b.z - a.z)
+	var seg_len := d.length()
+	if seg_len < 0.001:
 		return null
-	var arrays: Array = []
-	arrays.resize(Mesh.ARRAY_MAX)            # ARRAY_INDEX lives at slot 12
-	arrays[Mesh.ARRAY_VERTEX] = verts
-	arrays[Mesh.ARRAY_INDEX] = idx
-	var mesh := ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	return mesh
+	var seg := MeshInstance3D.new()
+	seg.mesh = PlaneMesh.new()
+	seg.position = Vector3((a.x + b.x) * 0.5, BAND_Y, (a.z + b.z) * 0.5)
+	seg.rotation.y = atan2(-d.z, d.x)      # local +X -> the segment dir
+	seg.scale = Vector3(seg_len, 1.0, BAND_WIDTH)
+	seg.material_override = mat
+	return seg
 
 
-# The ONE band material shape, built per node (runtime-duplicate idiom
-# — no .tres on disk to keep in sync): unshaded so it reads lit on the
-# dark arena, alpha-blended so the painted ground shows through.
+# The ONE band material shape, built per band node (runtime-duplicate
+# idiom — no .tres on disk to keep in sync): unshaded so it reads lit
+# on the dark arena, alpha-blended so the painted ground shows
+# through. Same pinned shape as G2 — the fix is the mesh mechanism,
+# not the material.
 static func _band_material() -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
