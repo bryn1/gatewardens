@@ -97,12 +97,18 @@ const TIER_TEXTURES := {
 
 # World height each sheet is scaled to — the greybox footprint it
 # replaces (VISUAL-TARGET "scaled to the existing box footprint"): the
-# pawn and ground-enemy capsules are 2 world units tall, the tower
-# capsule is authored scale.y 2 -> 4 units. Sprite3D maps 100 px to one
-# world unit at scale 1, so the scale is height / (px / 100); no layout
-# or coordinate ever changes (the node still sits on the record's pos).
-const WORLD_H_UNIT := 2.0     # heroes + enemies: the 2u capsule
+# ground-enemy capsule is 2 world units tall (hero pawns read bigger,
+# WORLD_H_HERO below — G7), the tower capsule is authored scale.y 2 ->
+# 4 units. Sprite3D maps 100 px to one world unit at scale 1, so the
+# scale is height / (px / 100); no layout or coordinate ever changes
+# (the node still sits on the record's pos).
+const WORLD_H_UNIT := 2.0     # enemies: the 2u capsule
 const WORLD_H_TOWER := 4.0    # tower capsule footprint: scale.y 2 -> 4u
+# v1.2.1 G7 (MC 11695, V121-PLAN G7a): heroes-only presentation const —
+# the hero must read bigger than the 2u mobs it fights at the shipped
+# D=64 rig (camera LOCKED, pin #3 spent). Capsules, pos and every sim
+# read stay untouched; enemies keep WORLD_H_UNIT (negative-leg pinned).
+const WORLD_H_HERO := 3.0     # heroes: taller than the 2u mobs
 
 
 # tier is the DISPLAY tier (T1 = 1); the 1-arg call shape keeps working

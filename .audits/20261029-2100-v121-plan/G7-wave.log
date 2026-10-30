@@ -1,0 +1,166 @@
+# G7-wave.log — v1.2.1 G7 hero identity at the shipped rig (MC 11695)
+
+Card: MC 11695 [type:code] · Base tip at intake: 4771c4a (W1 close);
+during the wave G2 (MC 11694) committed 6e98ab4 on DISJOINT files
+(lane_bands/mission_world/probe/test_lane_bands) — my gate re-based to
+that tip; my files untouched by it (verified via git show --stat).
+
+## Reading used (DoD ambiguities, declared per brief)
+
+- Row G7 mechanism + files = `sprite_bank.gd`, `hero_pawn.gd`, test
+  (V121-PLAN §G7 lines 140-148). "the hero's own sheet as a small crest
+  child, parented in hero_pawn.setup_pawn" shipped literally: crest =
+  mini make_sprite sheet + make_text name, under one "Crest" Node3D
+  child per pawn.
+- "hook its signal, no new mechanism": row G7's own text governs —
+  "the pawn visibility swap (hero_controller.gd:65-74) already moves
+  children with the active hero, so the crest follows F1-F3 FOR FREE".
+  hero_controller.gd is NOT in the row's file list and was NOT edited:
+  the crest rides the shipped _sync_pawns visibility through pawn
+  parenthood. Swap leg drives F2/F1 through bridge presses + mission
+  step (the shipped path, same shape as v11_sprite_probe's swap leg).
+- WORLD_H_HERO value 3.0 (plan names no number; > WORLD_H_UNIT 2.0
+  required, below WORLD_H_TOWER 4.0). Lives in ungoverned sprite_bank
+  (NOT in tools/check_hygiene.py GOVERNED_LITERALS) — no governed
+  literal touched; enemies keep the byte-pinned WORLD_H_UNIT 2.0.
+- describe-image ("hero reads clearly big enough") is the orchestrator
+  served-browser leg per V121-PLAN C-6 ("orchestrator legs"), not a
+  coder gate; engine HEIGHT leg (hero 3.0 u vs enemy 2.0 u, read off
+  the live nodes) is the coder-side proof.
+
+## Tree isolation (declared, per brief clause)
+
+Siblings LIVE on the shared checkout: at gate time the shared tree
+carried G3's UNCOMMITTED edits (mission.tscn WaveTelegraph append,
+wave_telegraph.gd(+uid), g3 probe, test_wave_telegraph.py) plus
+test_mission_clicks.py grown to 601 lines -> shared-tree
+check_hygiene = 1 hit (NOT a G7 file). Therefore the full-suite +
+hygiene + fixtures gates ran in an isolated worktree
+(HEAD 6e98ab4 + ONLY my 3 files); probe legs were additionally run in
+the shared tree before/after. GATE WORKTREE: /tmp/g7wt (git worktree
+add --detach HEAD 6e98ab4; dirty rows exactly:
+ M godot/scripts/hero_pawn.gd
+ M godot/scripts/sprite_bank.gd
+?? tests/test_hero_crest.py).
+
+## Change inventory (pathspec-committed set)
+
+- godot/scripts/sprite_bank.gd: + const WORLD_H_HERO := 3.0 (heroes-only
+  presentation const + header rows); WORLD_H_UNIT value byte-unchanged.
+- godot/scripts/hero_pawn.gd: setup_pawn scales the sheet with
+  WORLD_H_HERO and parents a "Crest" child (mini hero sheet +
+  heroes.json name through world_text.make_text); name read through
+  the GWTables array door; crest presentation consts. NO Label3D, NO
+  sim writes, camera never touched.
+- tests/test_hero_crest.py: NEW — engine probe (tmp-probe idiom, G6
+  shape; tree-state legs run at frame 4, the g1 idiom, because under
+  -s nothing is inside the tree during _init — measured) + data legs
+  (heroes.json names, sprite_bank consts parsed) + source-truth legs.
+- NOT touched: world_text.gd (USE only), hero_controller.gd (except a
+  declared planted-red, restored — see below), camera/rig (pin #3
+  SPENT — zero edits: mission.tscn and all camera files OUT of my
+  commit; the tscn diff in the shared tree is G3's, verified line-by-
+  line), mission.gd, mission/enemy/hero STAT files (see SIM-UNTOUCHED).
+
+## GATE: engine probe GREEN (verbatim machine rows, rc=0, stderr EMPTY)
+
+$ Godot_v4.7.2-stable --headless --path godot -s /tmp/v121_g7_probe.gd
+G7C-CREST id=warden text=Bram Wardenfell sheet=1 labels=1 billboard=1 visible=1
+G7C-CREST id=deadeye text=Sila Deadeye sheet=1 labels=1 billboard=1 visible=0
+G7C-CREST id=embercaller text=Ysolde Embercaller sheet=1 labels=1 billboard=1 visible=0
+G7C-ACTIVE active=warden names=Bram Wardenfell
+G7C-HEIGHT hero_h=3.000000 enemy_h=2.000000
+G7C-FOLLOW moved=2.686666 off_x=0.000000 off_y=2.400000 off_z=0.000000
+G7C-SWAP active=deadeye names=Sila Deadeye
+G7C-SWAPBACK active=warden names=Bram Wardenfell
+G7C-OK
+rc=0
+
+Legs read against the DoD: crest exists on EVERY pawn (3 CREST rows,
+each exactly 1 Label3D, billboard=1 = camera-facing by Label3D default,
+CrestSheet=1); text == the active hero's name from the deck AND == the
+heroes.json "name" for that pawn (pytest DATA leg re-derives NAMES from
+godot/data/heroes.json, never copies); position follows the hero:
+bridge-KeyD move carried the rig 2.687 u and the crest stayed at
+off=(0, 2.4, 0) off the rig — EPS 0.01 DECLARED (test + probe).
+HEIGHT: hero 3.0 u vs enemy 2.0 u, both read off live node scales
+(texture px * pixel_size * scale.y); pytest pins WORLD_H_HERO >
+WORLD_H_UNIT == 2.0 byte-pinned (NEG: enemy sheet height unchanged).
+
+## GATE: SWAP leg (part of the probe rows above — shipped path only)
+
+G7C-SWAP active=deadeye names=Sila Deadeye      (after F2 through
+G7C-SWAPBACK active=warden names=Bram Wardenfell  bridge + mission.step;
+  visibility painted by the UNTOUCHED hero_controller._sync_pawns)
+NEG rows: at boot the deadeye/embercaller crests carry visible=0 while
+warden=1; after F2 the ONLY visible crest name is Sila Deadeye (Bram
+Wardenfell and Ysolde Embercaller ABSENT from the visible set — pytest
+asserts both absences); swapback F1 mirrors it. Crest text follows the
+NEW active hero's name. _sync_pawns was never edited (see planted-red).
+
+## GATE: planted-red (swap hook removed -> swap leg RED) — run in the
+## isolated worktree (shared tree was mid-G3 at that moment)
+
+Plant: godot/scripts/hero_controller.gd step() body —
+    -	_sync_pawns()          # THE shipped swap-paint hook, removed
+(pytest tests/test_hero_crest.py::test_crest_mount_height_follow_swap_engine)
+RED (transcript, then hero_controller.gd restored via
+git checkout -- ; status clean):
+    G7C-SWAP active=deadeye names=Bram Wardenfell   <-- crest FROZEN on
+    ...
+    assert ('deadeye' == 'deadeye'
+      deadeye and 'Bram Wardenfell' == 'Sila Deadeye'
+      - Sila Deadeye
+      + Bram Wardenfell)
+    FAILED tests/test_hero_crest.py::test_crest_mount_height_follow_swap_engine
+The SWAP leg fails LOUD on the stale name (exactly the row's point);
+every other leg (mount/height/follow) stays green under this plant —
+the RED is specific to the swap-follows contract.
+GREEN again after restore (3 passed).
+
+## GATE: hygiene / fixtures / suite
+
+Shared tree at gate moment (G3 uncommitted): check_hygiene = 1 hit —
+  `tests/test_mission_clicks.py:1: [ceiling] 601 lines > 600` — a G3
+  sibling file, NOT in G7's set (G7 files contribute 0 hits).
+ISOLATED GATE (git worktree add --detach /tmp/g7wt HEAD=6e98ab4, + ONLY
+  my 3 files): `python3 tools/check_hygiene.py` -> 0 hit(s),
+  HYGIENE_EXIT=0. fixtures: git diff --stat tests/fixtures/ EMPTY,
+  git status --porcelain tests/fixtures/ EMPTY (both trees).
+  Two worktree-only failures were artifacts of MISSING GITIGNORED web
+  export output (static/index.html, then static/index.apple-touch-icon.
+  png -> 404 in tests_scaffold/tests_served; `git check-ignore` confirms
+  both gitignored). Copied the built static/ export in (env artifact,
+  zero code relation to G7) -> full suite green.
+  Worktree full suite @6e98ab4+G7: `259 passed` PYTEST_EXIT=0.
+Then G2+G3 LANDED (tip 60fef93, disjoint files) and the shared tree
+became clean -> FINAL gate runs directly at MY tree (60fef93 + my 4
+files); rows appended below.
+
+## GATE: FINAL full suite at MY tree (shared checkout, HEAD 60fef93 +
+## my 4 files; git status showed ONLY my files dirty, hygiene 0 there)
+
+$ python3 -m pytest tests/ -q
+265 passed in 173.04s (0:02:53)
+PYTEST_EXIT=0        (>= 244 bar, count measured)
+
+## SIM-UNTOUCHED (visual + crest only)
+
+Working-tree diff universe at commit time = exactly {godot/scripts/
+sprite_bank.gd, godot/scripts/hero_pawn.gd, tests/test_hero_crest.py,
+this log} (git status --porcelain, above). mission.gd, mission_heroes.gd,
+hero_controller.gd, hero_combat.gd, enemy_runner.gd, defense_obj.gd,
+phase_controller.gd, mission.tscn, world_text.gd and every data/godot
+STAT file: diff EMPTY — `git show --name-only HEAD` lists only the four
+paths. Camera: zero touched lines (pin #3 respected; row G7 "NO camera
+move"). The commit itself is the proof row.
+
+LEDGER-ROW: G7 (MC 11695) DONE 2026-10-30: hero identity at the shipped
+D=64 rig (camera untouched) — sprite_bank WORLD_H_HERO 3.0 heroes-only
+scale (enemies byte-pinned WORLD_H_UNIT 2.0) + per-pawn name crest
+(mini sheet + heroes.json name through world_text.make_text, camera-
+facing) riding the shipped F1-F3 pawn-visibility swap for free; probe/
+swap/NEG/planted-red + suite 265 green + hygiene 0 + fixtures byte-
+pinned in .audits/20261029-2100-v121-plan/G7-wave.log; commit follows.
+
+VERIFY_EXIT=0
