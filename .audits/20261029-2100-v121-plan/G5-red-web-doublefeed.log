@@ -1,0 +1,3 @@
+G5R-ARM armed=1 count=0
+G5R-KEYM count=1 green_drop=100 disarmed=1
+G5R-FAIL DEDUP leg: double-feed placed 2 (planned: exactly 1)

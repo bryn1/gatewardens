@@ -211,3 +211,116 @@ def test_g5_planted_red_arm_also_places_goes_red():
         "placer.place_id(armed_id, 1)")
     bad = _violations(planted)
     assert bad, "planted-red: an arm that also places slipped the gate"
+
+
+# ---------- served-path tier: the REAL main.gd forwarder + web dedup ----
+# The served-browser retest (orchestrator, 19715d4 export) reached what
+# direct on_key injection could not: on web EVERY physical key arrives
+# at GWBridge.on_key TWICE (the shell's JS keydown/keyup relay AND
+# Godot's own canvas pipeline via main.gd's _unhandled_input) — served
+# measurement: ONE KeyM press placed TWO. The shipped kit
+# godot/sim/g5_real_relay_probe.gd now boots the real mission, mounts
+# the real main.gd script as the relay object and feeds it SYNTHESIZED
+# InputEventKey/InputEventMouseButton (+ the JS entry _on_js_key):
+# the closest production analogue runnable under -s.
+
+RELAY_PROBE = "res://sim/g5_real_relay_probe.gd"
+RELAY_GD = conftest.repo_path("godot", "sim", "g5_real_relay_probe.gd")
+BRIDGE_GD = conftest.repo_path("godot", "scripts", "bridge.gd")
+
+
+def test_g5_real_relay_engine_leg(tmp_path, class_cache):
+    proc = conftest.run_probe_script(RELAY_PROBE, (), tmp_path)
+    assert proc.returncode == 0, \
+        "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                         proc.stderr)
+    assert proc.stderr == "", \
+        "-s probe stderr must be EMPTY (true parse signal):\n%s" % proc.stderr
+    out = proc.stdout
+    assert "G5R-FAIL" not in out, out
+    assert out.rstrip().endswith("G5R-OK"), out
+    kv = {ln.split(" ")[0]: _kv(ln) for ln in out.splitlines()
+          if ln.startswith("G5R-")}
+    assert kv["G5R-ARM"]["armed"] == "1" and kv["G5R-ARM"]["count"] == "0"
+    keym = kv["G5R-KEYM"]
+    assert keym["count"] == "1" and keym["disarmed"] == "1", keym
+    assert int(keym["green_drop"]) == BALLISTA, keym   # data-derived cost
+    # ONE physical press, BOTH live feeds (JS relay + engine pipeline):
+    # exactly ONE place — the served double-feed gate.
+    assert kv["G5R-DEDUP"]["placed"] == "1", kv["G5R-DEDUP"]
+    lmb = kv["G5R-LMB"]
+    assert lmb["count"] == "3" and lmb["disarmed"] == "1" \
+        and lmb["ghost"] == "-1" and int(lmb["green_drop"]) == BALLISTA, lmb
+    assert kv["G5R-RMB"]["armed"] == "0" and kv["G5R-RMB"]["ghost"] == "-1" \
+        and kv["G5R-RMB"]["count"] == "3", kv["G5R-RMB"]
+    assert int(kv["G5R-CYCLE"]["fwd"]) >= 0, kv["G5R-CYCLE"]
+    # combat locks the rows WHILE AFFORDABLE and nothing places;
+    # build unlocks them again (the served silent-refusal trap's gate).
+    assert kv["G5R-LOCK"]["disabled"] == "1" \
+        and kv["G5R-LOCK"]["armed"] == "0" \
+        and kv["G5R-LOCK"]["placed"] == "0", kv["G5R-LOCK"]
+    assert kv["G5R-UNLOCK"]["disabled"] == "0" \
+        and kv["G5R-UNLOCK"]["armed"] == "1", kv["G5R-UNLOCK"]
+
+
+def test_g5_planted_red_web_doublefeed_goes_red(tmp_path, class_cache):
+    """LEGACY-BRIDGE plant: emulate on_key WITHOUT the edge guard (the
+    pre-fix down path: held set + press appended unconditionally) by
+    replacing the JS-relay line in a copy of the shipped kit — the DEDUP
+    leg MUST go RED (two places from one physical press)."""
+    src = read(RELAY_GD).replace(
+        '_main._on_js_key(["KeyM", true])',
+        '_m.bridge.held["KeyM"] = true\n\t_m.bridge.presses.append("KeyM")')
+    assert src != read(RELAY_GD), "plant anchor lost"
+    probe = tmp_path / "g5_relay_legacy.gd"
+    probe.write_text(src, encoding="utf-8")
+    proc = conftest.run_probe_script(str(probe), (), tmp_path)
+    assert proc.returncode == 1, \
+        "planted-red: an unguarded double feed slipped the DEDUP leg\n%s" \
+        % proc.stdout
+    assert "G5R-FAIL DEDUP" in proc.stdout, proc.stdout
+
+
+# ---------- source truth: the edge guard + the combat lock -------------
+
+def _bridge_body(text):
+    return _body(text, "func on_key(code: String, down: bool) -> void:")
+
+
+def test_g5_dedup_and_lock_source_truth():
+    bad = []
+    bbody = _bridge_body(read(BRIDGE_GD))
+    if "held.has(code)" not in bbody or "presses.append" not in bbody:
+        bad.append("bridge.on_key lost the rising-edge guard "
+                   "(web double-feed re-opens)")
+    sbody = _body(read(PANEL_GD), "func sync() -> void:")
+    if "locked or not SIM_ECONOMY.can_afford(" not in sbody \
+            or "_cancel_arm()" not in sbody:
+        bad.append("panel.sync lost the combat phase-lock (rows arm into "
+                   "combat and silently refuse)")
+    assert not bad, "served-path gates lost: %r" % bad
+
+
+def test_g5_planted_red_dedup_guard_removed_goes_red():
+    code = read(BRIDGE_GD)
+    planted = code.replace("if held.has(code):", "if false:")
+    body = _bridge_body(planted)
+    assert "held.has(code)" not in body, \
+        "plant missed the on_key body"
+
+
+def test_g5_planted_red_lock_removed_goes_red():
+    code = read(PANEL_GD)
+    planted = code.replace("btn.disabled = locked or not "
+                           "SIM_ECONOMY.can_afford(",
+                           "btn.disabled = not SIM_ECONOMY.can_afford(")
+    sbody = _body(planted, "func sync() -> void:")
+    assert "locked or not SIM_ECONOMY.can_afford(" not in sbody, \
+        "plant missed sync()"
+    # the source-truth gate must notice (cancel route still present,
+    # so the gate keys on the disabled condition):
+    bad = []
+    if "locked or not SIM_ECONOMY.can_afford(" not in sbody \
+            or "_cancel_arm()" not in sbody:
+        bad.append("lock")
+    assert bad, "planted-red: lock removal slipped the source gate"

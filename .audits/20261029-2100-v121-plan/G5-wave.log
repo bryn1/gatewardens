@@ -102,3 +102,98 @@ Baseline at parent tip: 266 pytest green. At MY tree: 271 green (below).
 LEDGER-ROW: | BUILD v1.2.1 G5 build-confirm UX (MC 11700) | DONE — press = ARM ghost at first buildable slot (no place, count-negative leg pinned), Arrows cycle over placer.buildable() (held-key relay, rising edge), MouseLeft/armed-KeyM place ONCE via the ONE m.place_defense site then disarm, MouseRight/Escape cancel; KeyM-UNARMED legacy first-free place UNCHANGED (explicit/harness callers); W17f press=place copy retired in ARCHITECTURE (grep-to-zero, superseded copy archived), stale/clicks/family gates retargeted same commit; 271 pytest green, hygiene 0, sim/fixtures untouched |
 
 VERIFY_EXIT=0
+
+## FOLLOW-UP COMMIT (served-browser retest, orchestrator 2026-10-30)
+
+SERVED RESULT was a PARTIAL FAIL: arm worked (Ballista * highlighted,
+Defenses 0 / Green 300 — correct), but cycle+MouseLeft placed NOTHING,
+RMB placed nothing (consistent with "nothing armed the place path").
+
+### Root cause — NOT the G5 mechanism. TWO real web-path bugs + one
+### misread. Reproduced headlessly with a REAL main.gd forwarder feed
+### (godot/sim/g5_real_relay_probe.gd, synthesizing InputEventKey /
+### InputEventMouseButton through main._unhandled_input + the JS
+### _on_js_key entry), plus a served export of 19715d4 driven in a real
+### browser on :8142 (frames g5x-hub.png / g5x-after-lmb.png).
+
+1. WEB DOUBLE-FEED (REAL, fixed): on web ONE physical keypress reaches
+   GWBridge.on_key TWICE — the shell's JS keydown/keyup relay (the path
+   my direct-injection probe used) AND Godot's own canvas pipeline via
+   main.gd _unhandled_input. Measured on 19715d4: one KeyM press placed
+   TWO (spy showed the relay; the engine forwarder is the second feed).
+   FIX: bridge.on_key EDGE-TRIGGERS the press queue (down ignored while
+   the code is already held). held stays the level view; every shipped
+   caller is down/up-paired. Coupled harness fix: mission_smoke_swap
+   left F-keys held (never released), so the now-correct edge guard
+   dropped its re-press — releases added (real keys always key-up);
+   test_mission_smoke + test_hud 24 green beside it.
+2. COMBAT-PHASE SILENT REFUSAL (REAL UX trap, fixed): the served retest
+   ran AFTER the ~16s build window — its own coach copy ("FIGHT: both
+   mouse buttons hit") is FIGHT-phase proof, so the build had ALREADY
+   ENDED; place_id legitimately refuses with {why:phase}. But the panel
+   rows stayed ENABLED through combat, so a press armed a row that could
+   only answer phase-refusal — indistinguishable from "never armed".
+   FIX: panel.sync disables picker rows whenever phase != build (W17e's
+   ONE enabled pass) and cancels any armed aim on the lock.
+3. MISREAD (no code): cycle/LMB/RMB DID work headlessly through the real
+   forwarder; the browser frames g5x2-placed.png (placed, Green 200)
+   confirm after fixes 1+2 removed the double-feed and the combat trap.
+
+### New legs (both green + planted-red beside green)
+- godot/sim/g5_real_relay_probe.gd (new sim kit, +.uid): boots the real
+  mission, mounts the REAL main.gd as the relay object (_ready never
+  runs; bridge only), feeds SYNTHESIZED InputEvents through
+  main._unhandled_input + main._on_js_key. Legs G5R-ARM/KEYM/DEDUP/LMB/
+  RMB/CYCLE/LOCK/UNLOCK. G5R-DEDUP is the web-double-feed gate (one
+  physical press, both live feeds -> EXACTLY one place). G5R-LOCK proves
+  combat disables the rows WHILE AFFORDABLE (phase is the gate) + build
+  re-enables. Green rows: ARM/KEYM(d=1,drop=100)/DEDUP(placed=1)/
+  LMB(count=3,drop=100,disarm,ghost=-1)/RMB(armed=0,ghost=-1,keep)/
+  CYCLE(fwd=4)/LOCK(disabled=1,armed=0,placed=0)/UNLOCK(disabled=0,
+  armed=1). Empty stderr.
+- tests/test_g5_build_confirm.py: +test_g5_real_relay_engine_leg (all
+  G5R rows, green_drop re-derived from towers.json), +
+  test_g5_planted_red_web_doublefeed_goes_red (legacy unguarded down
+  plant -> DEDUP RED, rc1), +test_g5_dedup_and_lock_source_truth, +
+  planted-reds for the edge-guard and the combat-lock source gates.
+
+### ENGINE planted-red x2 (real .gd mutation + real-relay probe re-run,
+### restored byte-identical), transcripts on disk beside:
+- bridge guard removed (if held.has(code) -> if false):
+  "G5R-FAIL DEDUP leg: double-feed placed 2 (planned: exactly 1)"
+  -> G5-red-web-doublefeed.log
+- panel combat-lock removed (btn.disabled drops the `locked or` term):
+  "G5R-FAIL LOCK leg: combat rows not locked (dis=false armed=false)"
+  -> G5-red-combat-lock.log
+
+### Docs synced (replace-not-delete): bridge.gd row + defense_panel.gd
+### row gained the G5b web-edge-trigger / combat-lock readings in place;
+### main.gd's forwarder comment names the edge-trigger. Grep of the
+### stale "bridge.gd untouched" claim -> 0 with the G5b clause appended.
+    $ grep -rn "bridge.gd untouched" godot/scripts/main.gd
+    (now reads "bridge.gd untouched AT THIS CARD — G5b ... edge-triggered")
+    $ grep -rn "each pick places" docs/  -> count 0 (unchanged, G5 above)
+
+### Suites (my tree): full pytest >=273 green (see VERIFY_EXIT below);
+### hygiene 0 hits; sim/fixtures diff = the two NEW G5 kits (+.uid) and
+### the mission_smoke_swap release lines only.
+
+## SERVED-BROWSER RE-TEST REQUEST (orchestrator: re-serve + re-shoot)
+AFTER this follow-up commit, please re-export 19715d4+followup and re-run
+the EXACT same script (Ballista ROW press = arm, ArrowRight 120ms,
+MouseLeft confirm at the field) — now expected GREEN, plus two NEW shots:
+  (A) IN-BUILD place: run the whole cycle INSIDE the ~16s build window
+      (phase=build). Expected: Defenses 0->1, Green 300->200, row clears
+      (no *). My browser run: ARM d=0/g=300 -> LMB d=0->1/g=300->200
+      PLACED=true (frame g5x2-placed.png).
+  (B) COMBAT LOCK: let the build window lapse (~16s, coach shows the
+      FIGHT line), THEN look at the rows. Expected: all five build rows
+      DISABLED/greyed and no armed * (was: stayed live + silently
+      refusing). Frame g5x2-combat-lock.png.
+  (C) DOUBLE-FEED: press KeyM once with a row armed. Expected: exactly
+      ONE defense added (pre-fix it added two). Headless gate G5R-DEDUP.
+The original FAIL's MouseLeft/RMB legs were a COMBAT-PHASE artifact, not
+a broken place path — fixes 1+2 remove both the real double-feed and the
+enabling-the-impossible row state that made it read as "never armed".
+
+VERIFY_EXIT=0

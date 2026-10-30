@@ -213,9 +213,18 @@ func _result_sell() -> Dictionary:
 # Cheap by contract: text is touched only where a mark changed (no
 # churn), rows are NEVER freed here (E9 lives in the rebuild alone).
 func sync() -> void:
+	# G5b (v1.2.1, MC 11700): the placer's build-phase gate, mirrored in
+	# the UI (served 19715d4 trap: fight-phase rows stayed ENABLED, armed
+	# on click, then silently refused the confirm — the served retest read
+	# exactly as "nothing ever arms the place path"). Rows that can only
+	# answer {"why":"phase"} must never look placeable; an aim cannot be
+	# carried into combat, so the lock disarms through the ONE cancel route.
+	var locked := String(m.phase_kind) != "build"
+	if locked and armed:
+		_cancel_arm()
 	for row: Dictionary in picker_rows:
 		var btn = row["btn"]
-		btn.disabled = not SIM_ECONOMY.can_afford(int(m.green),
+		btn.disabled = locked or not SIM_ECONOMY.can_afford(int(m.green),
 				int(row["cost"]))
 		var want := "%s (%d)%s" % [String(row["name"]), int(row["cost"]),
 			" *" if class_rows[selected_class]["class"] \

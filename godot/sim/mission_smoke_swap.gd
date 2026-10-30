@@ -25,6 +25,7 @@ static func run(smoke, leg: Dictionary) -> bool:
 	# --- 6) hot-swap F3 (manual) + down-swap to next healthy (F2-10)
 	m.bridge.on_key("F3", true)
 	m.step(1.0 / 60.0)
+	m.bridge.on_key("F3", false)           # G5b: release — edge-trigger
 	if String(m.hero_id) != "embercaller":
 		smoke._fail("F3 manual swap: hero_id=%s" % m.hero_id)
 		return false
@@ -51,6 +52,7 @@ static func run(smoke, leg: Dictionary) -> bool:
 	m.bridge.on_key("F2", true)
 	m.step(1.0 / 60.0)                        # clamp: 130->100 tick, 100->90 swap
 	m.step(1.0 / 60.0)                        # pawn sync follows the swap
+	m.bridge.on_key("F2", false)             # G5b: release — edge-trigger
 	var swap_blue := float(m.blue)
 	if String(m.hero_id) != "deadeye" \
 			or swap_blue != float(m.hero_defs["deadeye"]["base"]["blue_max"]) \
@@ -70,6 +72,7 @@ static func run(smoke, leg: Dictionary) -> bool:
 	m.bridge.on_key("F1", true)
 	m.step(1.0 / 60.0)
 	m.step(1.0 / 60.0)
+	m.bridge.on_key("F1", false)             # G5b: release — edge-trigger
 	if String(m.hero_id) != "warden" \
 			or float(m.blue) > float(m.hero_defs["warden"]["base"]["blue_max"]) \
 			or not bool(rig.pawns["warden"].visible) \

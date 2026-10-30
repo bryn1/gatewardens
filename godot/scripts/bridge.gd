@@ -48,8 +48,17 @@ var presses: Array = []   # discrete codes, drained once per frame by main
 # The ONE feed point (web JS relay + the desktop _input forwarder both
 # call this; unknown codes are dropped exactly like the VS relay dropped
 # unmatched e.code values).
+# G5b (v1.2.1, MC 11700): EDGE-TRIGGERED. On web the same physical event
+# reaches this point TWICE — the served shell's JS keydown/keyup relay
+# AND Godot's own canvas listener via main.gd's _unhandled_input forwarder
+# (served-measured on the 19715d4 export: one KeyM press = TWO places).
+# A press code now appends only on the rising edge; every shipped caller
+# is down/up-paired (grepped), so desktop and harness feeds are unchanged;
+# held stays the level view it always was.
 func on_key(code: String, down: bool) -> void:
 	if down:
+		if held.has(code):
+			return                  # duplicate of a held-down code
 		held[code] = true
 		if code in DISCRETE_KEYS:
 			presses.append(code)

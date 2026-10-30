@@ -1,0 +1,7 @@
+G5R-ARM armed=1 count=0
+G5R-KEYM count=1 green_drop=100 disarmed=1
+G5R-DEDUP placed=1
+G5R-LMB count=3 green_drop=100 disarmed=1 ghost=-1
+G5R-RMB armed=0 ghost=-1 count=3
+G5R-CYCLE fwd=4
+G5R-FAIL LOCK leg: combat rows not locked (dis=false armed=false)

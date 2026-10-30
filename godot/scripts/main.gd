@@ -37,7 +37,9 @@
 # table-presence check over STEMS below; the brief's "bridge.read_input()" paraphrase is the
 # pinned forward-only relay: _unhandled_input maps events through
 # bridge.native_code/mouse_code into bridge.on_key (no read_input
-# method invented; bridge.gd untouched).
+# method invented; bridge.gd untouched AT THIS CARD — G5b MC 11700 later
+# edge-triggered on_key itself: the served web feeds one physical event
+# through BOTH this forwarder and the shell's JS relay).
 extends Node
 
 const GW_TABLES := preload("res://sim/sim_tables.gd")
