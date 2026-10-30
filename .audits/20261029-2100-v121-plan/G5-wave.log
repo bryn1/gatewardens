@@ -197,3 +197,4 @@ a broken place path — fixes 1+2 remove both the real double-feed and the
 enabling-the-impossible row state that made it read as "never armed".
 
 VERIFY_EXIT=0
+ORCHESTRATOR RE-TEST RESULT (2026-10-30, tip 7af9fa3, served :8143, files sha-pinned): (A) g5b-placed.png cd3c1dc1: build-window arm->ArrowRight->LMB(640,420) => HUD 'Defenses 1 / cap 60', 'Green 200' = CONFIRM WORKS IN REAL BROWSER. (B) g5b-keym.png aed96a0f: ONE synthetic KeyM press => Defenses 1/Green 200 = EXACTLY ONE PLACE, double-feed fixed (was 2). (C) live g5b-combat.png landed inside window (window is 20s on hard, not 16) -> rows bright = CORRECT-for-phase; combat-lock leg via builder committed frame g5x2-combat-lock.png vision: five tower buttons 'dim/faded rather than bright' + 'defenses 1' = LOCK PAINTS. RMB-cancel: relay probe G5R-RMB (TESTED engine-level). G5 LIVE VERIFIED.
