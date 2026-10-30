@@ -45,9 +45,25 @@ extends CanvasLayer
 #   panel beneath it (P1: the code-built hero slots default PASS /
 #   ProgressBars default STOP, VERIFIED headless; the hud.tscn rows were
 #   IGNORE since W10, which is why the bug hid in the CODE-built nodes).
+# - First-session coach (G8, MC 11692 / V121-PLAN §G8): _coach is a LOCAL
+#   display var carrying the timed copy over the SAME banner (I4 — zero
+#   mission writes; the copy strings are the plan's, I2-safe). The wave-0
+#   build edge fires inside $PhaseController.setup (mission.gd:153) BEFORE
+#   this node exists (mission.gd:168-171), so a connect can never see it —
+#   setup BOOTSTRAPS _coach from the public reads (m.phase_kind, m.wave:
+#   read + local assign only) and the EXISTING phase_changed signal carries
+#   only the later edges (combat :82, build from _finish_wave :97→:74).
+#   banner_text() priority = outcome > coach > "" — the outcome is NEVER
+#   overridden; banner_shown() read-back unchanged.
 
 const SIM_WAVE := preload("res://sim/sim_wave.gd")
 const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
+
+# G8 (MC 11692): the scripted first-mission copy, VERBATIM from
+# V121-PLAN §G8 — copy strings only, zero balance numbers (I2).
+const COACH_BUILD_W0 := "BUILD: tower buttons on the right panel — click arms, click again places"
+const COACH_FIGHT_W0 := "FIGHT: both mouse buttons hit, F1-F3 swap heroes"
+const COACH_TELEGRAPH_W1 := "NEXT WAVE: watch the gate billboards"
 
 var m = null                        # mission root (duck-typed READ source)
 var wave_label = null
@@ -64,6 +80,8 @@ var boss_bar = null
 var banner = null
 var slots: Array = []               # deck order, one VBoxContainer per hero
 var toast_label = null              # W11 loot toast (code-built Label)
+var _coach := ""            # G8: timed first-mission copy — LOCAL display
+# state only (I4: never a write onto m)
 
 var _tint_active := Color("d8ecff")     # the highlight IS this tint:
 var _tint_idle := Color("ffffff")       # highlight_index() reads it back
@@ -93,6 +111,13 @@ func setup(mission) -> void:
 	boss_label = $Root/BossBar/BossLabel
 	boss_bar = $Root/BossBar/BossHp
 	banner = $Root/Banner
+	# G8 (MC 11692): the banner box is the 480 px center column that keeps
+	# the W17b disjointness budget (right edge 880, clear of the defense
+	# panel at 904 — VERIFIED); the coach copy is longer than that box, so
+	# it WRAPS instead of growing over the panel (grow_horizontal=BOTH grew
+	# a 552 px line to x=916 -> the clicks gate went RED; VICTORY/DEFEAT
+	# are single words — wrap never touches their shipped rendering).
+	banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	for i: int in m.deck.size():
 		var slot := _build_slot(i)
 		hero_bar.add_child(slot)
@@ -124,6 +149,13 @@ func setup(mission) -> void:
 	# row means no HUD button exists by contract; a future interactive
 	# control must opt back IN by setting its own filter after setup().
 	_ignore_mouse(self)
+	# G8 first-session coach (MC 11692, Rev 2/DA A2 boot-order fix): the
+	# wave-0 build edge was emitted in $PhaseController.setup BEFORE this
+	# node existed, so the display var is BOOTSTRAPPED here from the
+	# public reads (read + local assign — I4/WRITE_RE untouched), and the
+	# EXISTING signal is connected for the LATER edges only.
+	_coach = _coach_for(String(m.phase_kind), int(m.wave))
+	$"../PhaseController".phase_changed.connect(_on_phase_changed)
 	refresh()
 
 
@@ -160,8 +192,8 @@ func refresh() -> void:
 		boss_bar.max_value = float(m.boss["hp_max"])
 		boss_bar.value = float(m.boss_hp)
 		boss_label.text = boss_text()
-	banner.visible = m.outcome != null
-	banner.text = banner_text()
+	banner.visible = m.outcome != null or _coach != ""   # G8: coach rides
+	banner.text = banner_text()                          # the SAME banner
 	toast_label.text = toast_text()
 	_place_icon(icon_wave, wave_label)     # V4: ride beside the CURRENT
 	_place_icon(icon_green, green_label)   # text width as counts grow —
@@ -239,9 +271,14 @@ func boss_text() -> String:
 
 
 func banner_text() -> String:
-	if m == null or m.outcome == null:
+	# G8 priority: outcome > coach > "" — an outcome NEVER loses to the
+	# coach line (the plan row's binding order; the shipped copy map and
+	# banner_shown() read-back are unchanged).
+	if m == null:
 		return ""
-	return "VICTORY" if String(m.outcome) == "win" else "DEFEAT"
+	if m.outcome != null:
+		return "VICTORY" if String(m.outcome) == "win" else "DEFEAT"
+	return _coach
 
 
 func active_index() -> int:
@@ -279,6 +316,26 @@ func hero_of_slot(i: int) -> String:
 
 
 # ---- internals ----
+
+# G8 (MC 11692): the ONE coach table — the bootstrap in setup() and the
+# later-edge handler share it, so the copy can never differ between the
+# two routes. Waves >= 2 answer "": the coach is a first-mission script.
+func _coach_for(kind: String, wave: int) -> String:
+	if kind == "build" and wave == 0:
+		return COACH_BUILD_W0
+	if kind == "combat" and wave == 0:
+		return COACH_FIGHT_W0
+	if kind == "build" and wave == 1:
+		return COACH_TELEGRAPH_W1
+	return ""
+
+
+# The EXISTING PhaseController.phase_changed is the only new wiring; the
+# wave row is read at emit time (_enter_build writes mission.wave before
+# emitting; _enter_combat leaves it at the wave being fought).
+func _on_phase_changed(kind) -> void:
+	_coach = _coach_for(String(kind), int(m.wave))
+
 
 func _build_slot(i: int) -> VBoxContainer:
 	var slot := VBoxContainer.new()

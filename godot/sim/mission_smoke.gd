@@ -91,8 +91,14 @@ func _init() -> void:
 	hud.refresh()
 	var build_secs := int(ceilf(float(m.waves_file["waves"][0].get(
 			"build_seconds", 0.0))))
+	# G8 (MC 11692): this boot IS the production mount order (PhaseController
+	# .setup ran at mission.gd:153, the HUD mounts at :168-171), so the
+	# banner here proves the BOOTSTRAP path — the coach's build wave-0 copy
+	# (the old assertion banner_text()=="" predates the coach row).
 	if String(hud.wave_text()) != "Build: wave %d in %d s" % [
-			int(m.wave) + 1, build_secs] or String(hud.banner_text()) != "":
+			int(m.wave) + 1, build_secs] \
+			or String(hud.banner_text()) != String(hud.COACH_BUILD_W0) \
+			or not bool(hud.banner_shown()):
 		_fail("HUD build label: %s (banner %s)" % [
 				hud.wave_text(), hud.banner_text()])
 		return

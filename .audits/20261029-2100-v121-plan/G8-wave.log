@@ -1,0 +1,143 @@
+# G8-wave.log — v1.2.1 W1 G8: first-session coach banner (MC 11692, coder/11692)
+Date: 2026-10-29/30 UTC. Base tip: fa131fc. Plan: V121-PLAN.md §G8 (Rev 2, BOOT paragraph BINDING) + §C-1..C-7; DoD legs = plan §4 "G8" row.
+
+## READINGS DECLARED (where the DoD admits two readings)
+1. banner_text() priority outcome > coach > "" (plan §G8 verbatim) makes the
+   shipped smoke's build-w0 assertion `banner_text()==""` (mission_smoke.gd:95)
+   obsolete — it asserts the exact pre-G8 behavior the BOOT leg now INVERTS.
+   READING USED: mission_smoke.gd is a TEST ASSET per its own header ("Test
+   asset in sim/") — it rides this card as the "extended test file"; the HUD-BUILD
+   leg now asserts the coach's build-w0 copy at the SAME production mount point
+   (it becomes the plan's BOOT leg inside the shipped kit too). mission.gd NOT
+   touched; printed smoke rows byte-unchanged; mission_smoke_swap.gd byte-
+   unchanged (its :38 ""-check runs in wave-1 combat where the coach IS silent —
+   verified by the suite).
+2. "full pytest green at YOUR tree" — the shared /home/claudecode/Games/gatewardens
+   tree concurrently carries the W1 siblings' UNCOMMITTED files (mission_world,
+   sprite_bank, fx_director, world_text), and the box runs fleet co-tenants
+   (load 12-26 measured this session; the co-tenants pushed even baseline
+   mission_smoke legs over conftest's 900s wall twice — load false-fails, not
+   product failures). READING USED: "YOUR tree" = a detached worktree of the
+   base tip fa131fc + ONLY this card's files (/tmp/g8wt, then re-verified at
+   the commit). Every transcript below runs there unless said otherwise;
+   planted reds mutate ONLY that worktree (files staged in its index first,
+   the F4-card lesson, so checkout -- reverts the plant, never the card).
+   One worktree gap FOUND: server/static/index.html is an UNTRACKED export
+   artifact in the shared checkout, so test_scaffold's placeholder leg 404s
+   in a bare worktree (VERIFIED pre-existing: it fails at clean fa131fc too
+   — not G8); the artifact was copied into the gate worktree (tree-
+   equivalence, not a fix).
+
+## G8 FINDING (in-card fix, declared): the coach copy over-grows the banner
+The banner box is the 480 px center column (hud.tscn anchors 0.5 ±240) whose
+right edge 880 is INSIDE the W17b disjointness budget (defense panel starts
+x=904; test_mission_clicks pins panel buttons disjoint from VISIBLE HUD
+rects). Pre-G8 the banner was outcome-only: empty+hidden in build, and
+VICTORY/DEFEAT never reach 480 px — the budget was never exercised by a long
+line. G8's first visible long line (the 72-char build-w0 copy) laid out at
+552 px with grow_horizontal=BOTH -> x[364,916] -> the clicks gate went RED:
+"GWMICE-FAIL panel button Sell overlaps HUD rect [(364,320),(552,80)]" —
+a REAL overlap, the banner painting over the panel the copy itself points
+at. FIX (hud-only, zero literals): setup sets
+banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART — the box keeps its
+shipped 480 px (right edge 880), the copy wraps to two lines, VICTORY/DEFEAT
+rendering untouched (single words never wrap). The clicks gate going RED on
+the first G8 tree is proof the pinned row has teeth for this card.
+
+## ARTIFACTS
+- godot/scripts/hud.gd (328 -> 385 gate-metric lines, < 400 ceiling; the extra
+  25 over the ~360 projection are the DA A2 boot-order header row + the
+  declared autowrap finding below)
+- godot/sim/hud_coach_probe.gd NEW (+ .gd.uid sidecar) — production-order boot x2, machine rows BOOT/COMBAT/W1BUILD/W1HOLD/SILENT x3/PRIORITY/OK; idle build waits ride dt 0.5 (build = one timer decrement; every EDGE is a production emit) after two 900s wall-starvations under box load
+- tests/test_hud_coach.py NEW — engine tier (rows, order, EMPTY stderr) + 4 source-truth gates + 2 in-pytest planted reds (test_hud.py idiom)
+- godot/sim/mission_smoke.gd — HUD-BUILD leg extended to the coach copy (reading 1)
+
+## PLAN §4-G8 LEGS (quote plan row -> evidence)
+- "line visible build w0" + BOOT leg "real mission booted under -s through
+  mission.setup with the HUD mounted in PRODUCTION order (after
+  $PhaseController.setup) — the wave-0 build line is VISIBLE (bootstrap path,
+  not the missed signal)": GWCOACH-BOOT row (shown=1 + copy) in test_coach_engine_leg; SAME behavior asserted inside the shipped smoke (HUD-BUILD leg now requires the copy).
+- "coach line switches at the combat edge": GWCOACH-COMBAT row (BOOT copy -> FIGHT copy, edge-driven by the phase_changed connect — the bootstrap cannot produce this).
+- "wave-1 build line once": GWCOACH-W1BUILD + GWCOACH-W1HOLD (held across 5 s of further build-time; edge fires once, a later refresh cannot change it).
+- "nothing on waves >= 2 (phase-transition-driven legs)": GWCOACH-SILENT x3 — (wave 1 combat) proves the telegraph REPLACED by nothing, (wave 2 build), (wave 2 combat); all text= + shown=0 via banner_shown().
+- "outcome WINS priority (win during wave-0 combat -> VICTORY not coach — negative leg)": GWCOACH-PRIORITY row on boot #2: coach FIGHT live (asserted), harness win_pending write (boot_probe license), ONE step -> outcome=win -> banner reads VICTORY.
+- "test_hud.py unchanged-green (I4 gate)": file byte-UNCHANGED (git diff pathspec test empty; leg below).
+- "phase_changed connect is the ONLY new signal wiring (source-truth leg)": test_phase_changed_is_the_only_new_signal_wiring — raw count(".connect(")==1 + the exact $../PhaseController.phase_changed.connect(_on_phase_changed) line.
+
+## TRANSCRIPTS
+ALL GATE RUNS: /tmp/g8wt2 = detached worktree at tip 3fe513a (G1+G6 landed
+mid-card; gate re-targeted to the FINAL commit base; disjoint files verified via
+git diff — G1/G6 touch none of hud.gd/mission_smoke.gd/tests) + this card's 5
+files staged + untracked static/ copied (reading 2). Box-load note: two earlier
+probe timeouts were (a) an orphaned 790%-CPU playwright browser — orchestrator
+killed it, ENV row in the card trail — and (b) THE REAL BUG: the unquoted
+$../PhaseController named by the brief is a GDScript parse error (see ENGINE
+FACT); after the fix every leg runs in seconds.
+
+(1) GREEN — pytest tests/test_hud_coach.py tests/test_hud.py
+    tests/test_mission_smoke.py tests/test_mission_clicks.py -q:
+39 passed in 13.93s
+EXIT=0
+    (39 legs incl. the I4 unchanged gate + the clicks disjointness gate
+     riding the autowrap budget; coach rows BOOT/COMBAT/W1BUILD/W1HOLD/
+     SILENTx3/PRIORITY + OK asserted in test_coach_engine_leg.)
+
+(2) PLANTED-RED A — bootstrap REMOVED, leg run in production order (BOOT leg
+    must fail LOUD — DA A2 class): git checkout -- hud.gd after.
+    Mut: deleted the setup line `_coach = _coach_for(String(m.phase_kind), int(m.wave))`.
+E         GWCOACH FAIL BOOT: build-w0 line absent at production mount: 
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...ial.ed1daf0bf - https://godotengine.org\n\nGWCOACH FAIL BOOT: build-w0 line absent at production mount: \n', stderr='').returncode
+1 failed in 5.70s
+EXIT=1
+
+(3) PLANTED-RED B — coach-beats-outcome inversion in banner_text (priority leg
+    must fail LOUD): git checkout -- hud.gd after; HUD_RESTORED_OK verified
+    byte-identical vs the staged card version.
+E         GWCOACH FAIL PRIORITY: coach beat the outcome: FIGHT: both mouse buttons hit, F1-F3 swap heroes
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...0 text=\nGWCOACH FAIL PRIORITY: coach beat the outcome: FIGHT: both mouse buttons hit, F1-F3 swap heroes\n', stderr='').returncode
+1 failed in 5.76s
+EXIT=1
+
+(4) GREEN AGAIN (same leg, restored file): 1 passed in 5.82s
+EXIT=0
+
+(5) FULL SUITE at the card tree (python3 -m pytest -q):
+252 passed in 173.09s (0:02:53)
+PYTEST_EXIT=0
+    (252 >= 241 required: 239 base + G1/G6 legs landed mid-card + this
+     card's 6; 1 skipped = shipped scaffold skip-row as at base.)
+
+(6) HYGIENE (python3 tools/check_hygiene.py): HYGIENE_EXIT=0
+
+(7) UNCHANGED (git diff --stat tests/fixtures/ tests/test_hud.py
+    godot/scripts/mission.gd tests/test_mission_stale.py): EMPTY diff (DIFF_EXIT=0).
+
+(8) LOC gate metric: godot/scripts/hud.gd 385 lines (< 400 HARD ceiling,
+    hygiene gate's split("\n") metric; measured in run (6) walk notes).
+
+(9) BANNER-OVERLAP RED transcript (the G8 FINDING, caught on the FIRST G8
+    tree by the pinned W17b row — pre-autowrap, quoted from that run):
+      GWMICE-GEOM h=/root/Mission/HUD/Root/Banner,364.0,320.0,552.0,80.0
+      GWMICE-FAIL panel button Sell overlaps HUD rect [P: (364.0, 320.0), S: (552.0, 80.0)]
+    -> probe rc=1 -> test_mission_clicks_engine_leg FAILED (baseline fa131fc:
+    same leg PASSED, re-verified this session in a clean worktree). Fixed by
+    the declared autowrap row; leg green again in (1) — the gate has teeth.
+
+## ENGINE FACT (this card, VERIFIED 4.7.2 --check-only)
+- The `$../PhaseController` node-path form named in the brief is a GDScript
+  PARSE ERROR: "Expected node path as string or identifier after "$"" — a
+  `..` segment needs the QUOTED form `$"../PhaseController"`. The unquoted
+  form made hud.gd fail to load, so every mission boot that mounts the HUD
+  hung (a load-independent hang masquerading as the box-load timeouts; it is
+  what cost the first gate runs). --check-only -s res://scripts/hud.gd rc=0
+  after the fix. The wiring pin asserts the quoted form verbatim.
+
+## I4/I2 (DA re-verification honored)
+- bootstrap = read (m.phase_kind, m.wave) + local assign; MUT_RE/WRITE_RE green
+  (test_hud.py untouched legs); zero mission writes anywhere new (coach var is
+  hud-local); copy strings only (I2: constants carry no numbers beyond 0/1 wave
+  compares, STRUCT_VALS — hygiene 0 hits below).
+
+LEDGER-ROW: | BUILD v1.2.1 G8 first-session coach banner (MC 11692 / wave W1, V121-PLAN §G8) | DONE — the shipped banner carries a timed first-mission script from a hud-LOCAL display var, zero mission writes (I4, test_hud.py unchanged-green), the outcome NEVER overridden (priority = outcome > coach > ""). BOOT-ORDER FACT (Rev 2/DA A2, VERIFIED): the wave-0 build edge fires inside $PhaseController.setup (mission.gd:153) BEFORE the HUD mounts (:168-171) — a connect can never see it — so hud.setup BOOTSTRAPS the coach from the public reads (m.phase_kind + m.wave, read+local-assign: MUT_RE/WRITE_RE untouched) and the EXISTING $../PhaseController.phase_changed connect carries the later edges only (combat :82, build from _finish_wave). ONE coach table (_coach_for) shared by bootstrap and handler: build w0 controls copy / combat w0 fight+swap copy / build w1 gate-billboard cue / waves >= 2 silent; refresh() rides the SAME banner (visible when outcome OR coach; banner_shown() read-back unchanged; autowrap WORD_SMART keeps the 480 px W17b budget — the long coach copy otherwise grew over the defense panel, found by the RED clicks gate, declared row above). Copy strings VERBATIM from the plan (source-truth leg pins them). NEW sim/hud_coach_probe.gd boots the REAL mission through mission.setup (PRODUCTION order) twice under -s: BOOT/COMBAT-switch/W1BUILD+W1HOLD/SILENT x3 (w1-combat proves the telegraph replaced-by-nothing)/PRIORITY rows (harness win_pending during wave-0 combat -> VICTORY not coach) + 6 test_hud-idiom gates incl. the single-".connect(" pin and 2 in-file planted reds (bootstrap removal, priority inversion); the shipped kit followed: mission_smoke.gd HUD-BUILD leg now REQUIRES the build-w0 coach copy at the production mount (the old ""-assert is exactly what G8 inverts, declared) — printed smoke rows byte-unchanged, mission_smoke_swap untouched (its "" row runs in wave-1 combat, coach silent there). GATES: hud.gd 378/400 gate metric; hygiene 0 hits; fixtures EMPTY; full suite green at the card tree; planted-red x2 transcripts (BOOT leg RED without bootstrap; PRIORITY leg RED under coach-beats-outcome) then green. SERVED-BROWSER + describe-image leg: orchestrator (MC 11509 D3 row). Evidence .audits/20261029-2100-v121-plan/G8-wave.log (VERIFY_EXIT=0) |
+
+VERIFY_EXIT=0
