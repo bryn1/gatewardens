@@ -74,13 +74,15 @@ STRUCT_VALS = {0.0, 1.0, 2.0, 3.0, 4.0, 0.5}
 LITERAL_RE = re.compile(r"\b\d+(?:\.\d+)?\b")
 
 # The governed scripts: ARCHITECTURE I2's five, joined by the twelve the
-# tests scanned by hand until W16 (hub layer 8 + hud + the defense three).
+# tests scanned by hand until W16 (hub layer 8 + hud + the defense three)
+# — and the defense_rows_ui.gd sibling the S split moved the panel's
+# rows UI into (MC 11699; pin #10: split -> set update same commit).
 GOVERNED_LITERALS = {os.path.join("godot", "scripts", n) for n in (
     "hero_combat.gd", "enemy_runner.gd", "defense_obj.gd",
     "phase_controller.gd", "hero_controller.gd", "hud.gd", "hub.gd",
     "gear_panel_ui.gd", "item_row.gd", "war_table.gd", "blacksmith_ui.gd",
     "tinkerer_ui.gd", "dummy_range.gd", "ascension_ui.gd",
-    "defense_placer.gd", "defense_panel.gd")}
+    "defense_placer.gd", "defense_panel.gd", "defense_rows_ui.gd")}
 
 
 def literal_violations(text):

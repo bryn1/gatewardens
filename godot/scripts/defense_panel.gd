@@ -40,27 +40,20 @@ extends Control
 #   clear+rebuild stays behind a dirty check on the defense list
 #   (count/uids). E9 unchanged: the rebuild that remains keeps detach +
 #   queue_free (never free a control mid-emit).
+# - S split (v1.2.1, MC 11699 / V121-PLAN §3 C-1 FULL MOVE): the ROW-LIST
+#   UI — class/family button build, the DEFENSES + RELICS sections, the
+#   W17c rebuild, the W17e marks and dirty check — moved WHOLE to
+#   scripts/defense_rows_ui.gd (the rows_ui below builds and refreshes;
+#   no second copy lives here). Selection state, bridge input and the
+#   action buttons stay: this file is the panel, rows_ui is its rows.
 
 const PLACER := preload("res://scripts/defense_placer.gd")
 const BANK_LIST := preload("res://scripts/bank_list.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 const UITWEEN := preload("res://scripts/ui_tween.gd")
-const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
+const ROWS_UI := preload("res://scripts/defense_rows_ui.gd")
 
 const PRESS := {"KeyM": "place", "KeyE": "upgrade", "KeyN": "sell"}
-
-# V4 (MC 11549 / VISUAL-TARGET row V4): class-id -> icon id, explicit
-# (the sprite_bank sheet-map idiom — never a stem rule). All five tower
-# ids carry an icon so the declared family picker (defense_placer
-# header) rides rows that already resolve; the shipped classes() list
-# shows the class winners (tower/blockade/trap). Decoration only: the
-# Button.icon scales WITH the button under ui_tween.attach (V6) and
-# sync() never touches icons — texts, handlers, signals unchanged.
-const ICON_FOR := {
-	"ballista": "icon_ballista", "bombard": "icon_bombard",
-	"hailspire_tower": "icon_hailspire", "gate_blockade": "icon_blockade",
-	"barbed_snare": "icon_snare",
-}
 
 var m = null
 var placer = null
@@ -75,10 +68,8 @@ var repair_btn = null
 var sell_btn = null
 var assign_btn = null
 var unassign_btn = null
-var relic_rows = null                # shared item_row list over the pool
-var defense_rows = null              # W17c: selectable rows (defense list)
-var _rows_uids: Array = []           # W17e: uids the rows were last built
-                                     # for — the rebuild dirty check
+var rows_ui = null                   # S split: the row-list UI, moved
+                                     # out whole (defense_rows_ui.gd)
 var info_label = null
 
 
@@ -91,72 +82,19 @@ func setup(mission, placer_in = null) -> void:
 		placer = PLACER.new()
 		placer.setup(m)
 	class_rows = placer.classes()
-	picker_rows = class_rows.duplicate()   # F4 (MC 11616): the family
-	# picker rows (the NON-winner towers.json rows — bombard, hailspire)
-	# ride the SAME button loop and the SAME W17e poll sync; a press
-	# places THAT family's T1 via placer.place_id, the one gate sequence.
-	var winner_ids: Array = []
-	for crow: Dictionary in class_rows:
-		winner_ids.append(String(crow["id"]))
-	for row: Dictionary in m.tables.rows("towers"):
-		if not winner_ids.has(String(row["id"])):
-			picker_rows.append({"id": String(row["id"]),
-					"name": String(row["name"]),
-					"cost": int(row["base_cost"]), "fam": true})
+	rows_ui = ROWS_UI.new()          # S split (MC 11699): rows_ui builds
+	rows_ui.setup(self, m)           # every row list, into this box
 	var box := VBoxContainer.new()
 	box.name = "Rows"
 	add_child(box)
 	info_label = Label.new()
 	info_label.name = "Green"
 	box.add_child(info_label)
-	for row: Dictionary in picker_rows:
-		var fam: bool = bool(row.get("fam", false))
-		var cid := String(row.get("class", ""))
-		var b := Button.new()
-		b.name = ("Family_" + String(row["id"])) if fam else ("Class_" + cid)
-		var target: Callable = _on_family_pressed if fam else _on_place_pressed
-		b.pressed.connect(target.bind(String(row["id"]) if fam else cid))
-		var icon_id := String(ICON_FOR.get(String(row["id"]), ""))
-		if icon_id != "":            # V4: icon-bearing rows (brief row 2)
-			b.icon = SPRITE_BANK.texture_for(icon_id)
-			b.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
-			b.add_theme_constant_override("icon_max_width",
-					SPRITE_BANK.ICON_PX)   # 4.x Control override API
-		box.add_child(b)
-		UITWEEN.attach(b)             # V6 (MC 11530): hover/press motion
-		if not fam:
-			class_buttons[cid] = b
-		row["btn"] = b
+	rows_ui.build_class_buttons(box)
 	upgrade_btn = _action(box, "Upgrade", _on_upgrade)
 	repair_btn = _action(box, "Repair", _on_repair)
 	sell_btn = _action(box, "Sell", _on_sell)
-	# W17c (MC 11274.1.30 / card 11387): placed defenses get SELECTABLE
-	# rows — until now select_defense() was only ever called by the smoke
-	# harness, so in a real game selected_uid stayed 0 and Upgrade/Repair/
-	# Sell were player-unreachable (the W17b false-green class, one layer
-	# deeper). Data = the EXISTING defense-list API (m.defense_list, the
-	# same list _selected_obj and the placer read). Plain greybox Buttons,
-	# NOT item_row: that widget is the pinned ITEM-pool renderer (F2-12 —
-	# a placed defense is not an inventory item); the clear+rebuild loop
-	# keeps the shipped bank_list.fill shape (W16 dedupe idiom).
-	var def_head := Label.new()
-	def_head.name = "Head_defenses"
-	def_head.text = "DEFENSES"
-	box.add_child(def_head)
-	defense_rows = VBoxContainer.new()
-	defense_rows.name = "Rows_defenses"
-	box.add_child(defense_rows)
-	# W14 leg 2 (pinned defense_panel row): relic slot -> relic picker =
-	# item_row instances over mission.relic_pool (F2-12 shared widget).
-	# Pick a pool row, then Assign/Unassign routes through the pinned
-	# mission crossing — this file is pure UI (C11 rules live there).
-	var relic_head := Label.new()
-	relic_head.name = "Head_relic"
-	relic_head.text = "RELICS"
-	box.add_child(relic_head)
-	relic_rows = VBoxContainer.new()
-	relic_rows.name = "Rows_relic"
-	box.add_child(relic_rows)
+	rows_ui.build_sections(box)      # Head/Rows_defenses + Head/Rows_relic
 	assign_btn = _action(box, "Assign relic", _on_assign)
 	unassign_btn = _action(box, "Unassign relic", _on_unassign)
 	select_class(0)
@@ -172,39 +110,6 @@ func select_defense(uid: int) -> void:
 	selected_uid = uid
 	refresh()                      # W17c: the row mark + URS re-gate the
 	                               # player path must be VISIBLE at once
-
-
-# W17c (MC 11274.1.30 / card 11387): the clear+rebuild over the EXISTING
-# m.defense_list API (no new mechanism); uid + class + tier + hp per row,
-# the selected row marked by its "»" text prefix (greybox-visible, no
-# theme). Text is data-only (I2: no formulas); clicks call the shipped
-# select_defense — the harness's old entry point becomes the player's too.
-func _rebuild_defense_rows() -> void:
-	# Detach NOW (no flicker) + queue_free: a row Button can be the very
-	# object emitting `pressed` when refresh() rebuilds (row click ->
-	# select_defense -> refresh), and free() on a locked (mid-emit)
-	# object is an engine ERROR (VERIFIED this card) — queue_free is the
-	# safe idiom, deferred to frame end after the emit unwinds.
-	for child: Node in defense_rows.get_children():
-		defense_rows.remove_child(child)
-		child.queue_free()
-	var built: Array = []
-	for rec: Dictionary in m.defense_list:
-		var obj = rec["obj"]
-		var b := Button.new()
-		b.name = "Row_%d" % int(rec["uid"])
-		b.text = "%suid %d %s T%d hp %d/%d" % [
-				"» " if int(rec["uid"]) == selected_uid else "",
-				int(rec["uid"]), String(obj.class_id), int(obj.tier) + 1,
-				int(obj.hp), int(obj.hp_max)]
-		b.pressed.connect(_on_defense_row.bind(int(rec["uid"])))
-		defense_rows.add_child(b)
-		built.append(int(rec["uid"]))
-	_rows_uids = built
-
-
-func _on_defense_row(uid: int) -> void:
-	select_defense(uid)
 
 
 func selected_tier() -> int:
@@ -235,8 +140,7 @@ func handle_press(code: String) -> void:
 # action refresh re-enters the rebuild through the same dirty check).
 func poll(presses: Array) -> void:
 	sync()
-	if _rows_dirty():
-		_rebuild_defense_rows()
+	rows_ui.refresh()              # W17e: dirty-guarded rows rebuild
 	for code: Variant in presses:
 		handle_press(String(code))
 
@@ -294,32 +198,7 @@ func sync() -> void:
 	assign_btn.disabled = obj == null or selected_relic <= 0 \
 			or int(obj.relic_uid) != 0
 	unassign_btn.disabled = obj == null or int(obj.relic_uid) == 0
-	# Defense-row selected-mark: the "» " prefix rides the existing text
-	# (hp/tier text is refresh data, never re-rendered on this path).
-	for child: Node in defense_rows.get_children():
-		var b := child as Button
-		if b == null:
-			continue
-		var marked := int(String(b.name).trim_prefix("Row_")) \
-				== selected_uid
-		var text := String(b.text)
-		if marked and not text.begins_with("»"):
-			b.text = "» " + text
-		elif not marked and text.begins_with("»"):
-			b.text = text.substr(2)
-
-
-# W17e dirty check: the rebuild runs only when the defense LIST changed
-# (count, or uids in order). A select/sell-refresh no longer churns the
-# rows into unsized new controls — the REPRO-A shape of losing the
-# player's next click to a mid-frame rebuild.
-func _rows_dirty() -> bool:
-	if _rows_uids.size() != m.defense_list.size():
-		return true
-	for i: int in m.defense_list.size():
-		if int(m.defense_list[i]["uid"]) != int(_rows_uids[i]):
-			return true
-	return false
+	rows_ui.sync_marks()           # W17e: the "»" selected-mark pass
 
 
 func refresh() -> void:
@@ -328,10 +207,10 @@ func refresh() -> void:
 	sync()                           # W17e: the ONE enabled/mark pass
 	# Relic picker repaint (shared item_row rows over the C11 pool; the
 	# assigned row is BADGED selected, assignment itself is mission-side).
-	BANK_LIST.fill(relic_rows, m.tables, m.relic_pool, selected_relic,
+	BANK_LIST.fill(rows_ui.relic_rows, m.tables, m.relic_pool,
+			selected_relic,
 			_on_relic_picked)   # the ONE fill loop (bank_list, W16)
-	if _rows_dirty():                # W17e: rows track LIST changes only
-		_rebuild_defense_rows()
+	rows_ui.refresh()                # W17e: rows track LIST changes only
 
 
 func _on_place_pressed(class_id: String) -> void:

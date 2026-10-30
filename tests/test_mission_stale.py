@@ -44,6 +44,10 @@ import check_hygiene as hyg  # noqa: E402  (blank_code for the source gate)
 
 GODOT = Path(conftest.repo_path("godot"))
 PANEL_GD = GODOT / "scripts" / "defense_panel.gd"
+# S split (MC 11699): the rows UI MOVED to its new home; the gate follows
+# the mechanism (V121-PLAN §3 C-1) — the rebuild/dirty-check legs below
+# read defense_rows_ui.gd, the panel legs stay on defense_panel.gd.
+ROWS_GD = GODOT / "scripts" / "defense_rows_ui.gd"
 
 PROBE_SRC = '''
 extends SceneTree
@@ -146,7 +150,7 @@ class Monitor:
 			if planted == "rows_churn":
 				# PLANT rows_churn: rebuild right after the select (the
 				# rebuild-every-refresh shape the dirty check removes).
-				_p()._rebuild_defense_rows()
+				_p().rows_ui._rebuild_defense_rows()
 			_click(r2.get_center())
 			var sel := int(_p().selected_uid)
 			print("GWSYNC-SEL want=2 selected=%d" % sel)
@@ -283,11 +287,14 @@ def test_stale_planted_red_rows_churn_goes_red(tmp_path, class_cache):
 
 # ---------- source truth: poll() runs the sync (W17b gate idiom) --------
 
-def _sync_violations(code):
+def _sync_violations(code, rows_code):
     """poll() must call sync() BEFORE draining presses (state re-gated
     from the CURRENT sim, then actions), and refresh() must rebuild the
     rows only behind the dirty check. Dropped call = REPRO-B reintroduced;
-    unguarded rebuild = REPRO-A churn reintroduced."""
+    unguarded rebuild = REPRO-A churn reintroduced. S split (MC 11699):
+    the rows-UI bodies moved WHOLE to defense_rows_ui.gd (rows_code) —
+    the dirty-guarded rebuild leg is read at the new home; the poll/sync
+    legs stay panel legs."""
     bad = []
     if "func sync" not in code:
         bad.append("no sync() — the poll-path state sync is gone")
@@ -295,7 +302,7 @@ def _sync_violations(code):
     body = poll_body[1].split("func ")[0] if len(poll_body) > 1 else ""
     if "sync()" not in body:
         bad.append("poll() never calls sync() (W17e stale buttons)")
-    refresh_body = code.split("func refresh() -> void:")
+    refresh_body = rows_code.split("func refresh() -> void:")
     rb = refresh_body[1].split("func ")[0] if len(refresh_body) > 1 else ""
     if "_rows_dirty()" not in rb or "_rebuild_defense_rows()" not in rb:
         bad.append("refresh() rebuild is not dirty-guarded (W17e churn)")
@@ -304,7 +311,8 @@ def _sync_violations(code):
 
 def test_panel_poll_declares_the_sync():
     bad = _sync_violations(hyg.blank_code(
-        PANEL_GD.read_text(encoding="utf-8"), "gd"))
+        PANEL_GD.read_text(encoding="utf-8"), "gd"), hyg.blank_code(
+        ROWS_GD.read_text(encoding="utf-8"), "gd"))
     assert not bad, "defense_panel.gd lost the W17e poll sync: %r" % bad
 
 
@@ -313,5 +321,6 @@ def test_panel_poll_planted_red_dropped_sync_goes_red():
     head, tail = code.split("func poll(presses: Array) -> void:", 1)
     planted = head + "func poll(presses: Array) -> void:" \
         + tail.replace("sync()", "pass", 1)
-    bad = _sync_violations(planted)
+    bad = _sync_violations(planted, hyg.blank_code(
+        ROWS_GD.read_text(encoding="utf-8"), "gd"))
     assert bad, "planted-red: dropped poll sync slipped the source gate"

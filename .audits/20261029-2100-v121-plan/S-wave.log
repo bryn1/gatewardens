@@ -1,0 +1,130 @@
+# S-wave.log — MC 11699 (v1.2.1 W3 S): defense_panel FULL MOVE split
+Seat: coder (11699) · base tip 72ba60a · date 2026-10-30
+SPEC: .audits/20261029-2100-v121-plan/V121-PLAN.md §3 C-1 + §4 W3 S row
+(DA A3 binding: FULL MOVE, coupled test named, retarget same commit).
+
+## The move — mechanism and exact declared bounds (per card: "READ the
+file and take the coherent rows-UI region, declaring exact bounds")
+
+NEW HOME: godot/scripts/defense_rows_ui.gd (+ .uid) — `extends
+RefCounted` (the bank_list.gd idiom): the rows UI is a helper the panel
+INSTANTIATES (`rows_ui`); it injects its controls into the panel's
+shared "Rows" box and is NOT a tree Node itself. The shipped node path
+DefensePanel/Rows/Rows_defenses is therefore BYTE-IDENTICAL before/after
+(the stale/clicks probes' get_node addresses keep working unchanged).
+No wrapper remains: the bodies live ONLY in the sibling (FULL MOVE — the
+plan refuses pinned dead wrappers). defense_panel.gd delegates.
+
+MOVED WHOLE out of defense_panel.gd (line refs at 72ba60a):
+  :48    SPRITE_BANK preload            → sibling (its only consumer: V4
+         icon loop; panel keeps UITWEEN — _action still attaches it)
+  :52-63 ICON_FOR const + V4 comment    → sibling
+  :78-81 relic_rows/defense_rows/_rows_uids vars → sibling (panel keeps
+         ONE var: rows_ui)
+  :94-105 picker_rows (F4 family rows) data build → sibling
+         build_class_buttons()
+  :112-129 class/family button build loop (names, press wiring, V4
+         icons, V6 tween) → sibling build_class_buttons()
+  :133-159 Head_defenses/Rows_defenses + Head_relic/Rows_relic build
+         (W17c/W14 comments included) → sibling build_sections()
+  :177-208 _rebuild_defense_rows + _on_defense_row → sibling
+  :297-309 sync()'s defense-row selected-mark loop → sibling
+         sync_marks() (panel sync() calls it at the same position)
+  :312-322 _rows_dirty() → sibling
+Panel-side call sites (same statements, new address): poll() and
+refresh() run the dirty-guarded rebuild via rows_ui.refresh(); sync()
+runs rows_ui.sync_marks(); refresh() fills the relic rows through
+BANK_LIST into rows_ui.relic_rows.
+
+STAYS IN PANEL (pinned or panel-concern, verified before cutting):
+  - BANK_LIST preload + the ONE fill call — tests/test_hub.py:363-373
+    pins 'defense_panel.gd must render rows through the single
+    bank_list fill loop' (source grep of the panel file).
+  - sync()'s picker loop + action-button gates + SIM_ECONOMY.can_afford
+    — tests/test_family_picker.py:310-312 and tests/test_mission_smoke
+    .py:358-365 pin them in defense_panel.gd source.
+  - class_rows/picker_rows/class_buttons vars + selection state +
+    bridge input (handle_press/poll/PRESS) + action buttons + handlers
+    — runtime probes read them ON the panel node (e.g.
+    test_mission_clicks, test_mission_stale _p().class_buttons,
+    _p().selected_uid, _p().sell_btn).
+
+Reading used for "lands well under 300": the plan's cited region
+(~:133-208 + ~:297-322) alone leaves the panel ≈ 326 — NOT under 300.
+The card's own instruction (take the coherent ROWS-UI region, declare
+bounds) resolves this: the row-BUILD concern (setup's picker button
+build loop + the two section builds + ICON_FOR/SPRITE_BANK) is the same
+concern as the row refresh region and moves with it. Declared and
+measured: panel 277 lines (gate metric split("\n") = 278), sibling 185
+(= 186 gate metric) — sibling also ≤250 per plan C-1. ZERO behavior
+change: full suite 266 green unchanged (below); mission_smoke row bytes
+are pinned by test_mission_smoke's byte asserts and pass.
+
+## Coupled test retargeted IN THIS COMMIT (pin #10; same asserts, new
+address) — tests/test_mission_stale.py, retarget hunks ONLY:
+  - :149 (probe, rows_churn plant): `_p()._rebuild_defense_rows()` →
+    `_p().rows_ui._rebuild_defense_rows()` — same probe, same asserts.
+  - source-grep leg (~:300): `func refresh() -> void:` body must
+    contain `_rows_dirty()` + `_rebuild_defense_rows()` — now read on
+    defense_rows_ui.gd (the mechanism's new home); poll/sync legs stay
+    panel legs (they never moved). `git diff` of the test file (quoted
+    in this card's trail) shows ONLY these retarget hunks + the ROWS_GD
+    line + comments; zero weakening, zero leg-count shift.
+
+## GATES (transcripts)
+
+### python3 -m pytest -q (full suite) — >=266, no leg shift:
+$ python3 -m pytest -q
+266 passed in 176.79s (0:02:56)          [exit 0]
+
+### hygiene 0 hits WITH the sibling row present:
+$ python3 tools/check_hygiene.py
+check_hygiene: 0 hit(s)                   [exit 0]   (notes = soft-250
+informational only; panel note now "defense_panel.gd 278 lines > soft 250")
+
+### PLANTED-RED (GOVERNED_LITERALS sibling row) — declared reading: the
+card's literal direction ("remove the sibling -> RED") has no mechanism
+in check_hygiene.py — a file OUTSIDE the set is never scanned, so the
+RED-capable proof is the planted literal going RED ONLY while the row
+is present; step [3] runs the card's removal and shows the gate goes
+BLIND (rc=0), i.e. the row is load-bearing; [4]-[5] restore -> green:
+$ cp defense_rows_ui.gd /tmp/drui.bak; printf '\nvar _planted := 137\n' >> defense_rows_ui.gd
+=== [1] GREEN baseline (row present, sibling clean) ===
+rc=0 hits: check_hygiene: 0 hit(s)|
+=== [2] plant literal in sibling (row present) ===
+rc=1 hits: godot/scripts/defense_rows_ui.gd: [i2-literal] non-structural number literals [137.0] — costs/ratios ride the data (I2)|check_hygiene: 1 hit(s)|
+=== [3] drop sibling row from GOVERNED_LITERALS (literal still planted) ===
+rc=0 hits: check_hygiene: 0 hit(s)|          <- gate BLIND without the row
+=== [4] restore row (literal still planted) ===
+rc=1 hits: godot/scripts/defense_rows_ui.gd: [i2-literal] non-structural number literals [137.0] — costs/ratios ride the data (I2)|check_hygiene: 1 hit(s)|
+=== [5] remove planted literal -> restore to delivered tree ===
+rc=0 hits: check_hygiene: 0 hit(s)|
+grep -c _planted godot/scripts/defense_rows_ui.gd -> 0 (restore clean)
+
+### fixtures diff EMPTY:
+$ git diff --stat tests/fixtures/
+(empty)
+
+### LOC rows (wc -l; gate metric split("\n") in parens):
+defense_panel.gd   BEFORE 398 (399)  ->  AFTER 277 (278)   well under 300
+defense_rows_ui.gd (new)              -> 185 (186)         <300 and ≤250
+
+### git diff --stat — only the owned paths (6 files = 5 owned paths;
+the defense_rows_ui.gd sibling counts as one with its .uid):
+$ git add -N godot/scripts/defense_rows_ui.gd godot/scripts/defense_rows_ui.gd.uid; git diff --stat
+ godot/scripts/defense_panel.gd       | 157 ++++-------------------------
+ godot/scripts/defense_rows_ui.gd     | 185 +++++++++++++++++++++++++++++++++++
+ godot/scripts/defense_rows_ui.gd.uid |   1 +
+ tests/test_mission_stale.py          |  21 ++--
+ tools/check_hygiene.py               |   6 +-
+ 5 files changed, 223 insertions(+), 147 deletions(-)
+(+ this log file rides the commit as the 6th file / 5th owned path)
+
+### stale-reference sweep (no second copy, no orphan caller):
+$ grep -rn "_rebuild_defense_rows|_rows_dirty|defense_rows\b|_rows_uids|sync_marks" godot/ tests/ tools/ --include=*.gd --include=*.py --include=*.tscn | grep -v "defense_rows_ui.gd|test_mission_stale"
+godot/scripts/defense_panel.gd:201:	rows_ui.sync_marks()   # the delegation call — only hit
+
+Committed pathspec-only, author "coder (11699)"; not pushed (leaf card;
+orchestrator pushes). VERIFY_EXIT below: post-commit re-verification of
+this exact tree (hygiene + full suite) appended by the same session.
+VERIFY_EXIT=0
