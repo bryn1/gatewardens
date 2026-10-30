@@ -1,0 +1,57 @@
+# W1-docs-wave.log — v1.3 REFACTOR W1 (MC 11722, [type:code], coder profile)
+# Date: 2026-10-30 (UTC). Base: 0dd2b54 (v1.3 audit FINDINGS commit).
+# Scope: docs/ARCHITECTURE.md ONLY (this wave's DoD) + this log. LEDGER.md untouched
+# (single writer); LEDGER-ROW line below is the contribution.
+
+SPEC = FINDINGS.md §4 rows CR-1 (P2) + CR-2 (P3); fix-list rows W1/CR-1 + W1/CR-2 (§6).
+
+## MEASURED, not trusted (gate count)
+python3 -c "...len(check_hygiene.GOVERNED_LITERALS)" -> 17 (defense_rows_ui.gd present;
+audit's claimed 17 CONFIRMED by direct measurement this session).
+
+## BEFORE (measured at tip 0dd2b54, working tree before this wave's edits)
+- docs/ARCHITECTURE.md LOC = 327
+- grep "16-file" docs/            -> 2 hits (ARCHITECTURE.md :184, :243)
+- stale governed-count claim rows total = 3 (:184, :210 "the 16 governed gameplay
+  files" + its 16-name list, :243) — matches the audit's "3 contradicting rows";
+  the literal "16-file" grep sees 2 of them.
+- Modules-row greps (grep -c in docs/ARCHITECTURE.md): lane_bands 0, world_text 0,
+  wave_telegraph 0, range_ring 0, defense_rows_ui 1 (inline mention in the
+  defense_panel row only — NO row), fx_director 1 (inside I7 text only — NO row).
+
+## AFTER (this wave)
+- docs/ARCHITECTURE.md LOC = 338 (+11: six new/refreshed rows + paint-story extension)
+- grep "16-file" docs/            -> 0 hits  (grep exit 1 = zero matches)
+- "16 governed" / "the 16 " docs/ -> 0 hits; the count is 17 in all three rows and
+  the :210 name list is the gate set VERBATIM: doc-name-set == GOVERNED_LITERALS set
+  verified by script (doc-only = {}, gate-only = {}, 17 == 17).
+- Modules-row greps: lane_bands 2, world_text 5, wave_telegraph 2, range_ring 1,
+  defense_rows_ui 4, fx_director 4 — every audit measure 0 -> >=1, rows added.
+- Rows ADDED (6): fx_director.gd (V5 MC 11552, the class the table never learned —
+  the audit's pre-v1.2.1 gap), world_text.gd (G6 MC 11691), wave_telegraph.gd
+  (G3 MC 11696), lane_bands.gd (G2 MC 11694/11698), range_ring.gd (G4 MC 11707),
+  defense_rows_ui.gd (S split MC 11699, governed-set join noted, pin #10).
+- Rows REFRESHED (2) to their shipped headers (each file header read first):
+  mission_world.gd (now: C7 build + C5 mirror + the ONE visual-mount site — V1
+  paint_arena + core emblem, G1 paint_spawn_gates, G2 LANE_BANDS hook) and
+  hero_pawn.gd (now: G7 crest + WORLD_H_HERO row of MC 11695 added to the v1.1 text).
+- Scenes paint story extended: v1.1 -> v1.2.1 world layer (G1 eyes, G2 bands, G3
+  telegraphs, G4 ring, G6 numbers, G7 crests) rides the SAME sprite_bank +
+  world_text mechanism, visual-only, zero sim writes.
+
+## GATE LEGS (all run this session, at tip)
+- full pytest: `python3 -m pytest tests/ -q` -> 283 passed in 196.41s, PYTEST_EXIT=0
+  (>=283 REQUIRED — met; no source-truth leg pins the doc count: grep verified no
+  test reads docs/ARCHITECTURE.md content, refs are prose citations only — no BLOCKED
+  leg). NOTE (shared-tree reality): sibling W2 (MC 11723) WIP lived uncommitted in the
+  tree during the run (bridge/defense_panel/defense_placer/lane_bands/mission_world/
+  range_ring/wave_telegraph + lit_material) — green includes their WIP; docs-only edits
+  are causally inert for the suite (no test reads ARCHITECTURE.md), so the result
+  transfers. My rows quote HEAD-committed headers only, verified via git diff.
+- hygiene: `python3 tools/check_hygiene.py` -> "check_hygiene: 0 hit(s)", HYGIENE_EXIT=0.
+- fixtures diff after the full pytest run: `git status --porcelain -- tests/fixtures`
+  -> EMPTY (byte-untouched).
+
+LEDGER-ROW: v1.3 RW1 W1-docs (MC 11722, coder, 2026-10-30): ARCHITECTURE claim-rot CLOSED — governed-set rows 16->17 measured vs the LIVE gate (len(GOVERNED_LITERALS)=17; doc name-list == gate set, replace-not-delete: defense_rows_ui joined the named list, pin #10 honored) + v1.2.1 Modules rows: lane_bands/world_text/wave_telegraph/range_ring/defense_rows_ui ADDED, fx_director row ADDED (pre-v1.2.1 gap), mission_world/hero_pawn REFRESHED to shipped headers, Scenes paint story extended G1-G7 — grep "16-file" docs/ 2->0, docs/ARCHITECTURE.md 327->338 LOC, pytest 283 green, hygiene 0, fixtures diff EMPTY.
+
+VERIFY_EXIT=0
