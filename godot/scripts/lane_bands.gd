@@ -25,6 +25,8 @@
 # (the sprite_bank ICON_PX doctrine: ungoverned file).
 extends RefCounted
 
+const LIT_MATERIAL := preload("res://scripts/lit_material.gd")
+
 const BAND_PREFIX := "LaneBand_"   # node-name marker the probe counts by
 const BAND_WIDTH := 1.6            # u, across the polyline (mobs are 2u)
 const BAND_Y := 0.02               # slightly > 0: rides the ground, no z-fight
@@ -41,7 +43,7 @@ static func paint_lane_bands(m) -> void:
 			continue                       # air lanes: G1's winged eye
 		var band := Node3D.new()
 		band.name = BAND_PREFIX + lid
-		var mat := _band_material()        # ONE material shape per band
+		var mat := LIT_MATERIAL.make(BAND_COLOR)  # the ONE shared shape
 		var wps: Array[Vector3] = lane["wps"]
 		for i: int in wps.size() - 1:
 			var seg := _segment_node(wps[i], wps[i + 1], mat)
@@ -72,15 +74,3 @@ static func _segment_node(a: Vector3, b: Vector3, mat: StandardMaterial3D) \
 	seg.material_override = mat
 	return seg
 
-
-# The ONE band material shape, built per band node (runtime-duplicate
-# idiom — no .tres on disk to keep in sync): unshaded so it reads lit
-# on the dark arena, alpha-blended so the painted ground shows
-# through. Same pinned shape as G2 — the fix is the mesh mechanism,
-# not the material.
-static func _band_material() -> StandardMaterial3D:
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = BAND_COLOR
-	return mat

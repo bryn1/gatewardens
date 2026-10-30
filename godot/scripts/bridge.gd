@@ -20,7 +20,7 @@ const MOVE_KEYS := ["KeyW", "KeyA", "KeyS", "KeyD",
 # and KeyE/KeyN are the W4 additions over the VS set).
 const DISCRETE_KEYS := ["Escape", "KeyM", "Digit1", "Digit2", "Digit3",
 	"Digit4", "KeyE", "KeyN", "F1", "F2", "F3", "Enter", "NumpadEnter",
-	"MouseLeft", "MouseMiddle", "MouseRight"]
+	"MouseLeft", "MouseRight"]
 
 # Physical keys -> the DOM-style codes the queues are keyed on (desktop
 # only; mirrors the e.code values the web relay forwards). main.gd's
@@ -36,9 +36,10 @@ const NATIVE_CODES := {
 	KEY_ENTER: "Enter", KEY_KP_ENTER: "NumpadEnter",
 }
 
+# The MouseMiddle leg shipped with the W4 relay but never gained a
+# consumer; the DEAD-2 pass (v1.3 W3, MC 11724) removed it.
 const MOUSE_CODES := {
 	MOUSE_BUTTON_LEFT: "MouseLeft", MOUSE_BUTTON_RIGHT: "MouseRight",
-	MOUSE_BUTTON_MIDDLE: "MouseMiddle",
 }
 
 var held: Dictionary = {} # code -> true while the key/button is down

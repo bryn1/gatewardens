@@ -36,6 +36,8 @@
 # positive-range family minutes before, WITH the ghost armed.
 extends RefCounted
 
+const LIT_MATERIAL := preload("res://scripts/lit_material.gd")
+
 const RING_NAME := "RangeRing"        # the node name the probe reads by
 const RING_Y := 0.05                  # rides above the ground and the G2
                                       # bands (BAND_Y 0.02), no z-fight
@@ -81,18 +83,7 @@ static func _ensure(m) -> MeshInstance3D:
 		torus.inner_radius = RING_INNER   #   the towers.json range number
 		torus.rings = RINGS
 		node.mesh = torus
-		node.material_override = _ring_material()
+		node.material_override = LIT_MATERIAL.make(RING_COLOR)
 		node.visible = false
 		m.add_child(node)
 	return node
-
-
-# The ONE material shape, the pinned G2 lit-translucent contract (the
-# mechanism G2 proved rasterizes in the web export): unshaded so it reads
-# lit on the dark arena, alpha-blended so the painted ground shows through.
-static func _ring_material() -> StandardMaterial3D:
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = RING_COLOR
-	return mat
