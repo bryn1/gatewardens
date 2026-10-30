@@ -3,10 +3,12 @@
 # carriers are previewed per spawner: the enemy's OWN sheet icon (ids
 # already in sprite_bank.TEXTURES — the G3 row's "ids already in the
 # bank") + one world_text count, grouped by lane -> spawner through the
-# RAW m.map_def lane rows (build_lanes drops the per-lane "spawner"
-# key, §0; map_def is the public read the plan names). Cleared at wave
-# start, re-shown next build phase with UPDATED counts (the plan's
-# HUD split: panel = when, billboards = what/where).
+# ONE shared raw lane read, MISSION_WORLD.raw_lane_rows (build_lanes
+# drops the per-lane "spawner" key, §0; map_def is the public read the
+# plan names and the helper is its single home, D-2 fold MC 11723).
+# Cleared at wave start, re-shown next build phase with UPDATED
+# counts (the plan's HUD split: panel = when, billboards =
+# what/where).
 #
 # OBSERVER doctrine (the fx_director header extends here, plan §G3):
 # ZERO writes to sim state — reads only, no mutators. Detection rides
@@ -41,6 +43,10 @@ extends Node3D
 const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
 const WORLD_TEXT := preload("res://scripts/world_text.gd")
 const SIM_WAVE := preload("res://sim/sim_wave.gd")
+# D-2 fold (MC 11723): the raw lane->spawner read has ONE home,
+# mission_world.raw_lane_rows — the door this observer now calls
+# (mission_world preloads nothing back: no cycle).
+const MISSION_WORLD := preload("res://scripts/mission_world.gd")
 
 const ICON_H := 1.6       # small: the preview must not out-shout the gate
 const COUNT_H := 1.0      # world_text line height (make_text scales to it)
@@ -83,17 +89,16 @@ func telegraph_step() -> void:
 # Group the upcoming wave's spawn rows into per-gate entries. THE READ
 # SITES, all read-only: SIM_WAVE.wave_comp(waves_file, i) — the sim's
 # OWN wave-row read, the same one mission.start_wave drives; and the
-# RAW m.map_def lane/spawner rows (the §0 public read that still
-# carries per-lane "spawner"/"kind"/waypoint-y). Counts are summed
-# per (spawner, enemy_id, kind), so multi-lane groups add up.
+# raw lane rows through MISSION_WORLD.raw_lane_rows (the §0 public read
+# that still carries per-lane "spawner"/"kind"/waypoint-y — ONE home
+# shared with the gate-eye wing read, D-2 fold MC 11723). Counts are
+# summed per (spawner, enemy_id, kind), so multi-lane groups add up.
 func _paint(m, w: int) -> void:
 	_clear()
 	var waves: Array = m.waves_file.get("waves", [])
 	if w < 0 or w >= waves.size():
 		return                 # defensive: no such wave row to preview
-	var lane_rows := {}
-	for lane: Dictionary in m.map_def.get("lanes", []):
-		lane_rows[String(lane.get("id", ""))] = lane
+	var lane_rows: Dictionary = MISSION_WORLD.raw_lane_rows(m)
 	var counts := {}
 	var origin_y := {}
 	for row: Dictionary in SIM_WAVE.wave_comp(m.waves_file, w):

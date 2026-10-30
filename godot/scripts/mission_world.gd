@@ -97,16 +97,29 @@ static func build_cores(m) -> void:
 	LANE_BANDS.paint_lane_bands(m)
 
 
+# D-2 shared read (MC 11723, v1.3 clean-code W2): the RAW map_def lane
+# rows indexed by lane id — the ONE home of the raw lane->spawner/"air"
+# grouping (build_lanes drops those keys, so this reads map_def
+# directly, a public read; gatefall: spawn_a/spawn_b carry lane_a1/a2,
+# spawn_c plain). Callers: paint_spawn_gates here (the gate-eye wing
+# variant) and wave_telegraph._paint (per-gate counts) — one read,
+# two consumers.
+static func raw_lane_rows(m) -> Dictionary:
+	var rows: Dictionary = {}
+	for lane: Dictionary in m.map_def.get("lanes", []):
+		rows[String(lane.get("id", ""))] = lane
+	return rows
+
+
 # G1 spawn-gate eyes (MC 11690, V121-PLAN G1): one billboard per
 # m.map_def["spawners"] row. The WINGED variant marks the gates that
-# carry an air lane — read from the RAW map lane rows' "spawner" key
-# (build_lanes drops that key, so this reads map_def directly, a public
-# read; gatefall: spawn_a/spawn_b carry lane_a1/a2, spawn_c plain).
+# carry an air lane — read through raw_lane_rows above (the one shared
+# raw read, D-2 fold).
 # Null-safe like every sprite_bank consumer: an un-sprited id mounts
 # nothing and no crash (the icon_core guard idiom).
 static func paint_spawn_gates(m) -> void:
 	var air: Dictionary = {}
-	for lane: Dictionary in m.map_def.get("lanes", []):
+	for lane: Dictionary in raw_lane_rows(m).values():
 		if String(lane.get("kind", "")) == "air":
 			air[String(lane.get("spawner", ""))] = true
 	for sid: String in m.map_def.get("spawners", {}):

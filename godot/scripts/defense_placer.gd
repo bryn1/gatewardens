@@ -159,7 +159,7 @@ func cycle_ghost(dir: int) -> void:
 # G4 (MC 11707 / V121-PLAN row G4): the tier-row RANGE NUMBER — the ring's
 # radius source and the DATA leg's sampled function. tower_id is the
 # towers.json DATA id (the row_for_id door), tier is 1-BASED (T1..T5, the
-# display convention defense_panel.selected_tier returns) — the tier entry
+# display convention GHOST_TIER (the confirm tier) carries) — the tier entry
 # is tiers[tier - 1] (defense_obj.tier_row holds the 0-based twin). The
 # number is READ, never computed (I2). Unknown id, out-of-range tier or a
 # missing range = 0.0, which the ring reads as the declared NO-RING answer

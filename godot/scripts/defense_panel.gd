@@ -132,11 +132,6 @@ func select_defense(uid: int) -> void:
 	                               # player path must be VISIBLE at once
 
 
-func selected_tier() -> int:
-	var obj = _selected_obj()
-	return int(obj.tier) + 1 if obj != null else 0
-
-
 # One relayed bridge code -> the routed action (greybox bindings header;
 # G5 adds the confirm/cancel codes — see the PRESS map reading).
 func handle_press(code: String) -> void:
