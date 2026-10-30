@@ -10,12 +10,15 @@
 # build_cores calls once per mission build — NOT from mission.gd, whose
 # file sits at the 400-line hygiene ceiling; this is the map-build and
 # visual-mount file the brief names. G1 (MC 11690) adds the third such
-# mount: the spawn-gate eye billboards, same build_cores hook.
+# mount: the spawn-gate eye billboards, same build_cores hook. G2
+# (MC 11694) adds the fourth: the lit lane bands, same hook, builder
+# lives in lane_bands.gd.
 # Zero step order / zero sim data touched — the lane rows, waypoints
 # and core records are byte-identical; git show proves it.
 extends RefCounted
 
 const CORE_OBJ := preload("res://scripts/core_obj.gd")
+const LANE_BANDS := preload("res://scripts/lane_bands.gd")
 const MESH_CORE := preload("res://assets/mesh_core.tres")
 const MAT_CORE := preload("res://assets/mat_core.tres")
 const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
@@ -89,6 +92,9 @@ static func build_cores(m) -> void:
 	# G1 hook (DECLARED, MC 11690): gate-eye billboards at the spawner
 	# positions — same visual-mount home, zero sim data.
 	paint_spawn_gates(m)
+	# G2 hook (DECLARED, MC 11694): lit bands on the GROUND lane polylines
+	# of m.lanes — same visual-mount home, read-only, air lanes unbanded.
+	LANE_BANDS.paint_lane_bands(m)
 
 
 # G1 spawn-gate eyes (MC 11690, V121-PLAN G1): one billboard per

@@ -1,0 +1,135 @@
+# G2-wave.log — v1.2.1 W2 G2: lit lane bands (MC 11694)
+# coder profile · 2026-10-30 · base tip 4771c4a · repo /home/claudecode/Games/gatewardens
+# Siblings LIVE on disjoint files this wave (hero scripts; wave_telegraph+mission.tscn).
+# LEDGER CONCURRENCY OVERRIDE (orchestrator ruling, same as W1): LEDGER.md NOT
+# touched; the row rides as the LEDGER-ROW line at the bottom of this log.
+
+== SPEC RE-READS (V121-PLAN Rev 2, read in full this session) ==
+- §G2: lit translucent band painted along the EXISTING waypoint polylines: per
+  ground lane, ONE quad-strip per waypoint segment at y slightly > 0, ONE
+  material, m.lanes READ-ONLY. Air lanes get NO band (G1's winged eye is their
+  cue — declared). Mechanism: NEW static builder lane_bands.gd, called ONCE
+  from mission_world.build_cores (the paint_arena hook precedent :88);
+  material/height numbers live in lane_bands.gd (ungoverned presentation file,
+  sprite_bank doctrine). REPLACES: nothing (no lane mesh exists). D2/D3 own
+  shimmer + painted-texture (§4) — NOT touched.
+- §C-1: mission.gd 400 = at ceiling, cards ADD ZERO LINES (file untouched —
+  --stat proves); mission_world.gd 152 had room; every NEW file <=250.
+- §C-3: visual mounts only, zero sim writes; fixtures diff EMPTY; suite green.
+- §C-4: I2 governs hud/defense_panel/defense_placer — NONE of my touched files
+  are governed; the band numbers (width/height/color) live on the builder.
+- My own re-reads at 4771c4a: mission_world.build_lanes :64-76 stores
+  {id,kind,wps: Array[Vector3],target,open} in m.lanes (build-time record; the
+  ONLY lane read my builder takes — zero duplicated lane geometry, zero new
+  lane semantics); gatefall.json = ground lane_g1(5 wps)/lane_g2(5)/lane_g3(4)
+  + air lane_a1/lane_a2 (never banded); build_cores = the paint_arena/G1
+  visual-hook home; g1_gate_eye_probe.gd = the kit boot idiom I ride.
+- READING USED (declared, per brief "state the reading"): closed ground lanes
+  KEEP their band — the polyline exists even when the sim holds the lane, and
+  filtering bands on "open" would BE lane semantics the plan does not grant.
+  Band count == GROUND lane count (3 on gatefall), open-state-independent.
+
+== DESIGN (one mechanism, no second lane model) ==
+- godot/scripts/lane_bands.gd (NEW, 77 lines): paint_lane_bands(m) iterates
+  m.lanes, skips every non-"ground" kind, and mounts ONE MeshInstance3D per
+  ground lane named LaneBand_<id>: mesh = one quad per waypoint segment
+  (corners at wp ± halfwidth along the segment normal, y BAND_Y 0.02 > 0,
+  upward-facing tris; degenerate segment draws nothing instead of a NaN
+  normal); material = ONE shape built in code (unshaded + TRANSPARENCY_ALPHA
+  + pinned BAND_COLOR = the lit-translucent read). Zero writes on m beyond
+  add_child; m.map_def NEVER read (the band rides build_lanes' public records).
+- mission_world.gd (+7 lines, file stays <=250): const preload + ONE
+  LANE_BANDS.paint_lane_bands(m) call in build_cores beside the G1 hook +
+  header/one comment block. mission.gd ZERO lines (at the 400 ceiling).
+- Kit godot/sim/g2_lane_band_probe.gd (g1 boot idiom verbatim; rows
+  LB-BANDS n=3 ground=3 (count == ground-lane count) / LB-BAND per-lane node
+  at origin + one-quad-per-segment vertex count + pinned material literals /
+  LB-WPS every ground wp is the EPS(0.05)-midpoint of a vertex pair spread by
+  BAND_WIDTH — the band walks the SAME polyline the sim walks / LB-NEG air=2
+  banded=0 — negative leg, an inverted kind filter cannot survive it).
+  HARDENED beyond G1 this session: a GDScript runtime error aborts a function
+  SILENTLY — first real run proved it (rc stayed 0, LB-OK still printed over
+  a stderr script error) — so LB-OK now prints only on the pass's own
+  completion flag, and the test pins LB-OK as the LAST transcript row plus
+  EMPTY stderr.
+- tests/test_lane_bands.py (4 legs): engine probe (rows asserted, stderr
+  EMPTY, LB-OK last), mount source-truth (ONE call in build_cores, geometry
+  NOT in mission_world), builder source-truth (m.lanes-only — m.map_def grep
+  ZERO, write-regex over m.* ZERO matches, one MeshInstance3D site, literal
+  "ground" filter), gatefall data leg (ground == {lane_g1,g2,g3}, air ==
+  {lane_a1,a2}, every ground lane >= 2 wps so the BANDS row can never spin
+  vacuous).
+
+== TREE GATING NOTE (shared checkout, live siblings) ==
+- Siblings are LIVE on disjoint paths (hero scripts; wave_telegraph+
+  mission.tscn); per the brief and W1 precedent ALL tree-level gates were
+  measured at an ISOLATED worktree: git worktree add /tmp/g2-verify 4771c4a,
+  plus ONLY my files (copy list = the commit pathspec) + the gitignored
+  static/ export copied in for baseline parity (G1-wave.log finding row: the
+  239/243 baselines were measured with the uncommitted static/ present).
+  Commit lands on the shared branch pathspec-only; sibling state untouched.
+- .uid sidecars (lane_bands.gd.uid, g2_lane_band_probe.gd.uid) generated by
+  the pinned 4.7.2 --import; BYTE-IDENTICAL between main checkout and the
+  verify worktree (diff -q silent both files — determinism re-shown).
+
+== GATES (all at /tmp/g2-verify = 4771c4a + my files + static/ parity) ==
+-- (1) parse checks, pinned 4.7.2 binary, --check-only per file (after
+        --import cache, same as conftest does):
+    res://scripts/lane_bands.gd         RC=0 stderr_bytes=0
+    res://scripts/mission_world.gd      RC=0 stderr_bytes=0
+    res://sim/g2_lane_band_probe.gd     RC=0 stderr_bytes=0
+
+-- (2) ENGINE PROBE GREEN (conftest.run_probe_script idiom,
+        ensure_class_cache + run_probe_script("res://sim/g2_lane_band_probe.gd",
+        (), data_home)):
+    GREEN_RC=0 STDERR_BYTES=0
+    Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+    LB-BANDS n=3 ground=3
+    LB-BAND lane_g1 verts=16 mat=1
+    LB-WPS lane_g1 wp=5 matched=5 eps=0.05
+    LB-BAND lane_g2 verts=16 mat=1
+    LB-WPS lane_g2 wp=5 matched=5 eps=0.05
+    LB-BAND lane_g3 verts=12 mat=1
+    LB-WPS lane_g3 wp=4 matched=4 eps=0.05
+    LB-NEG air=2 banded=0
+    LB-OK
+    => band node count == ground-lane count (3); one quad per segment
+       (verts 16/16/12 = 4*(wps-1)); EVERY sampled waypoint follows its lane
+       wp within the declared EPS 0.05; NEGATIVE leg: both air lanes unbanded.
+
+-- (3) PLANTED-RED (IN THE PROBE TREE ONLY: the kind filter gained
+        `or lid == "lane_g1"` — one ground band suppressed):
+    RED_RC=1 STDERR_BYTES=0
+    Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+    LB-FAIL band nodes = 2 (want 3 ground-lane bands)
+    => the BANDS leg goes RED LOUD with an exact count complaint.
+    REVERTED (main-checkout copy re-installed, diff -q == main), green re-run
+    (row-for-row identical to (2)) and the full suite below ran on the
+    reverted tree.
+
+-- (4) FIXTURES: git diff --stat tests/fixtures/ EMPTY (before AND after the
+        full suite; name-only count 0 both times).
+
+-- (5) HYGIENE: python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)"
+        rc0 (21 soft notes = the pre-existing baseline note set, byte-stable).
+        LOC: lane_bands.gd 77 / mission_world.gd 159 / probe 177 /
+        test_lane_bands.py 139 — all <=250. mission.gd UNTOUCHED (ZERO added
+        lines — at the 400 ceiling; --stat of this commit proves absence).
+        mission.gd + enemy_runner.gd + every TRACKED godot/sim/ file:
+        git diff ZERO hunks — my only sim-dir change is the NEW kit files
+        (g2_lane_band_probe.gd + .uid), the G1 kit precedent; no existing
+        sim/enemy file edited.
+
+-- (6) FULL SUITE AT THE VERIFY TREE: python3 -m pytest -q ->
+        256 passed in 174.58s (0:02:54)   PYTEST_EXIT=0
+        (252 at tip 4771c4a incl. the W1 G1/G6/G8 legs + my 4 new
+         test_lane_bands.py legs >= the >=244 bar).
+
+== DEFERRED TO ORCHESTRATOR (per plan §C-6, this card's brief excludes them):
+served-browser + describe-image leg ("lit path from each gate to cores
+readable at a glance") is the orchestrator verification leg, like every W1
+sibling's browser row.
+
+LEDGER-ROW: | BUILD G2 lit lane bands (MC 11694 / wave W2, V121-PLAN G2) | DONE 2026-10-30 — lane_bands.gd (NEW, 77 lines, ungoverned presentation file: BAND_WIDTH 1.6u / BAND_Y 0.02 / lit cyan BAND_COLOR live on the builder) mounts EXACTLY ONE translucent unshaded quad-strip MeshInstance3D per GROUND lane of m.lanes (build_lanes' public records — m.map_def NEVER re-read, zero duplicated lane geometry, zero writes; closed lanes keep their band, declared), one quad per waypoint segment at y 0.02, called ONCE from mission_world.build_cores beside the G1/paint_arena hooks (mission.gd at the 400 ceiling adds ZERO lines, proven by --stat); AIR lanes unbanded — the winged eye of G1 stays their cue (plan-declared). Kit godot/sim/g2_lane_band_probe.gd (g1 boot idiom): LB-BANDS n=3 == ground-lane count + per-lane origin/quad-count/material pins + LB-WPS every wp followed within EPS 0.05 + LB-NEG air=2 banded=0 — LB-OK rc0 stderr EMPTY, and LB-OK now rides a completion flag (a runtime-aborted pass cannot print it — the class of false-green this session's first run exposed); planted-red one-suppressed-ground-band -> LB-FAIL "band nodes = 2 (want 3)" rc1, reverted, green. tests/test_lane_bands.py 4 legs (engine + mount/builder source-truth + gatefall data). Gates at an ISOLATED 4771c4a+card worktree (siblings' W2 edits share this checkout — disjoint paths untouched): full pytest 256 green (252+4), hygiene 0 hits, fixtures byte-identical before+after suite, mission.gd/enemy/sim tracked diff EMPTY. Evidence .audits/20261029-2100-v121-plan/G2-wave.log (VERIFY_EXIT=0) |
+
+VERIFY_EXIT=0
