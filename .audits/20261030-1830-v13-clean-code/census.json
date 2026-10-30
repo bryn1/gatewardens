@@ -1,0 +1,800 @@
+[
+{
+"file": "tests/test_data_schemas.py",
+"loc": 600,
+"depth": 12,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_mission_clicks.py",
+"loc": 600,
+"depth": 15,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_hub_scroll.py",
+"loc": 568,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_hub.py",
+"loc": 508,
+"depth": 14,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_damage_numbers.py",
+"loc": 462,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_pierce_splash.py",
+"loc": 459,
+"depth": 12,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_mission_smoke.py",
+"loc": 445,
+"depth": 8,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_bulk_sell.py",
+"loc": 429,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_hub_layout.py",
+"loc": 424,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/scripts/mission.gd",
+"loc": 400,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "tests/test_hero_crest.py",
+"loc": 398,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/scripts/game_state.gd",
+"loc": 396,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/hud.gd",
+"loc": 385,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/defense_panel.gd",
+"loc": 371,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/g4_range_ring_probe.gd",
+"loc": 358,
+"depth": 6,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "tests/test_relic_negatives.py",
+"loc": 354,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_return_hub.py",
+"loc": 354,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_mission_stale.py",
+"loc": 347,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/scripts/defense_placer.gd",
+"loc": 336,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "tests/test_family_picker.py",
+"loc": 334,
+"depth": 11,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_g5_build_confirm.py",
+"loc": 327,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_persistence.py",
+"loc": 326,
+"depth": 14,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_loot_structure.py",
+"loc": 325,
+"depth": 7,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/sim/sim_headless.gd",
+"loc": 317,
+"depth": 7,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/v6_tween_probe.gd",
+"loc": 313,
+"depth": 9,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/defense_obj.gd",
+"loc": 306,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "tests/test_defense_boundaries.py",
+"loc": 292,
+"depth": 11,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/scripts/hub.gd",
+"loc": 290,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "tests/test_hud.py",
+"loc": 281,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_g4_range_ring.py",
+"loc": 275,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tools/check_hygiene.py",
+"loc": 270,
+"depth": 9,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "tests/test_gear_persist.py",
+"loc": 262,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/scripts/fx_director.gd",
+"loc": 261,
+"depth": 7,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "tests/test_wave_telegraph.py",
+"loc": 257,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/sim/v11_sprite_probe.gd",
+"loc": 250,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/gear_panel_ui.gd",
+"loc": 249,
+"depth": 5,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/main.gd",
+"loc": 247,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/mission_smoke_flow.gd",
+"loc": 236,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/g5_real_relay_probe.gd",
+"loc": 235,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/g2_lane_band_probe.gd",
+"loc": 233,
+"depth": 5,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/v1_world_probe.gd",
+"loc": 223,
+"depth": 6,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/hub_probe.gd",
+"loc": 215,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/g3_wave_telegraph_probe.gd",
+"loc": 213,
+"depth": 5,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/v4_icon_probe.gd",
+"loc": 211,
+"depth": 6,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "tests/test_hud_coach.py",
+"loc": 211,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_lane_bands.py",
+"loc": 208,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/sim/v5_fx_probe.gd",
+"loc": 200,
+"depth": 5,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/g5_build_confirm_probe.gd",
+"loc": 199,
+"depth": 5,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/save_probe.gd",
+"loc": 195,
+"depth": 5,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/sim_inventory.gd",
+"loc": 191,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "tests/test_lane_order.py",
+"loc": 191,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/sim/hub_probe_services.gd",
+"loc": 190,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/hud_coach_probe.gd",
+"loc": 190,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/defense_rows_ui.gd",
+"loc": 186,
+"depth": 5,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/hub_probe_mission.gd",
+"loc": 185,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/mission_smoke_swap.gd",
+"loc": 185,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "tests/test_heroes.py",
+"loc": 172,
+"depth": 5,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/scripts/blacksmith_ui.gd",
+"loc": 169,
+"depth": 5,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/enemy_runner.gd",
+"loc": 163,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/mission_smoke.gd",
+"loc": 160,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "tests/test_enemy_walk.py",
+"loc": 160,
+"depth": 5,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_served.py",
+"loc": 160,
+"depth": 6,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/scripts/mission_world.gd",
+"loc": 159,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/mission_smoke_w8.gd",
+"loc": 159,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "tests/test_scaffold.py",
+"loc": 159,
+"depth": 6,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_bridge_contract.py",
+"loc": 153,
+"depth": 5,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_sim_golden.py",
+"loc": 152,
+"depth": 9,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "tests/test_economy_numbers.py",
+"loc": 151,
+"depth": 5,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/scripts/tinkerer_ui.gd",
+"loc": 149,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/sprite_bank.gd",
+"loc": 145,
+"depth": 2,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/wave_telegraph.gd",
+"loc": 145,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/g1_gate_eye_probe.gd",
+"loc": 144,
+"depth": 5,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/hero_combat.gd",
+"loc": 137,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/v11_boss_shot.gd",
+"loc": 130,
+"depth": 6,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/sim_loot.gd",
+"loc": 129,
+"depth": 3,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/v1_world_shot.gd",
+"loc": 126,
+"depth": 6,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "tests/test_gate_eye.py",
+"loc": 126,
+"depth": 10,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/sim/v5_fx_shot.gd",
+"loc": 121,
+"depth": 6,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/save_store.gd",
+"loc": 116,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/hub_probe_stations.gd",
+"loc": 111,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/dummy_range.gd",
+"loc": 110,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/ascension_ui.gd",
+"loc": 109,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/hero_controller.gd",
+"loc": 108,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "tests/test_purity.py",
+"loc": 107,
+"depth": 4,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/scripts/phase_controller.gd",
+"loc": 106,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/bridge.gd",
+"loc": 100,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/ui_tween.gd",
+"loc": 100,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/range_ring.gd",
+"loc": 99,
+"depth": 2,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/archive/v11_shot3.gd",
+"loc": 97,
+"depth": 8,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/hero_pawn.gd",
+"loc": 91,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/lane_bands.gd",
+"loc": 87,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/hub_probe_equip.gd",
+"loc": 84,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/enemy_anim.gd",
+"loc": 83,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/item_row.gd",
+"loc": 83,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/mission_heroes.gd",
+"loc": 83,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "server/static_app.py",
+"loc": 82,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/boot_probe.gd",
+"loc": 78,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/mission_relics.gd",
+"loc": 77,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/sim_combat.gd",
+"loc": 72,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "tests/conftest.py",
+"loc": 69,
+"depth": 3,
+"hdr": false,
+"kind": "test"
+},
+{
+"file": "godot/sim/sim_tables.gd",
+"loc": 64,
+"depth": 3,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/sim_progression.gd",
+"loc": 61,
+"depth": 4,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/war_table.gd",
+"loc": 60,
+"depth": 4,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/gw_compose.gd",
+"loc": 52,
+"depth": 3,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "server/server.py",
+"loc": 51,
+"depth": 2,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/lane_path.gd",
+"loc": 50,
+"depth": 3,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/sim_parse_probe.gd",
+"loc": 47,
+"depth": 5,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/sim/sim_economy.gd",
+"loc": 36,
+"depth": 2,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "godot/scripts/bank_list.gd",
+"loc": 34,
+"depth": 2,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/core_obj.gd",
+"loc": 32,
+"depth": 2,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/scripts/world_text.gd",
+"loc": 32,
+"depth": 2,
+"hdr": false,
+"kind": "src"
+},
+{
+"file": "godot/sim/sim_wave.gd",
+"loc": 31,
+"depth": 1,
+"hdr": false,
+"kind": "kit"
+},
+{
+"file": "tools/export_windows.sh",
+"loc": 16,
+"depth": 1,
+"hdr": false,
+"kind": "tool-sh"
+},
+{
+"file": "tools/export_web.sh",
+"loc": 15,
+"depth": 1,
+"hdr": false,
+"kind": "tool-sh"
+}
+]
