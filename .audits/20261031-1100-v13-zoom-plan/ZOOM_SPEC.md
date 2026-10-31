@@ -1,5 +1,11 @@
 # ZOOM_SPEC — v1.3 camera zoom control (MC 11792) [type:plan, READ-ONLY]
 
+REV c2 (2026-10-31, post-DA): DA-verdict FIX round applied — P1-1 declared `load_steps=9→10` header
+bump (§3 row 2, S3, A5); P1-2 press-only wheel + declared per-tick edge guard (§1) with a buildable
+DEDUP+distinct-ticks A4 leg; P2-1 PLACE leg gets its producing stage (S4); P2-2 pre-S3 baseline
+capture feeds A2 (S1). Design core (wheel-only, 56/128/8, runtime-only, GOVERNED 17, single byte
+re-pin) unchanged — DA verified it.
+
 Repo `/home/claudecode/Games/gatewardens`, tip `7bf18cf` (origin/main; suite 283 green per card
 preamble — collection-verified 283 in the base audit, full re-run is the build card's leg).
 Owner grant MC 11719 (2026-10-30) verbatim: **"Go 1 and zoom control for 2."** — ZOOM ONLY.
@@ -22,8 +28,9 @@ Zoom = a runtime, wheel-driven translation of the shipped `CameraRig` ORIGIN alo
 line of sight. The `.tscn` rig row NEVER changes; the pitch/basis NEVER changes (D3); every wheel
 tick steps a clamped distance `D ∈ [D_MIN, D_MAX]` around the byte-pinned default. The rig row
 stays the ONE home of the default (the zoom node CAPTURES it at `_ready` — no `64` literal in code).
-One new scene script + one append-only scene edit + one declared re-pin row + new tests + a relay
-kit. No bridge change, no mission.gd code line, no shell change, no HUD change.
+One new scene script + one append-only scene edit (with its declared §3 header bump) + one declared
+re-pin row + new tests + a relay kit. No bridge change, no mission.gd code line, no shell change,
+no HUD change.
 
 ## 1. INPUT DESIGN
 
@@ -52,15 +59,27 @@ are repeat steps (Godot sends a press/release pair per tick).
   FINDINGS §2); wheel-as-presentation matches the ScrollContainer precedent, not the key relay;
 - adding WHEEL codes to `DISCRETE_KEYS` would queue them into `presses` where the mission pump
   drains-and-drops them (§1.1) — actively hostile;
-- `main.gd::_unhandled_input` (`main.gd:188-196`) maps mouse through `bridge.mouse_code` → today
+- `main.gd::_unhandled_input` (`main.gd:188-197`) maps mouse through `bridge.mouse_code` → today
   wheel hits `MOUSE_CODES.get(index,"")` → `""` → dropped (why zoom is exactly zero today —
   VERIFIED at tip: no wheel entry exists).
+
+**PRESS-ONLY + DECLARED PER-TICK EDGE GUARD (c2, DA P1-2 — the mechanism, stated before build):**
+one physical tick is itself a press+release PAIR — the shipped kit idiom dispatches
+`[true, false]` per tick (`g5_real_relay_probe.gd:221-227` `_mouse()`, VERIFIED at tip). Therefore
+`camera_zoom.gd` acts ONLY on `event.pressed == true` (releases ignored) AND owns a declared
+per-tick EDGE GUARD: one step is accepted per event-frame per `button_index` — a duplicate arrival
+of the SAME tick inside the step collapses to one step; two distinct ticks are two steps. The
+guard is node-local `_unhandled_input` state by necessity: the bridge's rising-edge dedup
+(`bridge.gd:59-67`) is STRUCTURALLY UNAVAILABLE to the wheel — this section shows wheel never
+enters `GWBridge` — so reusing it is impossible, not merely unchosen; the node-local guard is
+wheel-path-only and does not stand beside `on_key` as a duplicate key-queue mechanism. The A4
+`DEDUP` leg pins exactly these two semantics (§5).
 
 **WEB DOUBLE-FEED law (cited, binding):** on the served web export ONE physical event reaches
 GDScript TWICE — the shell JS relay AND the engine's own canvas listener via `main.gd`'s forwarder
 (`bridge.gd` G5b header, MC 11700, served-measured on the `19715d4` export: one KeyM press =
 TWO places). Consequence that binds this spec: **press queues are rising-edge only** —
-`on_key` appends only when the code is not already `held` (`bridge.gd:63-71`); no new input
+`on_key` appends only when the code is not already `held` (`bridge.gd:59-67`); no new input
 mechanism may assume one arrival per physical event.
 Wheel's actual served arrival is different and MUST BE MEASURED, NOT ASSUMED: `web_shell.html`
 relays ONLY `keydown`/`keyup` (`:106-110`, `e.code` semantics; no `wheel` listener exists), so the
@@ -72,8 +91,10 @@ under `-s`" — its `_key_press()`/`_mouse()` helpers (`:213-228`) build real
 `InputEventKey`/`InputEventMouseButton` and push them through the real forwarder. The new kit
 `godot/sim/g6_zoom_relay_probe.gd` clones that idiom with `button_index = MOUSE_BUTTON_WHEEL_UP/
 DOWN`, dispatching via the real tree path (`root.push_input`) so the zoom node's OWN handler runs,
-plus a `DEDUP` leg of the kit's own shape: feed the same tick twice (both live paths) and assert
-STILL exactly one step — proving the design stays correct if the shell ever grows a wheel relay.
+plus a `DEDUP` leg of the kit's own shape pinning the §1 edge-guard semantics: feed the same tick
+twice (both live paths) and assert STILL exactly one step, AND two distinct ticks assert exactly
+two steps — proving the design stays correct if the shell ever grows a wheel relay, and that the
+guard never eats real input.
 
 **Wheel-over-GUI blind spot, declared (not a gap):** Godot's viewport consumes mouse-button-class
 events under GUI Controls before `_unhandled_input` — wheel over a list that swallows it SCROLLS
@@ -100,7 +121,7 @@ a cost or ratio), and the file is new + declared in its header + given an ARCHIT
 in the wiring commit. The answer is explicit: **17 → 17, unchanged.**
 
 **Camera math (stated formula; the gate itself is the oracle — reuse, not new mechanism):**
-The rig sits at `O(D) = D · û` with `û = normalize(0, 47.47, 42.79) = (0, 0.7428, 0.6693)` taken
+The rig sits at `O(D) = D · û` with `û = normalize(0, 47.47, 42.79) = (0, 0.7428, 0.6695)` taken
 FROM the shipped row; forward is `−û`; basis frozen (pitch 48° unchanged — D3). A map point P
 (ALL of `test_hub_layout._map_points()`: waypoints, main+sub cores, spawners, hero battle space)
 stays framed iff, per the RF-1 `_in_frustum`: `along > 0` and
@@ -134,11 +155,16 @@ not a move of pin #3, which stays SPENT and untouched).
 
 ## 3. RE-PIN ARTIFACT
 
-**Every byte-pinned row that zoom moves — exactly ONE:**
+**What zoom moves: one byte-pinned re-pin + one relational header bump (pinned value,
+planted-red-then-green) — declared here, both ride the S3 wiring commit:**
 
 | row | file:line | old literal | new literal | derivation |
 |---|---|---|---|---|
 | `test_mission_tscn_uids_match_the_sidecars` ext-script-row count | `tests/test_mission_clicks.py:591` | `== 5` | `== 6` | count = #script ExtResource rows in `mission.tscn`; wiring APPENDS exactly one script ext row (camera_zoom.gd, uid attribute + committed `.uid` sidecar per the `:31-32` sidecar gate). Declared-drift chain is documented at the pin: 3→4 (V5 MC 11552), 4→5 (G3 MC 11696), **5→6 (this card, declared scene-script add — the only legal mover per §7 pin #6)**. Planted-RED first: the scene commit alone goes the leg RED (transcript kept); the retarget lands GREEN in the same commit. |
+| `mission.tscn` header `load_steps` (relational, c2/DA P1-1) | `godot/scenes/mission.tscn:1` | `load_steps=9` | `load_steps=10` | `test_wave_telegraph.py:226-231` pins relationally `load_steps == ext_count + sub_count + 1` (measured at tip: 7 ext + 1 sub + 1 = 9 — VERIFIED). The APPENDED ext row FORCES the header to 10 in the same commit: a letter-only "APPEND-only" build leaves 9, goes RED on `test_mission_tscn_mounts_the_telegraph_append_only`, and the stale header's Godot WARNING then pollutes every EMPTY-stderr gate. Precedent: G3's declared 4→5 add (`commit 0b49bba`) shipped `-[gd_scene load_steps=8] +[...load_steps=9]` beside its ext row. Same red-then-green protocol as row 1: the scene-append-alone state is the planted RED for both legs; the bump + retarget land GREEN in the same commit. |
+
+This is not a second byte re-pin — the header row is a derived counter held by a RELATIONAL pin,
+not a literal-equality pin; §3's byte-identical contract below is unchanged.
 
 **Rows that must stay BYTE-IDENTICAL (the fixtures-diff-EMPTY contract).** If any of these moves,
 the zoom card is broken:
@@ -159,12 +185,17 @@ the zoom card is broken:
 - `v6_tween_probe` screen-rect pins (UI layer, camera-independent per RF-5) and every RF-5
   world-const (no zoom card re-declaration needed: RF-5's constants ride heights/sizes, a pure
   distance change re-projects them, it does not re-tune them — re-checked by A1's frames).
+  Declared deviation cited BY NAME (c2/DA N3): FINDINGS §6 W4 (`FINDINGS.md:195`) expects the
+  camera card to "re-pin RF-1/2/3/4 ONCE each … re-declares each RF-5 const once"; this card
+  instead keeps ALL those rows byte-identical (stricter, D3-consistent — runtime-only zoom) and
+  declines the RF-5 re-declaration; the deviation is DA-verified and proved by A1's frames +
+  the byte-ident `git diff` rows of A5.
 
 ## 4. CLICK MAPPING UNDER ZOOM
 
 **Engine-side path, named in shipped code:** `InputEventMouseButton` → `main.gd::_unhandled_input`
-(`main.gd:188-196`) → `bridge.mouse_code` → `bridge.on_key` (ONE feed point, rising-edge,
-`bridge.gd:63`) → `mission.gd::step_bookkeeping` ONE pump (`mission.gd:242`) →
+(`main.gd:188-197`) → `bridge.mouse_code` → `bridge.on_key` (ONE feed point, rising-edge,
+`bridge.gd:59-67`) → `mission.gd::step_bookkeeping` ONE pump (`mission.gd:242`) →
 `$DefensePanel.poll(presses)` → PRESS map `"MouseLeft": "confirm"` (`defense_panel.gd:72`, handled
 `:140-145` armed-only) → `place_id(armed ghost slot)` (`defense_placer.gd:243`, the ONE gate
 sequence; confirm falls to first-free `:252-253`, the pinned LEDGER:16 behavior).
@@ -198,23 +229,32 @@ NEITHER `hud.gd/hud.tscn` (DOM-side HUD coordinates: unaffected by absence + by 
   asserted by node presence BY NAME (§7 pin #12 contracts) + pixel-visible via describe-image
   (game visuals = browser + describe-image verification, MC 11509 D3 scope row).
 - **A2 DEFAULT-FRAME IDENTITY:** fresh mission, zero wheel input → frame byte-compares the
-  pre-change default frame (runtime proof of §2's proof-row: default D=64 unchanged where it
-  counts, the pixels).
+  **pre-S3 baseline captured by S1** (§6 S1 row: `baseline-default-D64.png` + its sha256 sidecar,
+  stored in this `.audits/20261031-1100-v13-zoom-plan/` dir BEFORE the scene edit exists — the
+  compare-basis is that file, not a post-change re-render; c2/DA P2-2) (runtime proof of §2's
+  proof-row: default D=64 unchanged where it counts, the pixels).
 - **A3 PLACEMENT AT DISTANCE:** wheel out to D_MAX, arm a picker row, relay `MouseLeft` → defense
-  count +1 at the ghost slot (`place_id` ok:true); leg also runs at D_MIN (kit row; served spot
-  check optional).
+  count +1 at the ghost slot (`place_id` ok:true); leg also runs at D_MIN (kit row, produced by
+  S4's `PLACE` line — §5 A4 list; served spot check optional).
 - **A4 RELAY MEASURED (new kit `g6_zoom_relay_probe`, §1 idiom):** `WHEELIN`/`WHEELOUT` one
   synthesized tick through the real forwarder = EXACTLY one step; `DEDUP` the same tick fed twice
-  (engine forwarder + JS-relay path, the 19715d4 double-feed shape) = STILL one step;
+  (engine forwarder + JS-relay path, the 19715d4 double-feed shape) = STILL one step, AND two
+  distinct ticks = exactly two steps (both clauses pin the §1 press-only + edge-guard mechanism;
+  the leg is its red-then-green pin — a build without the guard ships RED here);
+  `PLACE` wheel to D_MAX → arm → relay `MouseLeft` → count +1 at the ghost slot, `place_id` ok:true,
+  also run at D_MIN (this is §5 A3's producing row, c2/DA P2-1);
   `BOUNDMIN`/`BOUNDMAX` clamps at 56.0/128.0 (D never leaves the envelope, order of ticks
   irrelevant); kit is pytest-referenced (kit census law, FINDINGS §3 DC-3 rule).
-- **A5 SUITE + GATE:** full pytest green **except** the declared §3 re-pin, which must be shown
-  **planted-RED (transcript) then GREEN in the same commit**; suite count grows (283 → 283+N) and
+- **A5 SUITE + GATE:** full pytest green **except** the declared §3 moves, each shown
+  **planted-RED (transcript) then GREEN in the same commit** — both the `:591` byte re-pin AND the
+  relational `load_steps=9→10` header bump (§3 row 2; the scene-append-alone state is the shared
+  planted RED for both legs, c2/DA P1-1); suite count grows (283 → 283+N) and
   the README/RELEASE_NOTES/LEDGER count claims update in the SAME commit (claim-rot law);
   `tools/check_hygiene.py` 0 hits; every new file under its ceiling; `mission.tscn` edit is
-  APPEND-only (ext row + new `CameraZoom` node block under `CameraRig`); `camera_zoom.gd.uid`
-  sidecar committed; **all other camera/fixture rows byte-identical → `git diff` over the pins of
-  §3 shows EMPTY** (the fixtures-diff-EMPTY contract, sha rows re-run).
+  APPEND-only **plus its declared header bump** (ext row + new `CameraZoom` node block under
+  `CameraRig` + header `load_steps=9→10` — the ONLY non-append line the diff may carry in that
+  file); `camera_zoom.gd.uid` sidecar committed; **all other camera/fixture rows byte-identical →
+  `git diff` over the pins of §3 shows EMPTY** (the fixtures-diff-EMPTY contract, sha rows re-run).
 - **A6 ZERO-MONETIZATION ROW (MC 11274.1, forever):** the evidence file carries the literal row
   `monetization surface added: NONE` backed by the diff inventory (no shop/purchase/premium/currency
   string in any added line; the diff's file list is exactly the §6 owned-files list).
@@ -232,10 +272,10 @@ The future build card runs these; THIS card owns no repo file.
 
 | stage | what | owned files (touch set) | checkable DONE |
 |---|---|---|---|
-| **G0 (BEFORE any build)** | devils-advocate gate on THIS spec | none (reads this file; writes its VERDICT doc) | DA doc `# VERDICT: SHIP` at `.audits/20261031-1100-v13-zoom-plan/DA-VERDICT.md`. Attack surface named: D_MIN derivation vs RF-1, node-local wheel reader vs the one-feed-point doctrine (ScrollContainer precedent), the 5→6 re-pin legality, envelope endpoints |
-| **S1 ∥ S2** | S1 envelope sweep kit; S2 the zoom script (independent — S2 depends only on §2's constants) | S1: `godot/sim/g6_zoom_sweep_kit.gd` (new; v1_world_probe FRAME idiom, re-positions `CameraRig/Camera3D` in the booted mission, prints screen margins per D, asserts red at ≤52.41 and green at 56/128) / S2: `godot/scripts/camera_zoom.gd` (new) | S1: kit printed margins agree with §2 within 1 u; pytest-referenced leg. S2: compiles headless, W4 preload binding, no literal but the three §2 consts, < 250 LOC, header states the ungoverned-presentation doctrine |
-| **S3 (after S1+S2)** | wiring — one commit: `mission.tscn` append (uid-bearing ext row + `CameraZoom` child node under `CameraRig`), `camera_zoom.gd.uid`, the §3 `5→6` RETARGET (planted-red transcript attached), §5 A7 comment/doc rewrites | `godot/scenes/mission.tscn`, `godot/scripts/camera_zoom.gd.uid`, `tests/test_mission_clicks.py` (:591), `godot/scripts/mission.gd` (comment only, LOC-neutral), `godot/scripts/hero_controller.gd` (comment), `docs/ARCHITECTURE.md`, `LEDGER.md` (PIN row + card row) | suite green apart from none (retarget rides the same commit); §3 byte-ident list `git diff` EMPTY; ext-count leg RED-then-GREEN transcripts attached |
-| **S4 (after S3)** | tests + relay kit: `tests/test_camera_zoom.py` (default-row byte-pin re-assert, envelope consts, wheel-not-in-bridge source-truth, kit-run lines) + `g6_zoom_relay_probe` WHEELIN/WHEELOUT/DEDUP/BOUNDMIN/BOUNDMAX + pytest wiring | `tests/test_camera_zoom.py`, `godot/sim/g6_zoom_relay_probe.gd`, the pytest test that runs the kit | full suite 283+N GREEN (all pre-existing lines byte-unchanged per §3); hygiene 0 hits |
+| **G0 (BEFORE any build)** | devils-advocate gate on THIS spec | none (reads this file; writes its VERDICT doc) | c1 ran on c1 of this doc → `# VERDICT: FIX` (2 P1 + 2 P2, DA-verdict.md); its four exact corrections are applied in THIS c2. Build gate: a DA re-check of c2 lands `# VERDICT: SHIP` (same `.audits/` dir) before S1 — the cycle count/cap is the build card's task-gate law. Attack surface named: D_MIN derivation vs RF-1, node-local wheel reader vs the one-feed-point doctrine (ScrollContainer precedent), the 5→6 re-pin legality + the declared `load_steps` relational bump (§3 row 2), envelope endpoints, press-only + edge-guard dedup (§1) |
+| **S1 ∥ S2** | S1 envelope sweep kit + **pre-S3 baseline capture** (c2/DA P2-2); S2 the zoom script (independent — S2 depends only on §2's constants) | S1: `godot/sim/g6_zoom_sweep_kit.gd` (new; v1_world_probe FRAME idiom, re-positions `CameraRig/Camera3D` in the booted mission, prints screen margins per D, asserts red at ≤52.41 and green at 56/128) + `baseline-default-D64.png` + sha256 sidecar in this `.audits/` dir (boots the UNMODIFIED mission, zero wheel input — captured BEFORE S3 exists) / S2: `godot/scripts/camera_zoom.gd` (new) | S1: kit printed margins agree with §2 within 1 u; pytest-referenced leg; baseline PNG + sha256 exist in this dir with pre-S3 timestamps. S2: compiles headless, W4 preload binding, no literal but the three §2 consts, press-only + §1 edge guard per its declaration, < 250 LOC, header states the ungoverned-presentation doctrine |
+| **S3 (after S1+S2)** | wiring — one commit: `mission.tscn` append (uid-bearing ext row + `CameraZoom` child node under `CameraRig`) **WITH the declared header bump `load_steps=9→10` (§3 row 2 — required by the relational pin, G3 precedent 0b49bba; c2/DA P1-1)**, `camera_zoom.gd.uid`, the §3 `5→6` RETARGET (scene-append-alone planted-red transcript attached, shared by both §3 legs), §5 A7 comment/doc rewrites | `godot/scenes/mission.tscn`, `godot/scripts/camera_zoom.gd.uid`, `tests/test_mission_clicks.py` (:591), `godot/scripts/mission.gd` (comment only, LOC-neutral), `godot/scripts/hero_controller.gd` (comment), `docs/ARCHITECTURE.md`, `LEDGER.md` (PIN row + card row) | suite green apart from none (both §3 moves ride the same commit); §3 byte-ident list `git diff` EMPTY; ext-count AND `load_steps` relational legs RED-then-GREEN transcripts attached |
+| **S4 (after S3)** | tests + relay kit: `tests/test_camera_zoom.py` (default-row byte-pin re-assert, envelope consts, wheel-not-in-bridge source-truth, kit-run lines) + `g6_zoom_relay_probe` kit rows `WHEELIN/WHEELOUT/DEDUP/PLACE/BOUNDMIN/BOUNDMAX` (DEDUP asserts BOTH clauses of §1's press-only+edge-guard: same tick fed twice = one step AND two distinct ticks = two steps; PLACE is the producing row for §5 A3 place-at-distance — c2/DA P2-1) + pytest wiring | `tests/test_camera_zoom.py`, `godot/sim/g6_zoom_relay_probe.gd`, the pytest test that runs the kit | full suite 283+N GREEN (all pre-existing lines byte-unchanged per §3); hygiene 0 hits |
 | **S5 (after S4, serial)** | acceptance: A1 frames ×3 + describe-image, A2 default-frame identity, A3 place-at-distance, evidence file + VERIFY_EXIT, count rows synced | none new (evidence under this `.audits/` dir; README/RELEASE_NOTES count rows + LEDGER status line) | evidence file reproduces A1–A7 each with an evidence level; last line `VERIFY_EXIT=0` |
 
 Parallel-safe: **S1 ∥ S2** (disjoint files, no shared artifact). S3 is the first join and the ONLY
