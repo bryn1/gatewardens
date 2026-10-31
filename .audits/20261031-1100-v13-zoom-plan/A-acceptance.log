@@ -1,0 +1,16 @@
+# A-legs served-browser acceptance (orchestrator leg, 2026-10-31, tip f0b47b7, served :8148 zoom export)
+A1 wheel zoom in/out IN THE SERVED WEB BUILD: three distinct frames (sha ce2a296e / 052d60d2 / f7d83b5b);
+  board-bright census z-out 154,544 -> floor 194,144 (+26% screen share) = camera genuinely moves. VERIFIED.
+A2 default-frame byte-identity AFTER mount: baseline_d64_kit re-run at mounted tip -> png sha
+  0a40d116c905d026810be902e6d216e377fc549d6015b40d9a215801484d675b == Z1 baseline, git diff EMPTY, stderr 0 B. VERIFIED.
+A3 PLACE AT ZOOMED-OUT DISTANCE: armed Ballista at default, wheel-out x5 (clamps D_MAX 128), KeyM placed:
+  z-out-placed.png DEFENSES list reads "uid 1 tower T1 hp 200/200" (describe-image quote). VERIFIED.
+A4 dedup/clamp engine legs: g6 kit WHEELIN/WHEELOUT/DEDUP/BOUNDS rows (Z3.log) — kit re-run green at this tip. TESTED.
+A5 framing at FLOOR: describe-image flagged "a path corner runs off edge" at D=56 — RESOLVED CONTRADICTED->VERIFIED
+  by running the SHIPPED gate math (test_hub_layout F-3, margin 0.92) at D=52.4/52.66/56/64/128: all waypoints/cores/
+  spawners/hero INSIDE margin at 56.0+; first outside = (34.0,0.0,30.0) at 52.40, below the floor, exactly as spec §2
+  derived. Vision saw board decor beyond the play points (gate universe = play points, unchanged since v1).
+  HUD READABLE at floor (describe-image). VERIFIED.
+BANDS paint at both out (z-out frames cyan rows) and floor ("pale cyan lane strips visible" describe-image). VERIFIED.
+ZERO MONETIZATION: no change; MC 11274.1 doctrine row. VERIFIED.
+A-ACCEPTANCE-DONE
