@@ -1,0 +1,132 @@
+P6-wave.log — v1.4 P6 tower-row grey/red icon states (MC 11854,
+wave W3). Seat: coder profile (child of hermes-standby
+session-391bd348). Date 2026-10-31.
+Base tip: e44f4f2 (detached, per-card worktree /tmp/gw-v14-p6 — V14-PLAN
+P2-C engine-tier isolation; static/ web-export present, test_served legs
+ran). Branch card/11854.
+SPEC: .audits/20261031-1830-v14-plan/V14-PLAN.md row P6 + W3. BUILD:
+godot/scripts/defense_rows_ui.gd (the ONE painter — states ride the
+already-shipped per-poll rows_ui hook) + tests/test_icon_states.py
+(NEW, 1 leg). defense_panel.gd / mission.gd / camera / fixtures / sim /
+the hygiene gate: byte-EMPTY (rows below).
+
+== HONEST READING DECLARATIONS ============================================
+- STATE MAP: the CARD's map governs (UNAFFORDABLE cost > green -> GREY;
+  COMBAT phase -> RED on BUILDABLE rows; affordable+BUILD -> neutral).
+  The older plan-row wording had the two halves worded swapped
+  ("red when cost > green, grey when phase != build"); the card cites
+  the DA-verified live phase writers (phase_controller.gd:69/78) for
+  the combat->RED mapping and pins the test rows literally
+  ("green-drilled-below-cost -> grey row", "combat-phase -> red rows").
+  Card over plan wording — declared here, not silently chosen.
+- OVERLAP (unaffordable AND combat): GREY wins — literal in the brief
+  ("RED-tint the BUILDABLE rows": an unaffordable row is not buildable,
+  so combat never paints it). The COMBAT leg runs all rows affordable,
+  so no leg hides behind the overlap; the reading is in the source
+  comment too.
+- TINT CONSTS live in defense_rows_ui.gd, NOT sprite_bank.gd (plan
+  wording): the card pathspec keeps the footprint to the rows file (+
+  optional new file) — a sprite_bank edit would be a second governed-
+  class file for three presentation constants. I2-safe: a Color
+  string-hex is blanked by the BN1 pre-pass (the gate's own rule, one
+  home), precedent: governed hud.gd ships _tint_down Color("6f6f6f")
+  in the same shape. Hygiene 0 rows below pin it.
+- THE PUMP: the plan W3 row planned "defense_panel.gd (one drive
+  line)"; the card pathspec keeps defense_panel.gd byte-quiet, so the
+  paint rides the hook the panel ALREADY calls every pump —
+  rows_ui.sync_marks() from sync() (poll() AND refresh() both run it).
+  The plan row itself names "the shipped W17e poll sync (defense_rows_ui
+  sync pass precedent, sync_marks idiom)" as the mechanism — zero new
+  pump lines exist anywhere. Cheap by the W17e contract: modulate is
+  touched only where a row's tint actually changed.
+- Presentation ONLY: both ENFORCEMENT legs re-run the shipped refusals
+  UNDER the painted state (grey rows still answer why:"green", red rows
+  why:"phase", green/list fixed, stderr EMPTY). NO cooldown states were
+  added (plan cd-half REJECT honored); no new nodes/scripts; costs read
+  row["cost"] (towers.json through picker_rows) — zero cost numbers
+  re-declared.
+
+== 1. GREEN (shipped tree) ==============================================
+$ python3 -m pytest -q tests/test_icon_states.py
+  1 passed in 6.97s  (re-run after the plant: 1 passed in 5.71s)
+$ conftest.run_probe_script(<tmp>/gw_icon_states_probe.gd, (),
+      <tmp>/user_home)   # P1/F3 tmp-probe idiom, P6-* machine rows
+rc= 0  STDERR_BYTES= 0
+  P6-BOOT rows=5 costs=100,50,80,160,140 white=5 grey=0 red=0
+      green=300 phase=build
+      tints=ffffffff,ffffffff,ffffffff,ffffffff,ffffffff
+  P6-DRILL green=49 white=0 grey=5 red=0
+      tints=808080ff,808080ff,808080ff,808080ff,808080ff
+  P6-ENFG ok=false why=green green=49 list=0
+  P6-GREENBACK green=300 white=5 grey=0 red=0
+  P6-COMBAT white=0 grey=0 red=5
+      tints=ff6666ff,ff6666ff,ff6666ff,ff6666ff,ff6666ff
+  P6-ENFP ok=false why=phase green=300 list=0
+  P6-PHASEBACK white=5 grey=0 red=0
+  P6-TEARDOWN white=5 grey=0 red=0 green_same=1 phase=build list=0
+  P6-OK
+Rows: neutral-default (start green 300 over EVERY towers.json cost —
+premise asserted); green DRILLED to min-1 = 49 (harness write, cap-leg
+idiom, restored one act later) -> every row GREY hex-exact; combat
+(F3 :235/:237 phase_kind+in_combat write/restore pair, E5 hand-driven
+shipped pump pair, NO world step) -> every affordable row RED; restore
+-> neutral; teardown byte-equal to the BOOT reads. The costs csv is
+re-derived python-side FROM towers.json through the build_class_buttons
+order rule (costs stay DATA; the winner+fam order 100,50,80,160,140
+compares). The grey/red hexes are READ from the shipped source (the
+_save_name source-truth idiom) AND re-checked STRUCTURALLY (grey:
+equal channels under white; red: red-dominant; neutral: ffffff) — a
+plant cannot agree its way green. IN-PROBE P6-FAIL guards quit(1) AND
+return; P6-OK LAST (the P5 completion-flag lesson structural).
+
+== 2. PLANTED-RED x1 (affordability predicate inverted) ==================
+Plant (throwaway scratch, STAGED FIRST — F4 — so `git checkout --`
+reverts the plant only; the build was staged, the plant sat above it):
+  sed 's/if not SIM_ECONOMY.can_afford/if SIM_ECONOMY.can_afford/'
+  godot/scripts/defense_rows_ui.gd            (the diff --stat row
+  showed exactly the 1-line plant above the staged build)
+RED transcript (same harness, same seed):
+rc= 1  STDERR_BYTES= 0
+  P6-BOOT rows=5 costs=100,50,80,160,140 white=0 grey=5 red=0
+      green=300 phase=build
+      tints=808080ff,808080ff,808080ff,808080ff,808080ff
+  P6-FAIL BOOT not neutral-default: 808080ff,808080ff,808080ff,...
+EXACTLY the affordability predicate drives the RED (affordable rows
+answer grey under the inversion — the FIRST read goes RED; P6-OK never
+prints — the OK-LAST guard live); pytest rc=1 (1 failed).
+$ git checkout -- godot/scripts/defense_rows_ui.gd && \
+  git diff --exit-code godot/scripts/defense_rows_ui.gd
+  -> REVERT_VERIFIED (byte-identical vs the staged build)
+GREEN re-run beside the red: 1 passed (row set byte-equal to §1).
+
+== 3. GATES AT THE FINAL TREE ===========================================
+$ git checkout -b card/11854 (from detached e44f4f2)
+$ git diff --cached --stat HEAD   (pathspec commit, no push):
+ godot/scripts/defense_rows_ui.gd |  46 ++++-   (tints + painter +
+   sync_marks join; the ONLY production file)
+ tests/test_icon_states.py        | 373 +++++   (NEW)
+ (+ LEDGER.md row + this log in-commit; author coder (11854))
+$ python3 -m pytest -q
+  321 passed in 190.52s  rc=0 ONE attempt (320 base collect at this
+  worktree + this card's leg; with-export per the PAPERWORK row note).
+$ python3 tools/check_hygiene.py
+  check_hygiene: 0 hit(s)  (24 notes = base set; ZERO new notes)
+$ git diff --name-only e44f4f2 -- tests/fixtures/        -> EMPTY
+$ git diff --name-only e44f4f2 -- godot/scripts/camera_zoom.gd -> EMPTY
+$ git diff --name-only e44f4f2 -- godot/scripts/mission.gd -> EMPTY
+$ git diff --name-only e44f4f2 -- godot/scripts/defense_panel.gd ->
+  EMPTY (the plan's "one drive line" NOT needed — §declarations)
+$ git diff --name-only e44f4f2 -- godot/sim/ tools/check_hygiene.py
+  -> EMPTY
+$ python3 -c "...GOVERNED_LITERALS..."                 -> 17 (unchanged;
+  defense_rows_ui.gd stays governed; its Color string-hexes carry no
+  governable number — BN1 pre-pass, hygiene 0 pin)
+LOC GATE-METRIC ROWS (len(text.split("\n")), ceiling 400/600):
+  defense_rows_ui.gd   186 -> 230  (soft ~250 target kept; well under
+    the 400 ceiling — no reason line needed)
+  defense_panel.gd     366 -> 366  (byte-quiet, plan LOC-watch row)
+  mission.gd           400 -> 400  (zero lines; ceiling fires >400)
+  test_icon_states.py  NEW 374     (tests tier, 600 cap)
+  test_mission_clicks.py 600 -> 600 (WATCH ROW honored: ZERO lines
+    added — the new file is the leg's home)
+VERIFY_EXIT=0

@@ -18,6 +18,7 @@ extends RefCounted
 
 const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
 const UITWEEN := preload("res://scripts/ui_tween.gd")
+const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 
 # V4 (MC 11549 / VISUAL-TARGET row V4): class-id -> icon id, explicit
 # (the sprite_bank sheet-map idiom — never a stem rule). All five tower
@@ -31,6 +32,21 @@ const ICON_FOR := {
 	"hailspire_tower": "icon_hailspire", "gate_blockade": "icon_blockade",
 	"barbed_snare": "icon_snare",
 }
+
+# P6 (MC 11854 / V14-PLAN row P6): the picker-row STATE tints, the
+# hud.gd named-tone idiom (hud._tint_down ships the same shape in a
+# GOVERNED file — a string hex is blanked by the I2 gate's BN1 pre-pass,
+# so no number literal exists to govern; DECLARED against the plan's
+# sprite_bank wording, the card pathspec keeps the tints with their one
+# painter). GREY = UNAFFORDABLE (cost > green: darken/desaturate, equal
+# channels under white); RED = COMBAT phase refusing an otherwise
+# buildable row (the live phase_kind writers are phase_controller
+# _enter_build/_enter_combat); NEUTRAL = affordable + BUILD, the rest
+# identity (ui_tween's rest value). Presentation ONLY — the shipped
+# refusals (can_afford, the placer phase gate) stay the one enforcement.
+const TINT_GREY := Color("808080")
+const TINT_RED := Color("ff6666")
+const TINT_NEUTRAL := Color("ffffff")
 
 var panel = null                   # the owning defense_panel: selection
                                    # state + press handlers route there
@@ -157,8 +173,13 @@ func _on_defense_row(uid: int) -> void:
 # sync() runs — the "» " prefix rides the existing text (hp/tier text is
 # refresh data, never re-rendered on this path). Cheap by contract: text
 # is touched only where a mark changed (no churn), rows are NEVER freed
-# here (E9 lives in the rebuild alone).
+# here (E9 lives in the rebuild alone). P6 (MC 11854): the picker-row
+# STATE TINT pass joined HERE — the plan row names this sync as its
+# precedent and the card pathspec leaves defense_panel.gd byte-quiet, so
+# the panel's existing per-poll sync call carries both passes (no second
+# pump line anywhere).
 func sync_marks() -> void:
+	_paint_states()                # P6: tints before marks (the pump's own order)
 	for child: Node in defense_rows.get_children():
 		var b := child as Button
 		if b == null:
@@ -170,6 +191,29 @@ func sync_marks() -> void:
 			b.text = "» " + text
 		elif not marked and text.begins_with("»"):
 			b.text = text.substr(2)
+
+
+# P6 (MC 11854): the picker-row state tint — UNAFFORDABLE (cost > green,
+# the shipped can_afford static the panel's own gate uses) GREY, COMBAT
+# phase RED on the rows that COULD build (the state read mirrors the
+# placer's phase gate; the live writers are phase_controller
+# _enter_build/_enter_combat), affordable+BUILD NEUTRAL. DECLARED
+# readings: affordability wins the overlap — an unaffordable row is not
+# "buildable", so combat RED never paints it (brief: RED-tint the
+# BUILDABLE rows); costs read row["cost"] (towers.json through the panel
+# picker_rows), no number is re-declared here (I2). Cheap by the W17e
+# contract: modulate is touched only where the tint actually changed.
+func _paint_states() -> void:
+	var combat := String(m.phase_kind) == "combat"
+	for row: Dictionary in panel.picker_rows:
+		var b: Button = row["btn"]
+		var want := TINT_NEUTRAL
+		if not SIM_ECONOMY.can_afford(int(m.green), int(row["cost"])):
+			want = TINT_GREY
+		elif combat:
+			want = TINT_RED
+		if b.modulate != want:
+			b.modulate = want
 
 
 # W17e dirty check: the rebuild runs only when the defense LIST changed
