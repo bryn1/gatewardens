@@ -1,0 +1,14 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+LB-BANDS n=3 ground=3
+LB-BAND lane_g1 segs=4 mat=1
+LB-CLASS lane_g1 mesh=PlaneMesh prim=1 segs=4
+LB-WPS lane_g1 wp=5 matched=5 eps=0.05
+LB-BAND lane_g2 segs=4 mat=1
+LB-CLASS lane_g2 mesh=PlaneMesh prim=1 segs=4
+LB-WPS lane_g2 wp=5 matched=5 eps=0.05
+LB-BAND lane_g3 segs=3 mat=1
+LB-CLASS lane_g3 mesh=PlaneMesh prim=1 segs=3
+LB-WPS lane_g3 wp=4 matched=4 eps=0.05
+LB-NEG air=2 banded=0
+LB-OK

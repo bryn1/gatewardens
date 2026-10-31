@@ -1,0 +1,132 @@
+# W2-code-wave.log — v1.3 REFACTOR W2 (MC 11723) [type:code] — coder
+# Repo /home/claudecode/Games/gatewardens @ base 0dd2b54. 2026-10-30.
+# COMMIT 0993a6e11756a5a4943533f0ccdc887fce0083a5 (author coder (11723)
+# <coder@agent-town.local>, pathspec-only, NOT pushed).
+
+== SCOPE / FINDINGS ==
+FINDINGS.md rows: DC-1 (the card brief names it DEAD-1; the FINDINGS row
+is "DC-1 (P3): defense_panel.gd:135 selected_tier() — ZERO callers")
+and D-2 (P4, raw-m.map_def lane->spawner/"air" grouping has two homes).
+
+== (1) DEAD-CALLER GATE — grep-verified BEFORE the delete (quoted) ==
+$ grep -rn "selected_tier" godot/ tests/
+godot/scripts/defense_placer.gd:162:# display convention defense_panel.selected_tier returns) — the tier entry
+godot/scripts/defense_panel.gd:135:func selected_tier() -> int:
+(= the def + ONE prose mention, exactly the audit's instrument result;
+ZERO call sites. The audit's own instrument line, FINDINGS §3 DC-1:
+"grep ... -> the def + ONE prose mention (defense_placer.gd:162
+comment)".)
+_selected_obj strand-check: grep -rn "_selected_obj" shows the
+surviving caller defense_panel.gd:234 (defense_rows_ui.gd:92 is a
+comment) — NOT orphaned by the delete.
+
+DECLARED READING (1): the brief's owned-path list omits
+defense_placer.gd, but the DC-1 fix text commands it verbatim ("Fix:
+delete + keep the comment's convention sentence pointing at
+GHOST_TIER/tier_range") AND the gate "grep -rn selected_tier godot/
+tests/ => 0" cannot pass while that comment mentions the name. Reading
+used: the audit's fix text is the authority — defense_placer.gd joined
+the commit as ONE comment line, convention sentence KEPT and re-pointed
+at GHOST_TIER (the file's own const := 1, the confirm tier). It is not
+in the siblings' file set (docs/ARCHITECTURE.md; lane_bands/range_ring/
+hero_pawn/bridge) and rode the pathspec commit; nothing of theirs was
+touched.
+
+== (2) D-2 FOLD — declared reading ==
+Fold home: mission_world.gd gets the ONE shared static helper
+raw_lane_rows(m) (raw map_def lane rows indexed by lane id) — the
+audit's natural home ("Fix = one shared read (mission_world is the
+natural home — telegraph already preloads mission-side modules)").
+The task brief named "mission_world's paint_spawn_gates block" as the
+owner of the same raw read — that block IS the read, so the helper was
+placed directly above it and paint_spawn_gates now derives its WINGED
+air set THROUGH the helper (raw_lane_rows(m).values()); wave_telegraph
+preloads mission_world.gd (no preload cycle: mission_world preloads
+nothing back — verified from both const blocks) and calls
+MISSION_WORLD.raw_lane_rows(m) where it built its own lane_rows map.
+No new file was needed (the brief's "optional new helper + .uid" path
+NOT taken — extending the existing file is the reuse-first result; no
+.uid change: no new script file).
+Why this shape is the ZERO-behavior fold: the helper reproduces
+wave_telegraph's exact index (String(lane.get("id","")) -> raw row);
+Godot Dictionaries iterate insertion-order, so paint_spawn_gates' air
+set derives identically to the old direct list loop (same rows, same
+order, same membership). Grouping sites: 2 -> 1 (the audit's measure,
+"dead-count −1 grouping site").
+
+== GATES (all re-run on the FINAL committed tree) ==
+full pytest: `python3 -m pytest tests/ -q` ->
+  283 passed in 186.75s (0:03:06)  /  PYTEST_EXIT=0
+  (>= 283 green; NO leg named selected_tier exists in tests/ — grep of
+  tests/ above shows zero test hits — so no retarget situation arose.)
+grep -rn selected_tier godot/ tests/ -> (no output) GREP_EXIT=1 (0 hits) ✓
+engine probe kits the fold touches, before -> after, ALL byte-identical
+(`cmp` both stdout and stderr; stderr EMPTY in every run, W4 ruling):
+  G2 band kit  g2_lane_band_probe.gd  rc0, 14 rows, g2_BYTE_IDENTICAL=1:
+    LB-BANDS n=3 ground=3
+    LB-BAND lane_g1 segs=4 mat=1
+    LB-CLASS lane_g1 mesh=PlaneMesh prim=1 segs=4
+    LB-WPS lane_g1 wp=5 matched=5 eps=0.05
+    LB-BAND lane_g2 segs=4 mat=1
+    LB-CLASS lane_g2 mesh=PlaneMesh prim=1 segs=4
+    LB-WPS lane_g2 wp=5 matched=5 eps=0.05
+    LB-BAND lane_g3 segs=3 mat=1
+    LB-CLASS lane_g3 mesh=PlaneMesh prim=1 segs=3
+    LB-WPS lane_g3 wp=4 matched=4 eps=0.05
+    LB-NEG air=2 banded=0
+    LB-OK
+  G3 telegraph kit  g3_wave_telegraph_probe.gd  rc0, 15 rows, g3_BYTE_IDENTICAL=1:
+    G3T-MOUNT script=res://scripts/wave_telegraph.gd
+    G3T-W0-ENT n=0
+    G3T-W0-MARK spawner=spawn_a id=skitterling kind=ground count=4 y=6.5
+    G3T-CLEAR children=0 entries=0
+    G3T-NEG alive=1 markers=0
+    G3T-W1-MARK spawner=spawn_a id=skitterling kind=ground count=5 y=6.5
+    G3T-W1-MARK spawner=spawn_c id=ash_bandit kind=ground count=3 y=6.5
+    G3T-W1-NEG spawn_b=0
+    G3T-W2-MARK spawner=spawn_a id=cinder_wisp kind=air count=3 y=9.0
+    G3T-W2-MARK spawner=spawn_a id=skitterling kind=ground count=6 y=6.5
+    G3T-W2-MARK spawner=spawn_c id=ash_bandit kind=ground count=4 y=6.5
+    G3T-AIR spawn_a air_y=9.0 ground_y=6.5 above=1
+    G3T-OK
+  G1 gate-eye kit (extra — paint_spawn_gates is the edited function):
+    g1_gate_eye_probe.gd rc0, 7 rows, g1_BYTE_IDENTICAL=1:
+    G1E-EYES n=3
+    G1E-MARK spawn_a pos=(-40.0, 3.0, 0.0) tex=res://assets/v11/icon_gate_eye_air.png
+    G1E-MARK spawn_b pos=(0.0, 3.0, -40.0) tex=res://assets/v11/icon_gate_eye_air.png
+    G1E-MARK spawn_c pos=(34.0, 3.0, 30.0) tex=res://assets/v11/icon_gate_eye.png
+    G1E-WING want=spawn_a,spawn_b got=spawn_a,spawn_b
+    G1E-NEG spawn_c plain=1 air=0
+    G1E-OK
+  Transcripts kept .tmp/w2/{g1,g2,g3}_{before,after,final}.{out,err}.
+fixtures/sim JSON: `git status --short tests/fixtures godot/data
+godot/sim` -> (empty) ✓ (no fixture/probe JSON moved).
+hygiene: `python3 tools/check_hygiene.py` -> "check_hygiene: 0 hit(s)"
+HYGIENE_EXIT=0 ✓
+git show --stat of the commit (owned paths only):
+  godot/scripts/defense_panel.gd  |  5 -----
+  godot/scripts/defense_placer.gd |  2 +-
+  godot/scripts/mission_world.gd  | 21 +++++++++++++++++----
+  godot/scripts/wave_telegraph.gd | 25 +++++++++++++++----------
+  4 files changed, 33 insertions(+), 20 deletions(-)
+  (Siblings' concurrent W1 edits — docs/ARCHITECTURE.md, bridge.gd,
+  lane_bands.gd, range_ring.gd — live UNSTAGED in this shared checkout
+  and stayed OUT of the commit; never touched.)
+
+== BEFORE/AFTER LOC + NESTING PROXY (max tab-depth, measured) ==
+defense_panel.gd   370 -> 365 LOC (-5),  nesting 5 -> 5   (helper _selected_obj kept, :234 caller live)
+defense_placer.gd  335 -> 335 LOC (0),   nesting 5 -> 5   (comment re-point only)
+mission_world.gd   158 -> 171 LOC (+13), nesting 5 -> 5   (fold HOME — helper + its header comment land here; WHAT GOT SMALLER: the concern count, raw-read sites 2 -> 1, per the audit's D-2 measure "grouping sites 2→1"; file size grew by the shared header the two callers used to carry in prose twice)
+wave_telegraph.gd  144 -> 149 LOC (+5),  nesting 5 -> 5   (loop -> one call; net -3 code lines, +8 doc lines re-pointing at the one home)
+
+== LEDGER-ROW (for the close seat to land in LEDGER.md) ==
+| REFACTOR v1.3 W2 selected_tier + air-grouping fold (MC 11723 / [type:code]) | DONE 2026-10-30 — DC-1: defense_panel.selected_tier DELETED (grep-verified zero call sites: def + ONE prose mention quoted; _selected_obj stays, live caller :234), convention sentence KEPT re-pointed at GHOST_TIER per the audit fix text (defense_placer.gd one comment line); D-2: raw map_def lane->spawner/"air" grouping folded from TWO homes to ONE — mission_world.raw_lane_rows(m) static helper (the natural home per the audit), paint_spawn_gates derives WINGED through it, wave_telegraph._paint preloads mission_world (no cycle) and calls it — grouping sites 2->1; ZERO behavior change: full pytest 283 green (>= 283, no selected_tier leg), G1+G2+G3 probe kits rc0 stderr-EMPTY byte-identical before/after, hygiene 0 hits, fixtures/sim JSON empty; grep selected_tier godot/ tests/ = 0. Commit 0993a6e (pathspec-only, siblings' live files untouched), log .audits/20261030-1830-v13-clean-code/W2-code-wave.log (VERIFY_EXIT=0) |
+
+== DECLARATION ==
+zero behavior change — declared row: the delete had no caller to
+change behavior through; the fold reproduces both derivations
+line-for-line (same index, same iteration order, same membership);
+proof rows above: byte-identical G1/G2/G3 probe transcripts + 283
+green suite + empty fixtures/sim JSON diff, all on the final tree.
+
+VERIFY_EXIT=0
