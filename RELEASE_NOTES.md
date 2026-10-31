@@ -1,6 +1,6 @@
 # Gatewardens — Release Notes
 
-## v1.3 (zoom) — 2026-10-31
+## v1.3 (zoom) — 2026-10-31 (RELEASED: tag + GitHub Release)
 
 The zoom wave: the mouse wheel moves the camera between a 2× overview and a
 close view that never crops a path corner — the ONE camera move the owner
