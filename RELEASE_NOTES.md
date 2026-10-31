@@ -1,5 +1,74 @@
 # Gatewardens — Release Notes
 
+## v1.3 (zoom) — 2026-10-31
+
+The zoom wave: the mouse wheel moves the camera between a 2× overview and a
+close view that never crops a path corner — the ONE camera move the owner
+granted — landing on a clean-code pass over the v1.2.1 base (audit: 0 hard
+size findings; the duplicate material builder and the duplicate air-grouping
+folded to one home each; the dead `selected_tier` accessor retired; docs
+de-staled; byte-identical probe transcripts prove zero behavior change).
+Nothing sim, economy or data moved (golden replays byte-identical), and zero
+monetization ships here or ever: **No shop. No loot boxes. No timers. No
+monetization, ever — by owner ruling 2026-10-25.**
+
+**What shipped**
+
+- **Mouse-wheel zoom** — scroll OUT for the overview: the rig distance
+  doubles from the shipped D=64 default to D=128 (2×, the readable-far limit —
+  at farther distances the enemies' walk-bob falls under a pixel). Scroll IN
+  to the close floor D=56, which never crops a path corner: the floor is
+  DERIVED from the shipped framing-gate math (the same frustum margin the
+  camera test enforces), whose first crop point 52.4 stays BELOW it — every
+  waypoint, core, spawner and hero battle-space point measures inside the
+  margin at 56 and beyond (the crop at 52.4 was re-measured on the shipped
+  gate, not assumed). One wheel tick = 8 units; both ends clamp.
+- **The default view is byte-identical to v1.2.1** — the camera row in the
+  scene file is NOT edited; zoom is runtime-only displacement that CAPTURES
+  the shipped default from the scene at startup, and a fresh mission at zero
+  wheel input renders a pixel-identical capture against the pre-change
+  baseline (byte-identical PNG, sha256 `0a40d116…`, verified again after the
+  mount shipped).
+- **Wheel-only by design — no keys** — +/− keys were deliberately NOT added:
+  every shipped key route ends in the mission's one press pump (a second
+  reader is the forbidden second mechanism), and the wheel is the repo's
+  existing engine-native presentation-input precedent — the hub list already
+  scrolls by wheel. See Known limits for what that means for touchpads and
+  the web build.
+- **No HUD change** — the HUD is in-engine Controls laid out in viewport
+  screen space, a function of the window, not of the camera; zoom cannot move
+  it, and nothing HUD-side shipped this wave.
+
+**Promised vs shipped** — the camera ships EXACTLY as granted: distance only,
+pinned in every other way. Owner grant MC 11719 (2026-10-30) verbatim:
+**"Go 1 and zoom control for 2"** — ZOOM ONLY. Pan, rotate and pitch remain
+NOT granted: the rig's basis stays byte-locked, the shipped default row stays
+byte-identical, and the LOCKED frustum pin #3 stays SPENT and untouched. Of
+v1.2.1's deferred row "player zoom / camera controls" only the zoom half is
+now shipped; the spawn-mouth shimmer / painted-lane treatments stay deferred.
+
+**Known limits, stated as they are**
+
+- **Zoom is wheel-only by design** — touchpads work (they emit wheel
+  events), there is no keyboard zoom. On the served web build one physical
+  KEY reaches the game twice (the shell-JS + engine double-feed,
+  served-measured at MC 11700), so the wheel path is NODE-LOCAL by design
+  with a per-tick guard: the same tick arriving twice is still one step, two
+  distinct ticks are two steps — both clauses pinned by the shipped relay
+  kit. Wheel-over-GUI: over a Control that consumes the wheel (the hub list,
+  the build panel's rows) it scrolls or acts there instead of zooming —
+  consistent with the shipped hub scroll, not a bug.
+- Carried forward from v1.2.1 (all still true, quoted from that section):
+  the kill-blow number "is a lower bound"; "Damage numbers share one effects
+  pool" (the 64-slot cap); "A kill right at the core's door shows no final
+  number"; "The hero crest and telegraph numbers are small at a 1280-px
+  window"; "The build ghost is a slot marker, not a translucent tower
+  silhouette"; and "`static/` (the browser build) is gitignored by design" —
+  regenerate with `bash tools/export_web.sh`.
+
+**Suite**: 287 pytest green, `check_hygiene: 0 hit(s)`, golden fixtures
+byte-identical.
+
 ## v1.2.1 (readability) — 2026-10-30 (RELEASED: tag v1.2.1 + GitHub Release)
 
 The readability wave: the battlefield now tells you at a glance where you are,
@@ -78,7 +147,7 @@ ruling 2026-10-25.**
   owner ruling — and the spawn-mouth shimmer / painted-lane treatments. The
   gate eyes and lane bands ARE the v1.2.1 treatment.
 
-**Suite**: 287 pytest green, `check_hygiene: 0 hit(s)`, golden fixtures
+**Suite**: 283 pytest green, `check_hygiene: 0 hit(s)`, golden fixtures
 byte-identical.
 
 ## v1.2 (quality-of-life) — 2026-10-29 (RELEASED: tag c95798b + GitHub Release with native Windows build, VM120-verified)

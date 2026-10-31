@@ -1,0 +1,115 @@
+# R13.log — v1.3 DOCS TAIL (MC 11818, tech-writer) — release notes v1.3 + README status + doc-sync sweep
+# Date: 2026-10-31 (UTC). Base tip: 7257b3c (A-acceptance commit; suite green there per A-log/Z3).
+# Scope law: RELEASE_NOTES.md + README.md + docs/ARCHITECTURE.md + THIS log — pathspec-only
+# commit, author tech-writer (11818), NOT pushed, NOT tagged (the tag rides the closing seat).
+# Documents written from the ARTIFACTS only: ZOOM_SPEC.md, Z1.log, Z2.log, Z3.log,
+# A-acceptance.log, DA-verdict.md (FIX)/DA-verdict-c2.md (SHIP), the v1.3 clean-code run
+# (FINDINGS.md, W1-docs-wave.log, W2-code-wave.log, W3-code-wave.log + the served-pixel
+# re-check row), git log v1.2.1..HEAD, and the live gates below — not from any doer's summary.
+
+== RELEASE-DOCTRINE ROW (1) — RELEASE_NOTES.md gains "## v1.3 (zoom) — 2026-10-31" ==
+Directly above the v1.2.1 section; the section states: mouse-wheel zoom (wheel-out to the
+2x overview D=128, wheel-in to the floor D=56 DERIVED from the shipped framing-gate math —
+the first crop point 52.4 stays BELOW it, both re-measured against the shipped gate per
+A-acceptance.log A5); default view byte-identical to v1.2.1 proven by the pixel-identical
+capture (baseline sha 0a40d116… re-verified mounted per A-acceptance.log A2); wheel-only
+keys-none design (spec §1 reasons); no HUD change; the clean-code wave (audit 0 hard size
+findings per FINDINGS.md §1 "Hard class: NONE"; material builder + air-grouping folded to
+one home each per W2/W3 logs; selected_tier retired per W2 log; docs de-staled per W1 log;
+byte-identical probe transcripts = zero behavior change per W2/W3 transcripts); the
+promised-vs-shipped row with the grant QUOTED VERBATIM — "Go 1 and zoom control for 2"
+(owner, 2026-10-30, MC 11719), zoom ONLY, pan/rotate/pitch NOT granted; the zero-
+monetization bold row restated in v1.2.1's style ("**No shop. No loot boxes. No timers.
+No monetization, ever — by owner ruling 2026-10-25.**"); known limits carrying forward
+ONLY limits already stated at v1.2.1 (each with a quote-cite of the v1.2.1 wording) plus
+the two new zoom rows (wheel-only by design — touchpads work, no keyboard zoom; the served
+key double-feed (MC 11700) is why the wheel path is node-local).
+VERIFY: grep -n "## v1" RELEASE_NOTES.md -> 3:## v1.3 (zoom) — 2026-10-31 / 72:## v1.2.1 …
+(section order v1.3 -> v1.2.1 -> v1.2 -> v1.1 -> v1); grep -c 'Go 1 and zoom control for 2'
+-> 1; grep -c "No monetization, ever" -> 3 (v1.3 + v1.2.1 + v1 — each section carries it).
+v1.3 Suite row: "**Suite**: 287 pytest green" (measured live below).
+
+== DECLARED DEVIATION (named, not silent) — the v1.2.1 Suite history row restored ==
+The brief's "older sections byte-untouched" collides with a corruption the ZOOM WAVE
+itself introduced: commit 7cd32138 (Z3) changed the v1.2.1 section's row
+"**Suite**: 283 pytest green…" to 287 — Z3.log §(C) itself quotes the pre-edit value 283,
+the v1.2.1 close (9cbead9) shipped it at 283, and the clean-code audit measured
+"283 tests collected" at the post-tag tip (FINDINGS.md BASELINE). A release section that
+claims a suite count the release never had is a false HISTORICAL claim (release notes are
+history per the doctrine — "RELEASE_NOTES older sections … are HISTORY"), and history says
+v1.2.1 = 283. Reading used: restoring the row to 283 RESTORES the v1.2.1-era bytes
+(it returns them byte-for-byte) — it does not rewrite history, it repairs it. The fix
+rides this docs commit as ONE line (`287 -> 283`); the live-count row "Dev checks at this
+release: … 287 green on the v1.3 zoom wiring; 283 at v1.2.1; 239 at v1.2; … 222" (already
+updated by Z3, in the v1 HOW-TO section) is untouched and remains correct. Every OTHER
+byte of the older sections is untouched (proof: the RELEASE_NOTES diff carries exactly two
+removed lines — the a/ header and that one Suite line; everything else is pure insertion).
+
+== RELEASE-DOCTRINE ROW (2) — README.md Status -> v1.3 ==
+Status line rewritten to the v1.3 one-wave summary (zoom + clean-code wave + grant quote
++ honest counts); the existing structure KEPT: status sentence, the release-page/LEDGER
+pointer sentence ("What shipped + the honest known-limits list: RELEASE_NOTES.md;
+acceptance list with evidence levels: LEDGER.md."), and the Windows-build pointer line
+(byte-untouched, incl. the [release page](https://github.com/bryn1/gatewardens/releases)
+link). The zero-monetization row (line 5) byte-untouched. I8 tokens over README.md:
+grep -c "VS_STATE\|__vsSnapshot\|vsHost" README.md -> 0 (test_bridge_contract's grep safe).
+VERIFY: grep -n "v1.3 (zoom)" README.md -> the Status line; README diff = 1 line (the Status
+line) — git diff -- README.md shows exactly one -/+ pair.
+
+== RELEASE-DOCTRINE ROW (3) — doc-sync sweep, grep-to-zero ==
+- grep -rn "283 " README.md docs/  ->  (no output), grep exit 1 = 0 HITS (the README live
+  claim is 287 since Z3; docs/ARCHITECTURE.md never carried a suite count). RELEASE_NOTES
+  older sections + LEDGER rows = HISTORY, deliberately NOT "fixed".
+- docs/ARCHITECTURE.md camera/Modules rows: `camera_zoom` grep -c = 2 — the new Modules row
+  `scripts/camera_zoom.gd` (row added by MC 11818) + the C4 camera-story sentence citing the
+  grant "Go 1 and zoom control for 2" (MC 11719) and the doctrine sentence "zoom steps the
+  rig ORIGIN along its frozen line of sight; basis/default LOCKED, pin #3 still SPENT". The
+  stale C4 claim "The camera rig is STATIC … never touched" (made untrue by the shipped
+  zoom) is rewritten to F8's real scope (swaps/pawn changes never touch it; hero_controller
+  quote kept, the mission.gd quote — whose comment I do not own — dropped from the doc line).
+- EVERY count written this commit, measured LIVE this session:
+    python3 -c "import sys; sys.path.insert(0, 'tools'); import check_hygiene as hyg; print(len(hyg.GOVERNED_LITERALS))" -> 17
+      (the camera_zoom row states "the I2 governed set measured live at 17, unchanged"; the
+      ARCHITECTURE I2 row "17 governed gameplay files" re-confirmed against the live gate.)
+    python3 -m pytest --collect-only -q | tail -1 -> "287 tests collected in 0.20s"
+    (README + RELEASE_NOTES v1.3 Suite rows: 287 — matches the full run below.)
+- CARRIED RESIDUE (named, outside this card's pathspec — NOT silently chosen, NOT edited):
+  godot/scripts/mission.gd:156 comment "the camera rig on this root is never touched (F8)"
+  — ZOOM_SPEC §5 A7 assigned its LOC-neutral rewrite to the S3 wiring commit (Z3) and Z3's
+  commit inventory shows it did not land. The comment is scoped to the W7 hero-rig route
+  (still literally true there — zoom rides a separate mounted node), but per the A7
+  grep-to-zero it should be clarified; mission.gd sits AT the 400-LOC ceiling so the rewrite
+  must stay LOC-neutral. hero_controller.gd:11 ("NOTHING here ever touches") VERIFIED still
+  TRUE (scoped to that file). Files: godot/scripts/mission.gd — handed to the orchestrator.
+
+== GATES (all run this session, this tree, AFTER the doc edits) ==
+1) FULL SUITE: python3 -m pytest -q -> tail "287 passed in 183.97s (0:03:03)"  PYTEST_RC=0
+   (>= 287 DoD — met exactly; doc edits causally inert for the suite: no test reads
+   README/RELEASE_NOTES content; test_bridge_contract's README grep re-checked: 0 I8 hits.)
+2) python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)"  HYGIENE_RC=0
+   (notes only — identical note family to tip; no docs/.md file is gate-walked.)
+3) git diff --stat (pre-commit) ->
+     README.md            |  2 +-
+     RELEASE_NOTES.md     | 71 +++++++++++++++++++++++++++++++++++++++++++++++++-
+     docs/ARCHITECTURE.md |  3 ++-
+     3 files changed, 73 insertions(+), 3 deletions(-)
+   git status --porcelain ->  M README.md / M RELEASE_NOTES.md / M docs/ARCHITECTURE.md /
+   ?? .audits/20261031-1100-v13-zoom-plan/R13.log (this file) — exactly the 4-path touch
+   set; NOTHING else. fixtures EMPTY: sha256sum tests/fixtures/*.jsonl ->
+     5e37c4b089209e64e26395237830bc16a1cf62aa3b9a6d427be2f361f970f628  _hard.jsonl
+     eafe3932f7d30898565664341697a32f20ecda7458d379be65b668bf2d6f3912  _normal.jsonl
+   (byte-identical to the pins in FINDINGS.md §7 row 1 / W3 log gate 4; `git diff --
+   tests/fixtures godot/data` EMPTY.)
+4) monetization surface added by this commit: NONE (no added line carries an I1 tripwire
+   token; the only added "money-adjacent" strings are the BANNED-pattern sentences
+   themselves restating the zero-monetization ruling).
+5) NOT tagged, NOT pushed, no git config — commit rides:
+   git -c user.name="tech-writer (11818)" -c user.email=tech-writer@agent-town.local commit
+   pathspec: README.md RELEASE_NOTES.md docs/ARCHITECTURE.md .audits/…/R13.log.
+
+UNVERIFIED-again rows (carried honestly, per citation-discipline): the served-browser A1
+frames and the A2 post-mount pixel identity are quoted FROM A-acceptance.log (orchestrator's
+leg at tip f0b47b7) — re-run by THIS card: no (no browser leg in a docs card; the doc lines
+say only what that log proves). Everything else above was executed this session.
+
+VERIFY_EXIT=0
