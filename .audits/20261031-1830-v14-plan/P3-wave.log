@@ -1,0 +1,398 @@
+# MC 11831 — v1.4 P3 mutation kill-rate over the pure-Python tier — VERDICT LOG
+seat: test (11831) | worktree /tmp/gw-v14-p3 @ 181e811 | date 2026-10-31
+
+DECLARED RE-READ (verbatim, per card): mutmut is Python-only; the game sim is
+GDScript; this card measures the repo's REAL pure-Python logic instead — the
+substitution is declared, not hidden (V14-PLAN §3 P3).
+
+## 1. Environment (quoted)
+```
+$ python3 -m venv /tmp/gw-mutmut-venv   -> FAILS on VM350: ensurepip not available
+  (python3.10-venv not installed). DECLARED substitution:
+$ ~/.local/bin/virtualenv /tmp/gw-mutmut-venv   (isolated venv, pip 26.2.2)
+$ /tmp/gw-mutmut-venv/bin/pip install "pytest<9" mutmut   -> rc=0
+$ /tmp/gw-mutmut-venv/bin/pip show pytest mutmut
+Name: pytest
+Version: 8.4.2
+Name: mutmut
+Version: 3.8.1
+```
+
+## 2. Method (declared readings)
+- mutmut 3.8.1 model (read from THIS version's source, not guessed flags): `mutmut run
+  reads config from CWD (setup.cfg [mutmut]); copies source + also_copy paths into
+  ./mutants/ and mutates ONLY the copy — the repo's real files are never written;
+  tests run with cwd=mutants/. Repo porcelain is therefore structurally untouched by
+  the run (verified, §6).
+- Scope config lives in SCRATCH only: /tmp/gw-mutmut-scratch/run-hyg/setup.cfg and
+  /tmp/gw-mutmut-scratch/run-static/setup.cfg (source_paths = src/check_hygiene.py /
+  server/static_app.py via symlink farm; nothing added to the repo — card requirement).
+- Module-path association: mutmut keys mutants by file path (tools/check_hygiene.py ->
+  tools.check_hygiene) while tests import the top-level names. Declared scratch fix:
+  hygiene farm places the file at src/check_hygiene.py (mutmut strips the src. prefix
+  so keys == check_hygiene.*, matching the tests' `import check_hygiene`), and the
+  static-app harness imports it as `from server import static_app` (the path-derived
+  key). Without this, mutmut 3.8.1 aborts with its own association guard (seen live).
+- Hygiene test universe (declared reading of the card's 'hygiene test universe'): the
+  pure-Python files that import tools/check_hygiene and exercise it IN-PROCESS:
+  tests/test_purity.py, test_bridge_contract.py, test_data_schemas.py,
+  test_loot_structure.py, test_economy_numbers.py, test_heroes.py, test_enemy_walk.py
+  (122 tests, green in 7.6s). The engine-tier files reuse blank_code incidentally for
+  their own greps and would add minutes of godot-probe runtime per stats pass without
+  covering any new gate function; test_scaffold.py drives the gate ONLY via subprocess
+  (see LIMITS) and its gate-green leg is additionally structurally incompatible with
+  the trampoline world (the copy legitimately exceeds the gate's own 400-line ceiling),
+  so it is excluded from the mutation universe and runs in the untouched full suite.
+- static_app universe: tests/test_served.py + the two test_scaffold server legs run
+  clean-run guards (they exercise the shipped HTTP shape in the copy world), and the
+  SCORED association comes from a SCRATCH-ONLY direct harness (tests_scratch/
+  test_direct_static_app.py, 15 tests, mock handler + tmp docroots) because the repo
+  suite reaches static_app only through a subprocess server, which mutmut 3.8.1 cannot
+  associate (in-process recording only) — DECLARED: the static_app kill-rate measures
+  the direct harness, and that gap in the repo suite is itself finding F-3.
+- Harness sealed before use (negative-testing rule): the scratch direct harness runs
+  15 GREEN on the clean copy, and went RED (7 failed) when the escape guard in the
+  COPY's static_app.py was planted-broken (commonpath != -> ==):
+  `7 failed, 8 passed` — red output kept at §7.
+
+## 3. Untouched full suite at the worktree (gate: proves zero repo change)
+```
+$ cd /tmp/gw-v14-p3 && /tmp/gw-mutmut-venv/bin/python -m pytest -q -p no:cacheprovider tests/
+287 passed in 184.19s (0:03:04)
+SUITE_RC=0
+```
+
+## 4. Raw mutmut summaries (quoted spinner rows + recomputed counts)
+### run-hyg — tools/check_hygiene.py (universe: 7 pure files, 122 tests)
+```
+⠹ 516/516  🎉 93 🫥 238  ⏰ 12  🤔 0  🙁 173  🔇 0  🧙 0
+12.19 mutations/second
+```
+generated 516 | killed 93 | survived 173 | timeout 12 | no-tests 238 | suspicious 0
+(counts recomputed from `mutmut results`: survived 173, timeout 12, no-tests 238)
+- kill-rate vs generated: 93/516 = 18.0% (with the 12 timeouts scored as kills: 105/516 = 20.4%)
+- kill-rate vs SCORED (mutmut's own denominator, generated - no-tests = 278):
+  (93+12)/278 = 37.8%; strict-killed 93/278 = 33.5%
+- the 238 no-tests are x_main (234) + x_rel (4): the gate driver main() runs ONLY as a
+  subprocess (test_scaffold), invisible to mutmut's in-process association — LIMITS row.
+### run-static — server/static_app.py (universe: scratch direct harness, 15 tests, DECLARED)
+```
+⠹ 121/121  🎉 108 🫥 0  ⏰ 0  🤔 0  🙁 13  🔇 0  🧙 0
+99.15 mutations/second
+```
+generated 121 | killed 108 | survived 13 | timeout 0 | no-tests 0 | suspicious 0
+- kill-rate: 108/121 = 89.3% (identical on both denominators, no-tests is empty)
+
+## 5. Survivor triage (every surviving mutant named; class harmless | test-gap)
+
+### 5a. server/static_app.py — 13 survivors
+
+Group reasons first; per-mutant rows carry the group tag.
+- EQ (harmless): identical codec — utf-8 == UTF-8.
+- F-3a (TEST-GAP): serve() OSError branch (isfile()==True then open() fails — chmod-000,
+  race, FIFO): NO test at any tier exercises it, so all 11 argument mutations on that
+  branch's send_error_json call survive. Verified: every surviving serve mutant's diff
+  hunk is the `except OSError:` line (mutmut show x_serve__mutmut_52 quoted at §7).
+- F-4 (TEST-GAP): _resolve lstrip("/") boundary — no test path has a post-slash name
+  starting with x/X (the mutant's strip-set is {/,X}).
+
+| mutant | mutation (old => new, compact) | class |
+|---|---|---|
+| static_app.send_error_json__mutmut_5 | body = json.dumps(obj).encode("utf-8") => body = json.dumps(obj).encode("UTF-8") | HARMLESS — EQ: "utf-8" == "UTF-8", same codec |
+| static_app._resolve__mutmut_21 | os.path.join(real_root, request_path.lstrip("/"))) => os.path.join(real_root, request_path.lstrip("XX/XX") | TEST-GAP — F-4: lstrip("/") boundary — no test requests a path whose post-slash name starts with x/X (mutant strips those chars too) |
+| static_app.serve__mutmut_46 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(None, 404, {"error": "NOT_FOUND"}) | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+| static_app.serve__mutmut_47 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(handler, None, {"error": "NOT_FOUND" | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+| static_app.serve__mutmut_48 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(handler, 404, None) | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+| static_app.serve__mutmut_49 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(404, {"error": "NOT_FOUND"}) | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+| static_app.serve__mutmut_50 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(handler, {"error": "NOT_FOUND"}) | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+| static_app.serve__mutmut_51 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(handler, 404, ) | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+| static_app.serve__mutmut_52 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(handler, 405, {"error": "NOT_FOUND"} | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+| static_app.serve__mutmut_53 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(handler, 404, {"XXerrorXX": "NOT_FOU | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+| static_app.serve__mutmut_54 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(handler, 404, {"ERROR": "NOT_FOUND"} | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+| static_app.serve__mutmut_55 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(handler, 404, {"error": "XXNOT_FOUND | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+| static_app.serve__mutmut_56 | send_error_json(handler, 404, {"error": "NOT_FOUND"}) => send_error_json(handler, 404, {"error": "not_found"} | TEST-GAP — F-3a: serve() OSError branch (isfile true, open() fails) is exercised by no test at any tier |
+
+### 5b. tools/check_hygiene.py — 173 survivors
+
+The structural cause behind almost all of them, stated once (FINDING F-1): the
+in-process hygiene universe asserts ABSENCE only (no banned token in blanked code,
+zero raw hits in scans). The shipped .gd/.py corpus is clean BY DESIGN, so blanking
+that misfires, empties itself, or skips whole comment families stays green — a
+mutation kill needs a POSITIVE CONTROL (a fixture that MUST be blanked / MUST trip).
+Second cause (FINDING F-2): blank_code is only ever run with family="gd" in-process;
+the gate blanks py (triple-quote), js (backtick), css, cfg (';') and html ('<!--')
+against the shipped tree, and no in-process test blanks any of those families.
+
+HARMLESS equivalents (8): blank_code nxt-value mutants 6/7/14 (the value flows only
+into =="/" / =="*" comparisons and can never equal either; 3); words 2/3 (the camel
+regex re-tokenizes any unsplit part, so the split delimiter is unobservable; 2);
+read 8 (utf-8 == UTF-8; 1); tripwire_hit 22/23 (phrase-window ±1: out-of-range slices
+cannot equal the token list; 2).
+
+Timeouts (12, blank_code loop guards) are NOT survivors: mutmut scores them killed-
+side; they are loop-guard inversions that hang — a real behavior change, detected as
+timeout. Listed for completeness: 105, 107, 199, 200, 39, 43, 44, 52, 70, 74, 75, 90
+
+| mutant | mutation (old => new, compact) | class |
+|---|---|---|
+| hygiene.blank_code__mutmut_3 | i, n = 0, len(text) => i, n = 1, len(text) | TEST-GAP — G-SPINE: first-char skip / join-separator spine: only observable through a positive-control assertion (none in-process) |
+| hygiene.blank_code__mutmut_6 | nxt = text[i + 1] if i + 1 < n else "" => nxt = None | HARMLESS — EQ: nxt is consumed only by =="/" / =="*" comparisons; the replaced values never equal either, for any input |
+| hygiene.blank_code__mutmut_7 | nxt = text[i + 1] if i + 1 < n else "" => nxt = text[i + 1] if (i + 1 < n) and False else  | HARMLESS — EQ: nxt is consumed only by =="/" / =="*" comparisons; the replaced values never equal either, for any input |
+| hygiene.blank_code__mutmut_9 | nxt = text[i + 1] if i + 1 < n else "" => nxt = text[i - 1] if i + 1 < n else "" | TEST-GAP — G-NXT-IDX: distinguishable only by a // or /* pair ending the text (no fixture carries one) |
+| hygiene.blank_code__mutmut_12 | nxt = text[i + 1] if i + 1 < n else "" => nxt = text[i + 1] if i + 2 < n else "" | TEST-GAP — G-NXT-IDX: distinguishable only by a // or /* pair ending the text (no fixture carries one) |
+| hygiene.blank_code__mutmut_14 | nxt = text[i + 1] if i + 1 < n else "" => nxt = text[i + 1] if i + 1 < n else "XXXX" | HARMLESS — EQ: nxt is consumed only by =="/" / =="*" comparisons; the replaced values never equal either, for any input |
+| hygiene.blank_code__mutmut_15 | if c in "\"'" or (c == "`" and family == "js"): => if c in "\"'" and (c == "`" and family == "js"): | TEST-GAP — G-STRCOND: string-start condition; the js backtick sub-term never runs in-process and the whole-condition flips are only observable via a positive-control blank assertion (none in-process) |
+| hygiene.blank_code__mutmut_16 | if c in "\"'" or (c == "`" and family == "js"): => if c not in "\"'" or (c == "`" and family == "js | TEST-GAP — G-STRCOND: string-start condition; the js backtick sub-term never runs in-process and the whole-condition flips are only observable via a positive-control blank assertion (none in-process) |
+| hygiene.blank_code__mutmut_17 | if c in "\"'" or (c == "`" and family == "js"): => if c in "XX\"'XX" or (c == "`" and family == "js | TEST-GAP — G-STRCOND: string-start condition; the js backtick sub-term never runs in-process and the whole-condition flips are only observable via a positive-control blank assertion (none in-process) |
+| hygiene.blank_code__mutmut_18 | if c in "\"'" or (c == "`" and family == "js"): => if c in "\"'" or (c == "`" or family == "js"): | TEST-GAP — G-STRCOND: string-start condition; the js backtick sub-term never runs in-process and the whole-condition flips are only observable via a positive-control blank assertion (none in-process) |
+| hygiene.blank_code__mutmut_19 | if c in "\"'" or (c == "`" and family == "js"): => if c in "\"'" or (c != "`" and family == "js"): | TEST-GAP — G-STRCOND: string-start condition; the js backtick sub-term never runs in-process and the whole-condition flips are only observable via a positive-control blank assertion (none in-process) |
+| hygiene.blank_code__mutmut_20 | if c in "\"'" or (c == "`" and family == "js"): => if c in "\"'" or (c == "XX`XX" and family == "js | TEST-GAP — G-STRCOND: string-start condition; the js backtick sub-term never runs in-process and the whole-condition flips are only observable via a positive-control blank assertion (none in-process) |
+| hygiene.blank_code__mutmut_21 | if c in "\"'" or (c == "`" and family == "js"): => if c in "\"'" or (c == "`" and family != "js"): | TEST-GAP — G-STRCOND: string-start condition; the js backtick sub-term never runs in-process and the whole-condition flips are only observable via a positive-control blank assertion (none in-process) |
+| hygiene.blank_code__mutmut_22 | if c in "\"'" or (c == "`" and family == "js"): => if c in "\"'" or (c == "`" and family == "XXjsXX | TEST-GAP — G-STRCOND: string-start condition; the js backtick sub-term never runs in-process and the whole-condition flips are only observable via a positive-control blank assertion (none in-process) |
+| hygiene.blank_code__mutmut_23 | if c in "\"'" or (c == "`" and family == "js"): => if c in "\"'" or (c == "`" and family == "JS"): | TEST-GAP — G-STRCOND: string-start condition; the js backtick sub-term never runs in-process and the whole-condition flips are only observable via a positive-control blank assertion (none in-process) |
+| hygiene.blank_code__mutmut_25 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family == "py" and text[i:i + | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_26 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family == "py" and text[i:i + | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_27 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c / 3 if (family == "py" and text[i:i + | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_28 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 4 if (family == "py" and text[i:i + | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_29 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family == "py" or text[i:i +  | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_30 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family != "py" and text[i:i + | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_31 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family == "XXpyXX" and text[i | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_32 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family == "PY" and text[i:i + | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_33 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family == "py" and text[i:i - | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_34 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family == "py" and text[i:i + | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_35 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family == "py" and text[i:i + | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_36 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family == "py" and text[i:i + | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_37 | q = q3 = c * 3 if (family == "py" and text[i:i + 3] == c => q = q3 = c * 3 if (family == "py" and text[i:i + | TEST-GAP — G-PY: py triple-quote path; blank_code is never run with family="py" in-process |
+| hygiene.blank_code__mutmut_40 | while j < n: => while j <= n: | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_41 | if text[j] == "\\": => if text[j] != "\\": | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_42 | if text[j] == "\\": => if text[j] == "XX\\XX": | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_45 | j += 2 => j += 3 | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_46 | continue => break | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_48 | if text.startswith(q3, j): => if text.startswith(q3, None): | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_50 | if text.startswith(q3, j): => if text.startswith(q3, ): | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_53 | j += 1 => j -= 1 | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_54 | j += 1 => j += 2 | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_60 | chunk = text[i:min(j + len(q), n)] => chunk = text[i:min(j - len(q), n)] | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_63 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("XXXX".join(ch if ch == "\n" else " " | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_64 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if (ch == "\n") and False  | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_65 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if (ch == "\n") or True el | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_66 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if ch != "\n" else " " for | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_67 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if ch == "XX\nXX" else " " | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_68 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if ch == "\n" else "XX XX" | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_71 | continue => break | TEST-GAP — G-STRSCAN: string-scan loop (quotes run on the gd corpus, but no in-process assertion targets the blanked result; escape/EOF cases have no fixture) |
+| hygiene.blank_code__mutmut_72 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == ";" and family == "cfg") and (c == "/"  | TEST-GAP — G-CMT-COND: #-comment condition (# runs on gd, no positive-control fixture; py/cfg membership = family gap) |
+| hygiene.blank_code__mutmut_80 | if (c == "#" and family in ("gd", "py", "cfg") => if (c == "#" and family in ("gd", "XXpyXX", "cfg | TEST-GAP — G-CMT-COND: #-comment condition (# runs on gd, no positive-control fixture; py/cfg membership = family gap) |
+| hygiene.blank_code__mutmut_81 | if (c == "#" and family in ("gd", "py", "cfg") => if (c == "#" and family in ("gd", "PY", "cfg") | TEST-GAP — G-CMT-COND: #-comment condition (# runs on gd, no positive-control fixture; py/cfg membership = family gap) |
+| hygiene.blank_code__mutmut_82 | if (c == "#" and family in ("gd", "py", "cfg") => if (c == "#" and family in ("gd", "py", "XXcfgXX | TEST-GAP — G-CMT-COND: #-comment condition (# runs on gd, no positive-control fixture; py/cfg membership = family gap) |
+| hygiene.blank_code__mutmut_83 | if (c == "#" and family in ("gd", "py", "cfg") => if (c == "#" and family in ("gd", "py", "CFG") | TEST-GAP — G-CMT-COND: #-comment condition (# runs on gd, no positive-control fixture; py/cfg membership = family gap) |
+| hygiene.blank_code__mutmut_84 | or (c == ";" and family == "cfg") => or (c == ";" or family == "cfg") | TEST-GAP — G-CFG: cfg ';'-comment family never blanked in-process |
+| hygiene.blank_code__mutmut_85 | or (c == ";" and family == "cfg") => or (c != ";" and family == "cfg") | TEST-GAP — G-CFG: cfg ';'-comment family never blanked in-process |
+| hygiene.blank_code__mutmut_86 | or (c == ";" and family == "cfg") => or (c == "XX;XX" and family == "cfg") | TEST-GAP — G-CFG: cfg ';'-comment family never blanked in-process |
+| hygiene.blank_code__mutmut_87 | or (c == ";" and family == "cfg") => or (c == ";" and family != "cfg") | TEST-GAP — G-CFG: cfg ';'-comment family never blanked in-process |
+| hygiene.blank_code__mutmut_88 | or (c == ";" and family == "cfg") => or (c == ";" and family == "XXcfgXX") | TEST-GAP — G-CFG: cfg ';'-comment family never blanked in-process |
+| hygiene.blank_code__mutmut_89 | or (c == ";" and family == "cfg") => or (c == ";" and family == "CFG") | TEST-GAP — G-CFG: cfg ';'-comment family never blanked in-process |
+| hygiene.blank_code__mutmut_91 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "/" or nxt == "/" and family in ("gd",  | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_92 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c != "/" and nxt == "/" and family in ("gd", | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_93 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "XX/XX" and nxt == "/" and family in (" | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_94 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "/" and nxt != "/" and family in ("gd", | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_95 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "/" and nxt == "XX/XX" and family in (" | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_96 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "/" and nxt == "/" and family not in (" | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_97 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "/" and nxt == "/" and family in ("XXgd | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_98 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "/" and nxt == "/" and family in ("GD", | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_99 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "/" and nxt == "/" and family in ("gd", | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_100 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "/" and nxt == "/" and family in ("gd", | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_101 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "/" and nxt == "/" and family in ("gd", | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_102 | or (c == "/" and nxt == "/" and family in ("gd", "js", " => or (c == "/" and nxt == "/" and family in ("gd", | TEST-GAP — G-SLASH: '//'-comment branch (gd/js/html): no fixture text carries // |
+| hygiene.blank_code__mutmut_108 | j = text.find("\n", i) => j = text.rfind("\n", i) | TEST-GAP — G-CMT-BODY: shared comment body (reachable via gd #): unterminated-comment-at-EOF and blank-width cases have no fixture |
+| hygiene.blank_code__mutmut_109 | j = text.find("\n", i) => j = text.find("XX\nXX", i) | TEST-GAP — G-CMT-BODY: shared comment body (reachable via gd #): unterminated-comment-at-EOF and blank-width cases have no fixture |
+| hygiene.blank_code__mutmut_111 | j = n if j < 0 else j => j = n if (j < 0) and False else j | TEST-GAP — G-CMT-BODY: shared comment body (reachable via gd #): unterminated-comment-at-EOF and blank-width cases have no fixture |
+| hygiene.blank_code__mutmut_112 | j = n if j < 0 else j => j = n if (j < 0) or True else j | TEST-GAP — G-CMT-BODY: shared comment body (reachable via gd #): unterminated-comment-at-EOF and blank-width cases have no fixture |
+| hygiene.blank_code__mutmut_113 | j = n if j < 0 else j => j = n if j <= 0 else j | TEST-GAP — G-CMT-BODY: shared comment body (reachable via gd #): unterminated-comment-at-EOF and blank-width cases have no fixture |
+| hygiene.blank_code__mutmut_114 | j = n if j < 0 else j => j = n if j < 1 else j | TEST-GAP — G-CMT-BODY: shared comment body (reachable via gd #): unterminated-comment-at-EOF and blank-width cases have no fixture |
+| hygiene.blank_code__mutmut_117 | out.append(" " * (j - i)) => out.append("XX XX" * (j - i)) | TEST-GAP — G-CMT-BODY: shared comment body (reachable via gd #): unterminated-comment-at-EOF and blank-width cases have no fixture |
+| hygiene.blank_code__mutmut_118 | out.append(" " * (j - i)) => out.append(" " * (j + i)) | TEST-GAP — G-CMT-BODY: shared comment body (reachable via gd #): unterminated-comment-at-EOF and blank-width cases have no fixture |
+| hygiene.blank_code__mutmut_120 | continue => break | TEST-GAP — G-CMT-BODY: shared comment body (reachable via gd #): unterminated-comment-at-EOF and blank-width cases have no fixture |
+| hygiene.blank_code__mutmut_121 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" and nxt == "*" or family in ("gd", " | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_122 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" or nxt == "*" and family in ("gd", " | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_123 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c != "/" and nxt == "*" and family in ("gd",  | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_124 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "XX/XX" and nxt == "*" and family in ("g | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_125 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" and nxt != "*" and family in ("gd",  | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_126 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" and nxt == "XX*XX" and family in ("g | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_127 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" and nxt == "*" and family not in ("g | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_128 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" and nxt == "*" and family in ("XXgdX | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_129 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" and nxt == "*" and family in ("GD",  | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_130 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" and nxt == "*" and family in ("gd",  | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_131 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" and nxt == "*" and family in ("gd",  | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_132 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" and nxt == "*" and family in ("gd",  | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_133 | if c == "/" and nxt == "*" and family in ("gd", "js", "c => if c == "/" and nxt == "*" and family in ("gd",  | TEST-GAP — G-STAR: /*-block condition (gd/js/css): no fixture carries /* |
+| hygiene.blank_code__mutmut_134 | j = text.find("*/", i + 2) => j = None | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_135 | j = text.find("*/", i + 2) => j = text.find(None, i + 2) | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_136 | j = text.find("*/", i + 2) => j = text.find("*/", None) | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_137 | j = text.find("*/", i + 2) => j = text.find(i + 2) | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_138 | j = text.find("*/", i + 2) => j = text.find("*/", ) | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_139 | j = text.find("*/", i + 2) => j = text.rfind("*/", i + 2) | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_140 | j = text.find("*/", i + 2) => j = text.find("XX*/XX", i + 2) | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_141 | j = text.find("*/", i + 2) => j = text.find("*/", i - 2) | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_142 | j = text.find("*/", i + 2) => j = text.find("*/", i + 3) | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_143 | j = n if j < 0 else j + 2 => j = None | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_144 | j = n if j < 0 else j + 2 => j = n if (j < 0) and False else j + 2 | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_145 | j = n if j < 0 else j + 2 => j = n if (j < 0) or True else j + 2 | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_146 | j = n if j < 0 else j + 2 => j = n if j <= 0 else j + 2 | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_147 | j = n if j < 0 else j + 2 => j = n if j < 1 else j + 2 | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_148 | j = n if j < 0 else j + 2 => j = n if j < 0 else j - 2 | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_149 | j = n if j < 0 else j + 2 => j = n if j < 0 else j + 3 | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_150 | chunk = text[i:j] => chunk = None | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_151 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append(None) | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_152 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(None)) | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_153 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("XXXX".join(ch if ch == "\n" else " " | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_154 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if (ch == "\n") and False  | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_155 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if (ch == "\n") or True el | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_156 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if ch != "\n" else " " for | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_157 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if ch == "XX\nXX" else " " | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_158 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if ch == "\n" else "XX XX" | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_159 | i = j => i = None | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_160 | continue => break | TEST-GAP — G-STAR-BODY: /*-block body (reachable family, no input): find/rfind and terminator-offset cases have no fixture |
+| hygiene.blank_code__mutmut_161 | if c == "<" and text.startswith("<!--", i) and family == => if c == "<" and text.startswith("<!--", i) or fa | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_162 | if c == "<" and text.startswith("<!--", i) and family == => if c == "<" or text.startswith("<!--", i) and fa | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_163 | if c == "<" and text.startswith("<!--", i) and family == => if c != "<" and text.startswith("<!--", i) and f | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_164 | if c == "<" and text.startswith("<!--", i) and family == => if c == "XX<XX" and text.startswith("<!--", i) a | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_166 | if c == "<" and text.startswith("<!--", i) and family == => if c == "<" and text.startswith("<!--", None) an | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_168 | if c == "<" and text.startswith("<!--", i) and family == => if c == "<" and text.startswith("<!--", ) and fa | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_169 | if c == "<" and text.startswith("<!--", i) and family == => if c == "<" and text.startswith("XX<!--XX", i) a | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_170 | if c == "<" and text.startswith("<!--", i) and family == => if c == "<" and text.startswith("<!--", i) and f | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_171 | if c == "<" and text.startswith("<!--", i) and family == => if c == "<" and text.startswith("<!--", i) and f | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_172 | if c == "<" and text.startswith("<!--", i) and family == => if c == "<" and text.startswith("<!--", i) and f | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_173 | j = text.find("-->", i) => j = None | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_174 | j = text.find("-->", i) => j = text.find(None, i) | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_175 | j = text.find("-->", i) => j = text.find("-->", None) | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_176 | j = text.find("-->", i) => j = text.find(i) | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_177 | j = text.find("-->", i) => j = text.find("-->", ) | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_178 | j = text.find("-->", i) => j = text.rfind("-->", i) | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_179 | j = text.find("-->", i) => j = text.find("XX-->XX", i) | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_180 | j = n if j < 0 else j + 3 => j = None | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_181 | j = n if j < 0 else j + 3 => j = n if (j < 0) and False else j + 3 | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_182 | j = n if j < 0 else j + 3 => j = n if (j < 0) or True else j + 3 | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_183 | j = n if j < 0 else j + 3 => j = n if j <= 0 else j + 3 | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_184 | j = n if j < 0 else j + 3 => j = n if j < 1 else j + 3 | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_185 | j = n if j < 0 else j + 3 => j = n if j < 0 else j - 3 | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_186 | j = n if j < 0 else j + 3 => j = n if j < 0 else j + 4 | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_187 | chunk = text[i:j] => chunk = None | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_188 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append(None) | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_189 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(None)) | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_190 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("XXXX".join(ch if ch == "\n" else " " | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_191 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if (ch == "\n") and False  | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_192 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if (ch == "\n") or True el | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_193 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if ch != "\n" else " " for | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_194 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if ch == "XX\nXX" else " " | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_195 | out.append("".join(ch if ch == "\n" else " " for ch in c => out.append("".join(ch if ch == "\n" else "XX XX" | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_196 | i = j => i = None | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_197 | continue => break | TEST-GAP — G-HTML: html '<!--' family never blanked in-process |
+| hygiene.blank_code__mutmut_203 | return "".join(out) => return "XXXX".join(out) | TEST-GAP — G-SPINE: first-char skip / join-separator spine: only observable through a positive-control assertion (none in-process) |
+| hygiene.words__mutmut_2 | for part in ident.split("_"): => for part in ident.split(None): | HARMLESS — EQ: words() re-tokenizes each part with the case/camel regex anyway, so the split delimiter is not observable for identifier inputs |
+| hygiene.words__mutmut_3 | for part in ident.split("_"): => for part in ident.split("XX_XX"): | HARMLESS — EQ: words() re-tokenizes each part with the case/camel regex anyway, so the split delimiter is not observable for identifier inputs |
+| hygiene.tripwire_hit__mutmut_1 | low = ident.lower() => low = None | TEST-GAP — G-IDENTMODE: identifier-mode token ('shop') and the case-normalization of the lookup have no positive-control test in-process |
+| hygiene.tripwire_hit__mutmut_2 | low = ident.lower() => low = ident.upper() | TEST-GAP — G-IDENTMODE: identifier-mode token ('shop') and the case-normalization of the lookup have no positive-control test in-process |
+| hygiene.tripwire_hit__mutmut_3 | if TRIPWIRE.get(low) == "identifier": => if TRIPWIRE.get(None) == "identifier": | TEST-GAP — G-IDENTMODE: identifier-mode token ('shop') and the case-normalization of the lookup have no positive-control test in-process |
+| hygiene.tripwire_hit__mutmut_5 | if TRIPWIRE.get(low) == "identifier": => if TRIPWIRE.get(low) == "XXidentifierXX": | TEST-GAP — G-IDENTMODE: identifier-mode token ('shop') and the case-normalization of the lookup have no positive-control test in-process |
+| hygiene.tripwire_hit__mutmut_6 | if TRIPWIRE.get(low) == "identifier": => if TRIPWIRE.get(low) == "IDENTIFIER": | TEST-GAP — G-IDENTMODE: identifier-mode token ('shop') and the case-normalization of the lookup have no positive-control test in-process |
+| hygiene.tripwire_hit__mutmut_22 | for k in range(len(w) - len(t) + 1): => for k in range(len(w) + len(t) + 1): | HARMLESS — EQ: phrase window range widened/shrunk by 1 yields no extra or fewer match for any token list (out-of-range slices never equal the token list) |
+| hygiene.tripwire_hit__mutmut_23 | for k in range(len(w) - len(t) + 1): => for k in range(len(w) - len(t) + 2): | HARMLESS — EQ: phrase window range widened/shrunk by 1 yields no extra or fewer match for any token list (out-of-range slices never equal the token list) |
+| hygiene.walk__mutmut_2 | if not os.path.isdir(base): => if os.path.isdir(base): | TEST-GAP — G-NOPOSITIVE: the only in-process scan test asserts ZERO hits — an inverted or emptied walk stays green (no coverage-count positive control) |
+| hygiene.walk__mutmut_7 | dirnames[:] = sorted(d for d in dirnames if d not in SKI => dirnames[:] = sorted(d for d in dirnames if d in | TEST-GAP — G-NOPOSITIVE: the only in-process scan test asserts ZERO hits — an inverted or emptied walk stays green (no coverage-count positive control) |
+| hygiene.walk__mutmut_9 | if os.path.splitext(name)[1].lower() in accept_exts: => if os.path.splitext(name)[1].upper() in accept_e | TEST-GAP — G-NOPOSITIVE: the only in-process scan test asserts ZERO hits — an inverted or emptied walk stays green (no coverage-count positive control) |
+| hygiene.walk__mutmut_12 | if os.path.splitext(name)[1].lower() in accept_exts: => if os.path.splitext(name)[1].lower() not in acce | TEST-GAP — G-NOPOSITIVE: the only in-process scan test asserts ZERO hits — an inverted or emptied walk stays green (no coverage-count positive control) |
+| hygiene.read__mutmut_2 | with open(path, encoding="utf-8", errors="replace") as h => with open(path, encoding=None, errors="replace") | TEST-GAP — G-READ-BOUND: encoding/errors variants are observable only on non-UTF-8 or unreadable files; every in-process read is a clean ASCII file |
+| hygiene.read__mutmut_3 | with open(path, encoding="utf-8", errors="replace") as h => with open(path, encoding="utf-8", errors=None) a | TEST-GAP — G-READ-BOUND: encoding/errors variants are observable only on non-UTF-8 or unreadable files; every in-process read is a clean ASCII file |
+| hygiene.read__mutmut_5 | with open(path, encoding="utf-8", errors="replace") as h => with open(path, errors="replace") as handle: | TEST-GAP — G-READ-BOUND: encoding/errors variants are observable only on non-UTF-8 or unreadable files; every in-process read is a clean ASCII file |
+| hygiene.read__mutmut_6 | with open(path, encoding="utf-8", errors="replace") as h => with open(path, encoding="utf-8", ) as handle: | TEST-GAP — G-READ-BOUND: encoding/errors variants are observable only on non-UTF-8 or unreadable files; every in-process read is a clean ASCII file |
+| hygiene.read__mutmut_8 | with open(path, encoding="utf-8", errors="replace") as h => with open(path, encoding="UTF-8", errors="replac | HARMLESS — EQ: "utf-8" == "UTF-8", same codec, identical behavior |
+| hygiene.read__mutmut_9 | with open(path, encoding="utf-8", errors="replace") as h => with open(path, encoding="utf-8", errors="XXrepl | TEST-GAP — G-READ-BOUND: encoding/errors variants are observable only on non-UTF-8 or unreadable files; every in-process read is a clean ASCII file |
+| hygiene.read__mutmut_10 | with open(path, encoding="utf-8", errors="replace") as h => with open(path, encoding="utf-8", errors="REPLAC | TEST-GAP — G-READ-BOUND: encoding/errors variants are observable only on non-UTF-8 or unreadable files; every in-process read is a clean ASCII file |
+
+Survivor tally run-hyg: HARMLESS 8, TEST-GAP 165 (total 173).
+
+### 5c. FINDING ROWS (test-gaps routed to the orchestrator, not silently accepted)
+- F-1 (P2, TEST-GAP): the in-process hygiene universe has NO POSITIVE CONTROL for
+  blank_code / walk / tripwire identifier-mode / rel. One synthetic fixture per branch
+  (a gd text with #, //, /* */ and a comment-EOF case; a data identifier that MUST trip
+  'shop' and 'cash_store'; a scan assertion of coverage-count > 0) would kill the bulk
+  of the 150+ surviving mutants. Evidence: condition-INVERSIONS survive (blank_code 15-
+  23, walk 2/7/12) — a scan that returns NOTHING stays green.
+- F-2 (P3, TEST-GAP): js/html/css/cfg/py blanking families are never exercised
+  in-process; the gate uses them on the shipped tree. Family-scoped fixture set needed.
+- F-3 (P3, TEST-GAP): server/static_app.py has NO in-process test — the repo reaches it
+  only via a subprocess server, which mutmut cannot associate; without the scratch
+  direct harness the module scores 0/121 by association alone. Sub-finding F-3a (P3):
+  serve()'s OSError branch is untested at EVERY tier (11 survivors).
+- F-4 (P3, TEST-GAP): _resolve lstrip("/") boundary — add a request path like
+  /xhr.js to test_served/test_purity negative rows.
+- F-5 (P4, host fact): python3 -m venv is broken on VM350 (ensurepip/python3.10-venv
+  missing); virtualenv works — worth fixing fleet-wide for other cards.
+- NOT a finding, declared boundary: check_hygiene.main() mutants (234) are not scoreable
+  by mutmut (subprocess driver). Their live substitute already ships: test_scaffold.py
+  proves the gate GREEN on the tree and RED on a planted bad file, inside the full
+  suite run above (287 green) — the declared substitute for main(), honest-limit row.
+
+## 6. Repo state gates (GATE rows)
+```
+$ cd /tmp/gw-v14-p3 && python3 tools/check_hygiene.py | tail -1
+check_hygiene: 0 hit(s)          HYGIENE_RC=0
+$ git diff --stat -- tests/fixtures          (empty)   FIXTURES_DIFF_RC=0
+$ git status --porcelain          -> clean except .audits/20261031-1830-v14-plan/P3-wave.log + LEDGER.md
+$ untouched suite: 287 passed in 184.19s (0:03:04), SUITE_RC=0 (quoted §3)
+```
+
+## 7. Quoted red/green evidence (harness proof + survivor hunk proof)
+```
+$ (pilot copy) pytest -q tests_scratch/test_direct_static_app.py
+15 passed in 0.08s
+$ planted-red: sed -i 's/commonpath\[...] != real_root/== real_root/' server/static_app.py (COPY)
+FAILED tests_scratch/test_direct_static_app.py::test_serve_root_200_html - as...
+FAILED tests_scratch/test_direct_static_app.py::test_serve_wasm_and_pck_types
+7 failed, 8 passed in 0.10s   (restore: git checkout-copy, green again)
+
+$ mutmut show server.static_app.x_serve__mutmut_52   (representative of survivors 46-56)
+@@ -13,7 +13,7 @@
+         with open(path, "rb") as handle:
+             body = handle.read()
+     except OSError:
+-        send_error_json(handler, 404, {"error": "NOT_FOUND"})
++        send_error_json(handler, 405, {"error": "NOT_FOUND"})
+```
+
+## 8. Honest limits (declared, not hidden)
+- GDScript sim NOT mutation-covered: no GDScript mutation tool exists. The shipped
+  substitute remains the declared one (plan OD3): the planted-red rule inside the probe
+  kits + the golden fixtures (test_sim_golden), exercised green in §3. No GDScript
+  mutation harness was started (card instruction).
+- check_hygiene.main() + any subprocess-only driver: not associable by mutmut 3.8.1;
+  covered by test_scaffold green+planted-red inside the untouched 287-green suite.
+- static_app kill-rate measures the DECLARED scratch direct harness (repo association
+  gap F-3); the repo's own HTTP tests additionally run green in the copy world as
+  clean-run guards (the server subprocess inherits the mutant env but the trampoline
+  dispatches by module identity, so it serves the original — verified live).
+- mutmut samples equivalence by construction: 8+1 harmless-equivalent survivors here
+  were proven equivalent by reasoning over the consumed-value (EQ rows), not assumed.
+
+## 9. Scratch + cleanup inventory (nothing outside these paths was written)
+- /tmp/gw-mutmut-venv            (virtualenv, pytest 8.4.2, mutmut 3.8.1)
+- /tmp/gw-mutmut-scratch/run-hyg     (setup.cfg, symlink farm, mutants/ + results-a*.txt)
+- /tmp/gw-mutmut-scratch/run-static  (setup.cfg, symlink farm, tests_scratch harness, mutants/)
+- /tmp/gw-mutmut-scratch/pilot       (plain copy used for selection pilots + planted-red; safe to rm)
+- /tmp/gw-mutmut-scratch/triage      (keys-*.txt, diffs-*.txt survivor diff captures)
+- /tmp/gw-mutmut-scratch/gen_log.py  (this generator)
+
+VERDICT-SCALES: hygiene kill-rate 20.4% of generated / 37.8% scored (survivors triaged,
+FINDINGS routed); static_app kill-rate 89.3% (13 survivors triaged, F-3/F-3a/F-4 routed).
+Zero repo change: porcelain §6, suite 287 green §3, hygiene 0, fixtures diff empty.
+
+TALLIES: run-hyg 185 scored mutants (93 killed, 12 timeout, 173 survived: 8 harmless,
+165 test-gap grouped under F-1/F-2) + 238 no-tests declared; run-static 121 mutants
+(108 killed, 13 survived: 1 harmless, 12 test-gap under F-3a/F-4).
+
+READING NOTE (declared, DoD ambiguity): the card DoD requires the log's last line to
+be VERIFY_EXIT=0; the test-profile contract requires the verdict marker as the final
+line. The card is the more specific instruction, so the literal last line is
+VERIFY_EXIT=0 and the verdict marker is the line directly above it.
+# VERDICT: PASS
+VERIFY_EXIT=0
