@@ -1,0 +1,120 @@
+P5b-wave.log — v1.4 P5b: SELECTED ring on WEB — root-cause + web pixel leg
+(MC 11852, seat: coder profile, child of hermes-standby session-391bd348).
+Date 2026-10-31. Base tip e44f4f2 (detached worktree /tmp/gw-v14-p5b;
+branch card/11852). FINDING under test: .audits/20261031-1830-v14-plan
+ring-leg-repro.cjs + frames 00..03 (the served leg archived at e44f4f2).
+
+== ROOT CAUSE (measured, not assumed) ===================================
+MECHANISM: the P5 finding is a REPRO ARTIFACT, not a WEB-runtime defect.
+The original repro never reached the SELECTED state: its 4th click
+(640,380) is WORLD GROUND, and the shipped select route is the PANEL uid
+row only (defense_rows_ui.gd:153 b.pressed -> panel.select_defense; world
+LMB rides PRESS "confirm" and does nothing unarmed — defense_panel
+PRESS map). No selection => the driver's correct answer IS hide_ring =>
+"zero ring-band pixels" was TRUE but not a product bug.
+
+INSTRUMENT ROWS (temporary SCRATCH11852 prints in selection_ring.gd,
+exported scratch web build, served 127.0.0.1:8177, console captured via
+the repro harness page.on('console'); prints REMOVED before commit,
+revert byte-verified):
+  SR11852-READY                                  <- node mounts on web
+  SR11852 n=1 tick / n=2 hidden ... (heartbeat)   <- _process FIRES on web
+  SR11852 n=118 armed show g=0 r=16.0 ...         <- armed leg on web
+  SR11852 n=266 sel show uid=1 r=16.0 pos=(-40.0, 0.0, 0.0) ... (x18)
+      -> the driver RUNS on WEB and its SELECTED branch REACHES
+         show_ring at the tower with r=16.0 (towers.json T1 number).
+
+CANDIDATES TESTED, NOT ASSUMED:
+- "_process dispatch/timing on web": REFUTED — heartbeat rows above.
+- "ARMED was painted by an OLDER painter, driver never ran on web":
+  PARTLY TRUE / DRIVER EXONERATED — the G4 _sync_ring event painter does
+  also paint frame 01 (idempotent same-write, by design), but the driver
+  demonstrably ran (armed show rows during 01, sel show rows during 03).
+- "material/alpha path differences": REFUTED — SELECTED_COLOR painted
+  (census + crop below), same LIT_MATERIAL.make path as the web-green
+  RING_COLOR yellow.
+
+EVIDENCE THE ORIGINAL STATE WAS NEVER SELECTED (in the archived frames):
+- P5b-panelrow-crop-orig-03.png: uid row WITHOUT the "»" selected-mark
+  (the W17c mark is painted by the shipped refresh — defense_rows_ui:143
+  — whenever selected_uid matches); compare P5b-panelrow-crop-mine-03.png
+  "» uid 1 tower T1 hp 200/200".
+- orig 02-placed vs 03-selected PIL diff th18 = 157 px total (animation
+  jitter level) — the 4th click changed NOTHING. The e44f4f2 "54 px
+  inside the tower bbox" diff = the PLACE landing; there was no
+  SELECTED leg to paint.
+
+== FIX ================================================================
+Product code: ZERO change (nothing to fix — the WEB build already paints
+the SELECTED ring AT THE TOWER with SELECTED_COLOR once the shipped
+select route is actually used). git diff --stat godot/ = EMPTY; product
+byte-identity: selection_ring.gd sha256 47aa2a02e2e691fdd8a0062017379dd0
+35d516fa7dd503151c1451cdf6b245a3 (== e44f4f2). The BROKEN script is the
+throwaway repro: FIXED = ring-leg-11852.cjs (uid-row select + re-arm
+priority + Escape fallback + sell teardown legs; DECLARED pathspec
+addition — it is this card's fixed script). Console clean on the clean
+build: console-clean-11852.txt = 0 error lines, 0 SR11852 rows (prints
+gone).
+
+== WEB PIXEL LEG (acceptance) =========================================
+$ bash tools/export_web.sh            # clean build from byte-clean tree
+$ python3 -m http.server 8177 --bind 127.0.0.1   (static/, loopback)
+$ PW_CHROME=...chromium-1243... PW_SHOTS=shots11852 PW_PORT=8177 \
+      node ring-leg-11852.cjs         # shots11852/00..06.png
+CENSUS (ring-census-11852.py, tower-slot region 150,240..520,500,
+full-pixel, cool band = SELECTED_COLOR over tan ground):
+  00-mission   cool=19    (baseline)
+  01-armed     cool=19  yellow=5731   (ARMED yellow still paints, web)
+  02-placed    cool=19
+  03-selected  cool=1555  (+1536 ring-band px AT THE TOWER — PRESENT)
+  04-rearm     cool=19                (ARMED > SELECTED priority, web)
+  05-fallback  cool=1555              (Escape -> selection ring returns)
+  06-teardown  cool=19                (shipped sell selected_uid=0 reset
+                                       -> census BACK TO BASELINE)
+Crop beside this log: P5b-ring-crop-03.png (cyan SELECTED ring around the
+tower sprite; P5b-ring-crop-00.png / P5b-ring-crop-06.png = the same
+region at baseline).
+TEARDOWN: server killed — fuser -k -n tcp 8177 (port verified closed).
+
+== PLANTED-RED x1 (WEB, the fixed path) ================================
+Break selection_ring.gd SEL branch show_ring(m,obj.pos,r,SELECTED_COLOR)
+-> hide_ring(m)  # PLANT11852RED; re-export; same driver -> shots11852red:
+  01-armed cool=19 yellow=5731 (armed leg untouched — non-vacuous)
+  03-selected cool=19  <- RED: ring ABSENT although selection is live
+$ git checkout -- godot/scripts/selection_ring.gd
+  sha256 = 47aa2a02... (byte-identical to pre-plant); PLANT11852RED grep 0
+$ re-export; re-run -> shots11852post: 00 cool=19, 03 cool=1555,
+  06 cool=19 — GREEN again. Census is load-bearing, not vacuous.
+
+== GATES AT THIS TREE ================================================
+$ python3 -m pytest -q  -> 320 passed in 186.42s rc=0 ONE attempt (>=320)
+$ python3 tools/check_hygiene.py      -> check_hygiene: 0 hit(s)
+  (24 notes = base set; ZERO new)
+$ git diff --name-only HEAD -- tests/fixtures/       -> EMPTY
+$ git diff --name-only HEAD -- godot/scripts/camera_zoom.gd -> EMPTY
+$ git diff --name-only HEAD -- godot/scripts/mission.gd     -> EMPTY
+$ GOVERNED_LITERALS len                               -> 17 (unchanged)
+$ git diff --stat HEAD -- godot/ tests/               -> EMPTY (product
+  byte-clean; the commit carries evidence-side files only, DECLARED:
+  ring-leg-11852.cjs 42 + ring-census-11852.py 26 are the fixed repro +
+  its census, .audits evidence side, per the e44f4f2 throwaway precedent)
+
+== LOC GATE-METRIC ROWS ==============================================
+selection_ring.gd 89 -> 89 (byte-identical); range_ring.gd 111 -> 111;
+mission.gd 400 -> 400 (untouched); ring-leg-11852.cjs NEW 42;
+ring-census-11852.py NEW 26. No source file grew; hygiene ceiling
+unaffected.
+
+== DECLARATIONS =======================================================
+- DoD reading: "SELECTED ring does not paint on WEB" resolved as
+  root-cause-first; the fix named by the DoD ("FIX so the SELECTED ring
+  paints") is SATISFIED by the shipped code + fixed repro (the pixel leg
+  above is the acceptance instrument). No product diff exists to commit;
+  committing a NO-OP product hunk would be the dishonest artifact.
+- Deselect teardown uses the shipped sell -> selected_uid = 0 reset (the
+  P5 declared reading: the player has no separate deselect control).
+- shots11852*/ frames + console-11852.txt (instrumented console, 10.6 KB)
+  stay host-side evidence under .audits (not in the pathspec; the load-
+  bearing rows are quoted above, the crops are committed).
+
+VERIFY_EXIT=0
