@@ -1,0 +1,32 @@
+# P8-wave.log — v1.4 crest legibility FIX (MC 11835, conditional card ACTIVE from P4 ILLEGIBLE)
+Date 2026-10-31. Worktree /tmp/gw-v14-p8 (branch card/11835 off ce61e62). Coder leg; the served 1280px re-shoot leg is the ORCHESTRATOR's after merge (MC 11509 D3).
+
+FIX (rides the ONE crest mechanism, no new node/script):
+- hero_pawn.gd crest consts (ungoverned presentation numbers): CREST_NAME_H 0.55 -> 1.1 (x2, the brief's "roughly x2 current"), CREST_NAME_DY 0.85 -> 1.9, NEW CREST_NAME_OUTLINE := 10 (outline/contrast over the bright tan floor). CREST_Y 2.4 and CREST_SHEET_H 1.2 UNCHANGED.
+- world_text.gd DECLARED override param: make_text gains optional outline_px := OUTLINE_PX. The 3-arg callers (G6 fx_director damage numbers, G3 wave_telegraph counts) are byte-identical — default path unchanged, their rendered size did not move (suite green; TEXT_PX/OUTLINE_PX values untouched). ONE mechanism parameterized, not a second text-builder.
+- Interplay arithmetic (crest above the head, never over its own active mark): name block bottom = DY - H = 0.8 above the anchor >= sheet top SHEET_H/2 = 0.6 — the taller block clears the mini sheet in the worst (top-anchored) case at all 3 heroes; no world-space HUD/marker sits in the crest band (ACTIVE is the deck-slot tint+label — screen-space Control, never coverable by world text; gate eyes ride the SPAWN positions).
+- tests/test_hero_crest.py (declared: NO existing pin moved — CREST_Y/enemy-2.0/FOLLOW all green unchanged): engine CREST row gains per-hero size=/outline= read off the LIVE label (font_size*pixel_size, outline_size); new source-truth leg test_crest_p8_legibility_size_and_interplay (size floor >= x2 the P4-measured 0.55; DY/H/sheet interplay; outline > OUTLINE_PX; single make_text; override default).
+
+GATES:
+- git diff --stat (code = const-level + the one optional param):
+  godot/scripts/hero_pawn.gd  | 19 +++++++++++----
+  godot/scripts/world_text.gd |  8 +++++--
+  tests/test_hero_crest.py    | 56 ++++++++++++++++++++++++++++++++++++++++--
+- baseline suite at the UNTOUCHED tree (before fix): 287 passed rc=0 (.tmp/.tmp-baseline-pytest.log).
+- full suite at the fixed tree: 288 passed in 194.37s rc=0 (287 pre-existing legs green + 1 new P8 leg; NO re-pin needed — none moved).
+- hygiene: python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)" rc=0 (2 pre-existing soft notes, untouched files).
+- GOVERNED_LITERALS: python -c "import sys; sys.path.insert(0,'tools'); import check_hygiene as h; print(len(h.GOVERNED_LITERALS))" -> 17 (CONSTRAINT MET).
+- camera files + scenes + mission.gd + fixtures diff EMPTY: git diff --stat -- godot/scripts/camera_zoom.gd tests/test_camera_zoom.py godot/scenes/mission.tscn godot/scripts/mission.gd tests/fixtures/ -> EMPTY (grant honored: ZOOM ONLY, camera files untouched).
+- LOC rows (gate metric): hero_pawn.gd 99, world_text.gd 35, tests/test_hero_crest.py 449 (test ceiling 600 respected; targets met).
+
+PLANTED-RED x1 (fleet gate rule — the leg must prove it can fail):
+- rule: line-sed on the const line — s/^const CREST_NAME_H := 1\.1      #/const CREST_NAME_H := 0.0      #/ (file sha256 55a2800290753edf...42e7 recorded pre-plant).
+- RED: 1 failed, 3 passed — FAILED tests/test_hero_crest.py::test_crest_p8_legibility_size_and_interplay — "assert 0.0 >= ((2.0 * 0.55) - 0.01)" (crest name height fell back toward the P4-illegible 0.0).
+- revert: byte-verified (sha256sum -c OK: 55a28002...42e7), re-run: 4 passed rc=0. Green resumed.
+- (engine-row outline branch red-path is the same leg's sibling assert: int(row["outline"]) == CREST_NAME_OUTLINE -> world_text's 6px default would fail it if the override were dropped.)
+- NOTE honest row: the FIRST sed mis-hit a stale line number and "red" ran GREEN vacuously — caught, content-addressed rule re-ran; the red transcript above is the real one.
+
+CONSTRAINTS SUMMARY: camera diff EMPTY / mission.gd 0 lines / GOVERNED_LITERALS 17 / no new node or script / crest stays above the pawn head at all 3 heroes (interplay arithmetic + engine row) / name x2 with stronger outline / world_text override DECLARED and default byte-identical for G6/G3.
+SERVED LEG (orchestrator, after merge): 1280px re-shoot at default D=64, describe-image read-back spells a hero name.
+P8-DONE
+VERIFY_EXIT=0

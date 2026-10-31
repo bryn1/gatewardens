@@ -32,6 +32,16 @@ call is the ONLY caller of WORLD_H_HERO (enemies untouched).
 PLANTED-RED (fleet gate rule) rides G7-wave.log: the shipped swap hook
 (hero_controller.step's _sync_pawns call) removed -> the SWAP leg goes
 RED; transcript beside the green one, hero_controller.gd restored.
+
+v1.4 P8 (MC 11835): the served P4 measure read the crest NAME as
+~4-6px glyph smudges at default D=64 (ILLEGIBLE) — the fix doubles the
+SAME crest text const and overrides the outline over the bright tan
+floor, riding world_text's single make_text (optional param, defaults
+byte-identical for G6/G3 callers). The CREST row gains engine-read
+size/outline fields (planted-red: shrink CREST_NAME_H or drop the
+outline override -> this leg RED); the size floor, the CREST_Y
+interplay arithmetic and the one-make_text pin are the source-truth
+legs. G6 damage-number sizes are NOT pinned here and must not move.
 """
 
 import json
@@ -45,12 +55,14 @@ import check_hygiene as hyg  # noqa: E402  (reuse: the gate's blank_code)
 
 BANK_GD = conftest.repo_path("godot", "scripts", "sprite_bank.gd")
 PAWN_GD = conftest.repo_path("godot", "scripts", "hero_pawn.gd")
+WT_GD = conftest.repo_path("godot", "scripts", "world_text.gd")
 RUNNER_GD = conftest.repo_path("godot", "scripts", "enemy_runner.gd")
 HEROES = json.load(open(conftest.repo_path(
     "godot", "data", "heroes.json"), encoding="utf-8"))
 NAMES = {r["id"]: r["name"] for r in HEROES}
 DECK = ["warden", "deadeye", "embercaller"]   # the probe deck seed (v11/g1)
 EPS = 0.01          # declared eps for the FOLLOW/height comparisons
+P4_MEASURED_H = 0.55   # the world height P4 measured as a ~4-6px smudge
 
 # key=value fields whose values may contain spaces (crest names) — a
 # value runs until the next ` key=` or end of row.
@@ -175,9 +187,11 @@ func _crest_leg() -> void:
 			return
 		var sheet := crest.get_node_or_null("CrestSheet") as Sprite3D
 		print(("G7C-CREST id=%s text=%s sheet=%d labels=1 billboard=1 " \
-				+ "visible=%d") % [hid, String(lb.text),
+				+ "visible=%d size=%.6f outline=%d") % [hid, String(lb.text),
 				1 if sheet != null else 0,
-				1 if crest.is_visible_in_tree() else 0])
+				1 if crest.is_visible_in_tree() else 0,
+				float(lb.font_size) * float(lb.pixel_size),
+				int(lb.outline_size)])
 	var vis := _visible_names()
 	if vis.size() != 1:
 		_fail("visible crests at boot = %s (want exactly 1)" % str(vis))
@@ -323,6 +337,15 @@ def test_crest_mount_height_follow_swap_engine(tmp_path, class_cache):
         assert row["text"] == NAMES[hid], (hid, row)
         assert (row["sheet"], row["labels"], row["billboard"]) == \
             ("1", "1", "1"), (hid, row)
+        # P8 engine-read leg (MC 11835): the live name label's world
+        # height == the doubled CREST_NAME_H const and its outline ==
+        # the crest's override const. Planted-red: shrink the size const
+        # to 0 (pixel_size 0 -> size 0) or drop the outline override
+        # (world_text default 6) and this row goes RED per hero.
+        assert abs(float(row["size"]) - _const(PAWN_GD, "CREST_NAME_H")) \
+            < EPS, (hid, row)
+        assert int(float(row["outline"])) == \
+            int(_const(PAWN_GD, "CREST_NAME_OUTLINE")), (hid, row)
     # the boot ACTIVE leg: exactly the deck[0] crest visible — the NEG
     # reading: the two non-active names are absent from the visible set
     # (only one visible crest exists, and it carries deck[0]'s name).
@@ -377,6 +400,35 @@ def test_hero_scale_is_a_presentation_only_swap():
         "the pawn must not read the enemy/unit const"
     assert "SPRITE_BANK.WORLD_H_UNIT" in _read(RUNNER_GD), \
         "enemy_runner no longer mounts at WORLD_H_UNIT"
+
+
+def test_crest_p8_legibility_size_and_interplay():
+    """v1.4 P8 (MC 11835): the served P4 measure read the 0.55 name line
+    as ~4-6px glyph smudges at default D=64 — the fix doubles the SAME
+    crest const (floor: >= x2 the P4-measured height; planted-red home:
+    shrink CREST_NAME_H to 0 -> this leg RED) with an outline override
+    above the world_text default for the bright tan floor. The CREST_Y
+    interplay arithmetic pins the taller block entirely above the mini
+    sheet — the name never paints over the crest's own hero miniature
+    (the active hero's mark) in any anchoring case: block bottom sits
+    DY - H above the anchor, sheet top SHEET_H/2 above it."""
+    name_h = _const(PAWN_GD, "CREST_NAME_H")
+    assert name_h >= 2.0 * P4_MEASURED_H - EPS, \
+        "crest name height fell back toward the P4-illegible %s" % name_h
+    dy = _const(PAWN_GD, "CREST_NAME_DY")
+    sheet_h = _const(PAWN_GD, "CREST_SHEET_H")
+    assert dy - name_h >= sheet_h / 2.0, \
+        "name block would cover the mini sheet: DY=%s H=%s SHEET=%s" \
+        % [dy, name_h, sheet_h]
+    assert _const(PAWN_GD, "CREST_NAME_OUTLINE") > \
+        _const(WT_GD, "OUTLINE_PX"), "crest outline did not raise contrast"
+    # ONE mechanism (brief): world_text keeps its single make_text; the
+    # override is an OPTIONAL param defaulting to OUTLINE_PX, so the G6
+    # damage numbers and G3 counts (3-arg callers) paint byte-identically.
+    wt = _read(WT_GD)
+    assert wt.count("static func make_text") == 1, wt
+    assert "outline_px := OUTLINE_PX" in wt, wt
+    assert _read(PAWN_GD).count("WORLD_TEXT.make_text(") == 1, "two crest name lines"
 
 
 def test_crest_rides_shipped_factories_source_truth():

@@ -27,10 +27,18 @@ const MATS := {
 # doctrine — the governed UI scripts carry none). A crest = the hero's
 # own sheet miniature + its heroes.json name line, riding the shipped
 # factories above the pawn's head (V121-PLAN G7b).
-const CREST_Y := 2.4          # crest anchor height above the pawn origin
-const CREST_SHEET_H := 1.2    # mini hero sheet world height
-const CREST_NAME_DY := 0.85   # name line above the crest anchor
-const CREST_NAME_H := 0.55    # name line world height
+# v1.4 P8 (MC 11835): the P4 served measure read the 0.55 name line as
+# ~4-6px glyph smudges at default D=64 — ILLEGIBLE. The name rides the
+# SAME crest mechanism at x2 height; the DY lift keeps the taller block
+# entirely above the mini sheet (block bottom = DY - H = 0.8 > the
+# sheet's +SHEET_H/2 = 0.6 top even in the top-anchored worst case),
+# and a stronger outline carries the white glyphs over the bright tan
+# floor (the world_text outline_px override, one mechanism).
+const CREST_Y := 2.4           # crest anchor height above the pawn origin
+const CREST_SHEET_H := 1.2     # mini hero sheet world height
+const CREST_NAME_DY := 1.9     # name line above the crest anchor (P8)
+const CREST_NAME_H := 1.1      # name line world height — x2 the P4 pin
+const CREST_NAME_OUTLINE := 10 # px outline over OUTLINE_PX for the floor
 
 var hero_id := ""
 
@@ -74,7 +82,8 @@ func _make_crest(id: String) -> Node3D:
 		sheet.name = "CrestSheet"
 		crest.add_child(sheet)
 	var label := WORLD_TEXT.make_text(hero_name(id),
-			Vector3(0.0, CREST_NAME_DY, 0.0), CREST_NAME_H)
+			Vector3(0.0, CREST_NAME_DY, 0.0), CREST_NAME_H,
+			CREST_NAME_OUTLINE)
 	label.name = "CrestName"
 	crest.add_child(label)
 	return crest

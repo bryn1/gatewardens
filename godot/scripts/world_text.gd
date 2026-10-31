@@ -18,13 +18,17 @@ const OUTLINE_PX := 6        # default-black outline keeps the white
 # block is world_h world units tall (the make_sprite scaling idiom,
 # px-space instead of sheet-space). Position is set HERE, so callers
 # hand in the final paint point and never touch the node again.
+# outline_px is the ONE contrast override (MC 11835): it defaults to
+# OUTLINE_PX, so every pre-P8 caller (G6's damage numbers, G3's
+# telegraph counts) paints byte-identically; only a caller that needs
+# more outline over the bright floor passes a bigger value.
 static func make_text(text: String, pos: Vector3,
-		world_h: float) -> Label3D:
+		world_h: float, outline_px := OUTLINE_PX) -> Label3D:
 	var l := Label3D.new()
 	l.text = text
 	l.font_size = TEXT_PX
 	l.pixel_size = world_h / float(TEXT_PX)
-	l.outline_size = OUTLINE_PX
+	l.outline_size = outline_px
 	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	l.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	l.position = pos
