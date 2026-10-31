@@ -1,0 +1,18 @@
+{
+  "file": "baseline-default-D64.png",
+  "sha256": "0a40d116c905d026810be902e6d216e377fc549d6015b40d9a215801484d675b",
+  "repo_tip_sha": "7994d20f5ed0b85573384fee2c2dc1ea9f3ed0a6",
+  "kit": "baseline_d64_kit.gd (this dir; run by absolute -s path — v1_world_probe boot idiom + v1_world_shot capture idiom, no second mechanism)",
+  "kit_sha256": "67a028572c0a5711e33a1a9fc316660898fbd9172609c21ac4d164c8bc29f891",
+  "stderr": "EMPTY (0 bytes both runs)",
+  "run_cmd": "xvfb-run -a /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --rendering-driver opengl3 --path godot -s $PWD/.audits/20261031-1100-v13-zoom-plan/baseline_d64_kit.gd",
+  "engine": "Godot 4.7.2 stable (ed1daf0bf), opengl3 over xvfb, Mesa llvmpipe",
+  "viewport": "1280x720",
+  "capture_frame": 120,
+  "boot": "mission.tscn instantiated, _ready+setup driven directly, pinned seed 11274, deck warden/deadeye/embercaller, gatefall/normal (v1_world_probe idiom verbatim)",
+  "rig_row_from_engine": "Z1-RIG origin=(0.0, 47.47, 42.79) norm=63.909 rig_origin=(0.0, 47.47, 42.79) fov=75.0 frame=120",
+  "double_run": "captured twice independently (14:05 run1 + run2); both PNGs byte-ident (sha above)",
+  "card": "MC 11812 (coder) — ZOOM_SPEC stage S1 baseline row (c2/DA P2-2); feeds §5 A2 byte-identity",
+  "captured_at_utc": "2026-10-31T14:05Z (run1), 2026-10-31T14:05Z+6s (run2)",
+  "pre_s3": true
+}

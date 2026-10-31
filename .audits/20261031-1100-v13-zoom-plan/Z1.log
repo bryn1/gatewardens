@@ -1,0 +1,70 @@
+# Z1.log — MC 11812 — zoom Z1: baseline default-D64 capture (ZOOM_SPEC stage S1, c2/DA P2-2)
+
+Repo /home/claudecode/Games/gatewardens, tip at capture `7994d20f5ed0b85573384fee2c2dc1ea9f3ed0a6`
+(`git log -1`). Task: capture `baseline-default-D64.png` + sha256 sidecar in this dir, feeding §5 A2
+byte-identity BEFORE S3 exists. NO repo code change outside this `.audits/` dir.
+
+## Purity
+- `git status --porcelain` before commit: ONLY `.audits/20261031-1100-v13-zoom-plan/` paths (listed below).
+- `git diff --stat HEAD -- godot tests tools docs LEDGER.md README.md` → EMPTY (0 lines). Product tree untouched.
+- No kit change was smuggled into `godot/sim/`: the spec's S1 row names `g6_zoom_sweep_kit.gd` (the
+  envelope sweep, margins per D) — that is the BUILD CARD's S1/S4 artifact. Z1's DoD is the BASELINE
+  capture only, and the spec's own words for it ("boots the UNMODIFIED mission, zero wheel input",
+  "the v1_world_probe FRAME idiom — the engine's own projection, not a re-derivation") are satisfied
+  by a kit that rides the shipped idioms and LIVES IN THIS DIR, run via absolute `-s` path
+  (VERIFIED supported on Godot 4.7.2 this session: script outside res:// boots the project and
+  `res://` preloads resolve). No second frame-capture mechanism: capture is v1_world_shot's
+  `root.get_texture().get_image().save_png` under xvfb+opengl3, frame 120.
+
+## Kit
+`baseline_d64_kit.gd` (this dir, 131 lines, hygiene-exempt dir — `tools/check_hygiene.py` SKIP_DIRS
+includes `.audits`; gate re-run below: 0 hits). Boot idiom = `sim/v1_world_probe` VERBATIM (instantiate
+mission.tscn, drive `_ready`+`setup`, pinned seed 11274, deck warden/deadeye/embercaller, gatefall/normal)
+— NOT the router-click boot: a router-boot kit rewrites pixels every run through OS-entropy RNG
+(`.audits/20261028-0758-clean-code/W3-wave.log` lesson, quoted). Dispatches ZERO InputEvents (A2's
+"zero wheel input" — nothing is fed, not even a click).
+
+## Run (run1; run2 identical modulo banner)
+```
+xvfb-run -a /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 \
+    --rendering-driver opengl3 --path godot \
+    -s $PWD/.audits/20261031-1100-v13-zoom-plan/baseline_d64_kit.gd
+```
+Kit rows (stdout; the DoD rows proving DEFAULT D=64, rig distance QUOTED from engine output):
+```
+Z1-PHASE kind=build map=gatefall difficulty=normal seed=11274
+Z1-RIG origin=(0.0, 47.47, 42.79) norm=63.909 rig_origin=(0.0, 47.47, 42.79) fov=75.0 frame=120
+Z1-INPUT dispatched_push_input=0 presses=0 held=0
+Z1-SHOT-OK .../baseline-default-D64.png px=1280x720 frame=120
+Z1-OK
+```
+`norm=63.909` is the live engine's own `|Camera3D.global_position|` — the "D=64" shorthand of the
+shipped row `transform = Transform3D(1,0,0, 0,0.669,0.743, 0,-0.743,0.669, 0,47.47,42.79)`
+(`godot/scenes/mission.tscn`, §2 proof-row), not an assumed constant. Engine warnings (llvmpipe
+V-Sync, ALSA audio on a headless host) print on STDOUT; the EMPTY-stderr gate measures stderr:
+**0 bytes in BOTH runs** (`wc -c` = 0, `.z1_run1.stderr`/`.z1_run2.stderr`).
+
+## Byte-stability (the compare-basis contract for A2)
+Independent second xvfb run captured a second PNG:
+```
+0a40d116c905d026810be902e6d216e377fc549d6015b40d9a215801484d675b  run1
+0a40d116c905d026810be902e6d216e377fc549d6015b40d9a215801484d675b  run2 == baseline-default-D64.png
+```
+Byte-ident. The build-phase frame text ("Build: wave 1 in 20 s", zero towers/enemies) was identical
+across the runs — deterministic under this kit's pump, proven, not assumed.
+
+## Gates
+1. `python3 tools/check_hygiene.py` → `check_hygiene: 0 hit(s)` (24 notes, identical set to tip — no new note). HYGIENE_EXIT=0.
+2. Suite: product tree byte-untouched (`git diff` EMPTY above) ⇒ the 283-collected suite is unaffected
+   by this evidence-only commit; the spec's full re-run is the build card's §5 A5 leg, not re-run here.
+3. Frame content: inspected this session — fresh gatefall/normal BUILD-phase mission at the default
+   rig, arena board + lane bands + full defense panel, zero towers, zero enemies (VERIFIED by image
+   inspection + the Z1-RIG/Z1-INPUT rows).
+
+## Deliverables committed (pathspec-only)
+- `.audits/20261031-1100-v13-zoom-plan/baseline-default-D64.png` (sha256 above)
+- `.audits/20261031-1100-v13-zoom-plan/baseline-default-D64.png.sha256.json` (sidecar: png sha256, tip sha, kit, empty stderr)
+- `.audits/20261031-1100-v13-zoom-plan/baseline_d64_kit.gd` (the kit, in-dir)
+- `.audits/20261031-1100-v13-zoom-plan/Z1.log` (this file)
+
+VERIFY_EXIT=0
