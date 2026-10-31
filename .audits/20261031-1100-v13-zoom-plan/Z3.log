@@ -1,0 +1,162 @@
+# Z3.log — v1.3 zoom Z3 (MC 11817): camera_zoom mounted + declared re-pins
+# + g6 kit + doc counts [type:code]
+
+Stage: ZOOM_SPEC §6 S3 (wiring) + S4 (relay kit + kit wiring) + the P2-3
+doc-count fix (DA-verdict-c2), per the card brief. DA gate: DA-verdict-c2
+# VERDICT: SHIP (same dir). Base tip: 4834b21e (Z2 landed).
+Single commit declared: ONE commit carries the scene mount, both §3 re-pin
+legs (planted-RED transcripts below), the g6 kit + its pytest leg and the
+README/RELEASE_NOTES count rows — this is exactly the shape P2-3 demanded
+("the count rows land in the SAME commit that grows the suite"; spec §5 A5
+"count claims update in the SAME commit"). Both §3 legs' planted-RED state
+is the shared scene-append-alone state (spec §3 row 2's own protocol),
+transcript attached; the bump + retarget land GREEN in this same commit.
+
+## Declared readings (brief-internal tensions, stated not silent)
+- KIT-TEST HOME: the brief's owns list omits a pytest home for the kit,
+  yet the same brief demands suite >= 287 (286 at base) and spec §5 A4
+  pins "kit is pytest-referenced (kit census law)". Reading used: the
+  kit-run leg is +1 test in tests/test_camera_zoom.py — the file spec §6
+  S4 names as the kit's pytest home — docstring first paragraph updated
+  for the one claim my own change retired ("NOT mounted in mission.tscn
+  yet", claim-rot law). Everything else on the owns list held exactly.
+- BOUNDS ROW NAMING: the brief's `BOUNDS` leg ships as TWO kit rows
+  G6-BOUNDSMIN / G6-BOUNDSMAX (spec §6 S4 names them BOUNDMIN/BOUNDMAX;
+  one leg, two quoted clamp endpoints, both held under a further tick).
+- PLACE AT DISTANCE: the brief's D_MAX row plus spec S4/A3's "also run
+  at D_MIN" clause — the kit lands BOTH (G6-PLACE rows at 128.0 and 56.0).
+- DOC COUNT ROWS: the three HEAD-claim rows move 283 -> 287; the
+  RELEASE_NOTES dev-checks row keeps its history chain (row style of the
+  :591 comment) and prepends the new total.
+- :591 EDIT SCOPE: the byte-pin line itself (5 -> 6) is the only line
+  touched in test_mission_clicks.py (":591 only" read literally); the
+  5->6 chain entry lives in spec §3 row 1 and this log.
+
+## Files (LOC before -> after; hygiene gate counts)
+- godot/scenes/mission.tscn: 48 -> 52 (3 declared line-groups: header,
+  ext row, node block — the ONLY lines the diff carries, quote below)
+- tests/test_mission_clicks.py: 599 -> 599 (one byte retarget at :591)
+- tests/test_camera_zoom.py: 296 -> 347 (+1 kit-run test, < 600 ceiling)
+- godot/sim/g6_zoom_relay_probe.gd: 0 -> 276 (NEW kit, < 400 hard; soft
+  250 note is informational, the g4 kit row shows the same note at tip)
+- godot/sim/g6_zoom_relay_probe.gd.uid: 0 -> 1 (engine-generated,
+  `godot --headless --path godot --import` rc 0; uid://cu0bxsvh4e5hf)
+- README.md: 11 -> 11 (one count row); RELEASE_NOTES.md: 296 -> 296
+  (two count rows)
+- .audits/20261031-1100-v13-zoom-plan/Z3.log: this file (NEW)
+- camera_zoom.gd: BYTE-UNCHANGED — `git diff HEAD --
+  godot/scripts/camera_zoom.gd` = 0 lines; sha256
+  c8277db7a03821b8ad82352337e9badcd297d4cd2ab5caabc7debab0e762e2cf
+  (file) == same (git show HEAD:). NOT edited, not needed.
+
+## (A) MOUNT — scene rows (spec §3, G3 precedent 0b49bba shape)
+Header, SAME edit as the append: `-[gd_scene load_steps=9 format=3]`
+-> `+[gd_scene load_steps=10 format=3]`; ext row appended to the ext
+block with the uid attribute + committed sidecar (the :31-32 sidecar
+gate): `+[ext_resource type="Script" uid="uid://b4yoi8pquwrwm"
+path="res://scripts/camera_zoom.gd" id="6_zoom"]`; node block appended
+under the rig (spec §6 S3: `CameraZoom` child under `CameraRig`):
+`+[node name="CameraZoom" type="Node" parent="CameraRig"]` /
+`+script = ExtResource("6_zoom")`. Full `git diff HEAD --
+godot/scenes/mission.tscn` carried ONLY these hunks (quoted at the diff
+gate below).
+
+## (A) PLANTED RED — scene-append-WITHOUT-header-bump state (both legs,
+transcript kept; both legs RED from the one shared state, spec §3 row 2):
+1. tests/test_wave_telegraph.py::test_mission_tscn_mounts_the_telegraph_append_only
+   (relational load_steps pin, :226-231):
+     E  AssertionError: load_steps 9 stale: 8 ext + 1 sub + 1
+     E  assert 9 == (9 + 1)
+     tests/test_wave_telegraph.py:228: AssertionError
+2. tests/test_mission_clicks.py::test_mission_tscn_uids_match_the_sidecars
+   (:591 ext-count pin):
+     E  AssertionError: the script ext_resource rows must all carry uid attributes
+     E  assert 6 == 5
+     tests/test_mission_clicks.py:591: AssertionError
+     FAILED ... 2 failed in 0.10s
+Then the declared bump + retarget. The ONE byte-pinned retarget row,
+before/after verbatim (:591):
+  - `    assert len(_ext_rows(read_text(MISSION_TSCN))) == 5, \`
+  + `    assert len(_ext_rows(read_text(MISSION_TSCN))) == 6, \`
+Declared-drift chain (spec §3 row 1): 3->4 (V5 MC 11552), 4->5 (G3 MC
+11696), 5->6 (this card — the only legal mover, §7 pin #6).
+GREEN: `2 passed in 0.06s` (both legs, same tree as the commit).
+
+## (B) g6 kit rows (godot/sim/g6_zoom_relay_probe.gd; the g5_real_relay
+idiom — REAL mission boot + REAL main.gd relay object — wheel ticks via
+the REAL tree path root.push_input so the MOUNTED node's own
+_unhandled_input + per-frame guard run; confirm rides the shipped
+slot-cycle route arm -> KEY_RIGHT cycle -> MouseLeft -> ONE pump ->
+place_id at the ghost). Machine rows, rc 0, stderr 0 bytes:
+  G6-WHEELOUT steps=1 d=71.909195
+  G6-WHEELIN steps=1 d=63.909195
+  G6-DEDUP dup=1 distinct=2 d=79.909195
+  G6-BOUNDSMIN d=56.000000 held=1
+  G6-BOUNDSMAX d=128.000000 held=1
+  G6-PLACE d=128.000000 count=1 delta=1 id=ballista
+  G6-PLACE d=56.000000 count=2 delta=1 id=ballista
+  G6-OK
+The kit CANNOT pass on a silent leg — every row is re-read numerically
+by test_camera_zoom_g6_relay_kit_engine_leg (EMPTY stderr asserted,
+W4 ruling). KIT GOES RED — first-run transcript (expectation set to the
+unclamped default-8 before the Z2 CAP/STEP clamp math — from the default
+one IN step lands 55.909, ON the 56.0 floor — was applied, the engine
+answered 56.0 and the leg FAILED loudly):
+  G6-FAIL WHEELIN d=56.000000, wanted 55.909195 (exactly one step in)
+  RC=1
+Permanent planted-red teeth stay with the Z2 legs (test_camera_zoom
+_planted_red_unclamped_step_goes_red + the Z2.log break-the-clamp
+transcript).
+
+## (C) DOC COUNTS — grep '283' docs, every hit and its fate:
+- README.md:9 `(283 pytest green,`  -> UPDATED `(287 pytest green,`
+- RELEASE_NOTES.md:81 `**Suite**: 283 pytest green` -> UPDATED `287`
+- RELEASE_NOTES.md:279 `(283 green at v1.2.1;` -> UPDATED `(287 green
+  on the v1.3 zoom wiring; 283 at v1.2.1;` (history chain kept, new
+  total leads)
+- LEDGER.md:155 + :157 `283` -> KEPT (historical card rows, append-only
+  history; LEDGER.md is NOT on this card's owns list; the LEDGER-ROW
+  below rides this log for the closing seat).
+Suite total MEASURED wins: 287 (below), docs now agree with HEAD.
+
+## Gates (all run in this tree, this session)
+- `python3 -m pytest -q` tail row: `287 passed in 184.68s (0:03:04)`
+  rc=0 (>= 287 DoD; 286 at base + the kit leg).
+- `python3 tools/check_hygiene.py` -> `check_hygiene: 0 hit(s)` rc=0.
+- fixtures/data diff EMPTY: `git diff HEAD -- tests/fixtures/ godot/data/`
+  = 0 lines; `git diff HEAD -- godot/sim/` = 0 lines (only NEW files in
+  sim: the kit + its .uid; v1_world_probe.gd:40 re-quoted:
+  `const MIN_MARGIN := 60.0` — byte-unchanged, kit feeds NO wheel to it).
+- tscn byte-ident proof: `git diff HEAD -- godot/scenes/mission.tscn`
+  carried EXACTLY the three declared hunks (header 9->10; ext row;
+  CameraZoom block) — `grep -c Transform3D` over the diff = 0: the rig
+  row `transform = Transform3D(1, 0, 0, 0, 0.669, 0.743, 0, -0.743,
+  0.669, 0, 47.47, 42.79)` and the whole CameraRig block are
+  byte-identical (pin #3 stays SPENT, D3 holds); the :398-402 planted
+  replace-TARGET and the test_hub_layout FOV/regex/lighting pins ride
+  files this commit does not touch (name-only diff below).
+- `git diff HEAD --name-only` inventory (the whole touch set): README.md,
+  RELEASE_NOTES.md, godot/scenes/mission.tscn, tests/test_camera_zoom.py
+  (declared reading above), tests/test_mission_clicks.py + NEW
+  godot/sim/g6_zoom_relay_probe.gd(.uid) + this log.
+  monetization surface added: NONE (no shop/purchase/premium/currency
+  token in any added line; hygiene I1 tripwire over the tree: 0 hits).
+- GOVERNED_LITERALS: len == 17, camera_zoom.gd NOT in the set — 17 -> 17
+  unchanged (re-measured at return; test_camera_zoom
+  _stays_ungoverned_set_stays_17 pins it).
+- Import: `godot --headless --path godot --import` rc 0, stderr EMPTY
+  (no stale-header WARNING — the header moved WITH the append).
+
+LEDGER-ROW: v1.3 zoom Z3 (MC 11817): camera_zoom MOUNTED — mission.tscn
+APPEND + declared load_steps 9->10 (G3 0b49bba shape, planted-RED
+transcript kept, relational leg green), :591 ext-count byte re-pin
+5->6 (declared chain, RED-then-GREEN same commit), g6_zoom_relay_probe
+kit (g5 real-relay idiom, wheel via real root.push_input tree path):
+WHEELIN/WHEELOUT/DEDUP(dup=1 distinct=2)/BOUNDSMIN 56.0/BOUNDSMAX 128.0
+/PLACE ballista +1 AT 128.0 AND 56.0, G6-OK, stderr empty; kit-run leg
+in test_camera_zoom (declared reading), suite 286->287 green, README +
+RELEASE_NOTES count rows 283->287 in the SAME growing commit (P2-3
+closed); camera_zoom.gd byte-unchanged, GOVERNED 17 unchanged, fixtures/
+sim JSON diff EMPTY, rig row byte-ident, hygiene 0 hits.
+
+VERIFY_EXIT=0

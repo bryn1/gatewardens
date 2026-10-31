@@ -1,12 +1,14 @@
-"""Z2 camera-zoom unit legs (v1.3 zoom, MC card 11813; ZOOM_SPEC §1-§2
-.audits/20261031-1100-v13-zoom-plan/, DA-verdict-c2 SHIP). The script
-camera_zoom.gd is NOT mounted in mission.tscn yet (Z3 wires it) — these
+"""Z2 camera-zoom unit legs + the Z3 served-path kit leg (v1.3 zoom,
+MC cards 11813/11817; ZOOM_SPEC §1-§2, §5 A4, §6 S4
+.audits/20261031-1100-v13-zoom-plan/, DA-verdict-c2 SHIP). The unit
 legs instantiate the script DIRECTLY, the g5_real_relay_probe idiom
 ("the closest production analogue runnable under -s"): a fake Node3D
 rig stands at the shipped mission.tscn:34 CameraRig row VERBATIM and
 SYNTHESIZED InputEventMouseButton WHEEL_UP/DOWN events (the shipped
 wheel model of test_hub_scroll.py:249-251 — button_index, pressed) are
-fed through the script's OWN _unhandled_input.
+fed through the script's OWN _unhandled_input. The scene has carried
+the mounted node since Z3 — the kit leg at the bottom boots the REAL
+mission.tscn and feeds the wheel through the REAL tree path.
 
 Legs (machine rows ZM-*):
 - CAP       _ready captures the default FROM the scene row — no 64
@@ -294,3 +296,52 @@ def test_camera_zoom_planted_red_unclamped_step_goes_red():
     assert bad, "planted-red: an unclamped step slipped the zoom gate"
     assert not _clamp_violations(_zoom_code()), \
         "the shipped zoom script must pass its own clamp gate"
+
+
+# ---------- Z3 served-path kit leg: the REAL mounted scene -------------
+
+def test_camera_zoom_g6_relay_kit_engine_leg(tmp_path, class_cache):
+    # The shipped kit godot/sim/g6_zoom_relay_probe.gd (g5_real_relay
+    # idiom, ZOOM_SPEC §5 A4): boots the REAL mission.tscn -- so this
+    # leg only passes BECAUSE the scene carries the mounted node --
+    # and feeds WHEEL ticks through the REAL tree path (root.push_input,
+    # the shipped W17b viewport-push idiom). EMPTY stderr (W4 ruling);
+    # the kit cannot pass on a silent leg: every row is re-read here.
+    proc = conftest.run_probe_script("res://sim/g6_zoom_relay_probe.gd",
+                                     (), tmp_path)
+    assert proc.returncode == 0, \
+        "kit rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                       proc.stderr)
+    assert proc.stderr == "", \
+        "-s probe stderr must be EMPTY (true parse signal):\n%s" % proc.stderr
+    out = proc.stdout
+    assert "G6-FAIL" not in out, out
+    assert out.rstrip().endswith("G6-OK"), out
+    near = lambda v, w: abs(float(v) - w) < 0.01
+    # WHEELIN/WHEELOUT: ONE synthesized tick = EXACTLY one step (out
+    # first, in back to the default -- see the kit header for why).
+    assert _kv(out, "G6-WHEELOUT")["steps"] == "1" \
+        and near(_kv(out, "G6-WHEELOUT")["d"], 71.909195), out
+    assert _kv(out, "G6-WHEELIN")["steps"] == "1" \
+        and near(_kv(out, "G6-WHEELIN")["d"], 63.909195), out
+    # DEDUP pins BOTH clauses of the §1 press-only + per-tick edge
+    # guard: same tick fed twice in ONE engine frame = one step; two
+    # distinct frames = two steps. A build without the guard ships RED.
+    dedup = _kv(out, "G6-DEDUP")
+    assert dedup["dup"] == "1" and dedup["distinct"] == "2" \
+        and near(dedup["d"], 79.909195), dedup
+    # Envelope clamps quoted FROM the engine, held under a further tick.
+    assert near(_kv(out, "G6-BOUNDSMIN")["d"], 56.0) \
+        and _kv(out, "G6-BOUNDSMIN")["held"] == "1", out
+    assert near(_kv(out, "G6-BOUNDSMAX")["d"], 128.0) \
+        and _kv(out, "G6-BOUNDSMAX")["held"] == "1", out
+    # §5 A3's producing rows (c2/DA P2-1): the shipped slot-cycle
+    # confirm places a ballista (count +1) AT D_MAX and again AT D_MIN
+    # -- placement is zoom-invariant by construction, this measures it.
+    place = [dict(kv.split("=", 1) for kv in ln.split(" ")[1:] if kv)
+             for ln in out.splitlines() if ln.startswith("G6-PLACE ")]
+    assert len(place) == 2, out
+    assert [p["count"] for p in place] == ["1", "2"], place
+    assert all(p["delta"] == "1" and p["id"] == "ballista"
+               for p in place), place
+    assert near(place[0]["d"], 128.0) and near(place[1]["d"], 56.0), place

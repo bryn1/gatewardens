@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" uid="uid://duidisb02w2tl" path="res://scripts/mission.gd" id="1_mission"]
 [ext_resource type="Script" uid="uid://d4iftsrpsjard" path="res://scripts/phase_controller.gd" id="2_phase"]
@@ -7,6 +7,7 @@
 [ext_resource type="Mesh" path="res://assets/mesh_plane.tres" id="4_ground"]
 [ext_resource type="Material" path="res://assets/mat_ground.tres" id="5_matg"]
 [ext_resource type="Script" uid="uid://7cf4beti21gb" path="res://scripts/wave_telegraph.gd" id="3c_tele"]
+[ext_resource type="Script" uid="uid://b4yoi8pquwrwm" path="res://scripts/camera_zoom.gd" id="6_zoom"]
 
 [sub_resource type="Environment" id="env_greybox"]
 background_mode = 1
@@ -46,3 +47,6 @@ script = ExtResource("3b_fx")
 
 [node name="WaveTelegraph" type="Node3D" parent="."]
 script = ExtResource("3c_tele")
+
+[node name="CameraZoom" type="Node" parent="CameraRig"]
+script = ExtResource("6_zoom")

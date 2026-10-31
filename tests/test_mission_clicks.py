@@ -588,7 +588,7 @@ def test_mission_tscn_uids_match_the_sidecars():
     # row resolves through the editor cache AT CONVERSION TIME — the
     # stale-cache poisoning this card closed; the .tres assets carry no
     # uid, so exactly the SCRIPT rows are pinned; V5 MC 11552: 3 -> 4, G3 MC 11696: 4 -> 5).
-    assert len(_ext_rows(read_text(MISSION_TSCN))) == 5, \
+    assert len(_ext_rows(read_text(MISSION_TSCN))) == 6, \
         "the script ext_resource rows must all carry uid attributes"
 
 

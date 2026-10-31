@@ -78,7 +78,7 @@ ruling 2026-10-25.**
   owner ruling — and the spawn-mouth shimmer / painted-lane treatments. The
   gate eyes and lane bands ARE the v1.2.1 treatment.
 
-**Suite**: 283 pytest green, `check_hygiene: 0 hit(s)`, golden fixtures
+**Suite**: 287 pytest green, `check_hygiene: 0 hit(s)`, golden fixtures
 byte-identical.
 
 ## v1.2 (quality-of-life) — 2026-10-29 (RELEASED: tag c95798b + GitHub Release with native Windows build, VM120-verified)
@@ -276,7 +276,7 @@ unsigned, no malware, click More info > Run anyway.
   artifacts are never committed; the script regenerates them).
 - Serve: `python3 server/server.py` (honors `GW_PORT`, default **8124**) →
   open `http://<host>:8124/` in a browser.
-- Dev checks at this release: `python3 -m pytest -q` (283 green at v1.2.1;
+- Dev checks at this release: `python3 -m pytest -q` (287 green on the v1.3 zoom wiring; 283 at v1.2.1;
   239 at v1.2; the v1 GA tag counted 222) and
   `python3 tools/check_hygiene.py` (`check_hygiene: 0 hit(s)`).
 - Served controls (current at v1.2.1, from the verified journey): mouse click
