@@ -1,0 +1,147 @@
+P7-wave.log — v1.4 P7 kit-presentation probe leg (MC 11857, seat: test
+profile, child of hermes-standby session-391bd348). Date 2026-10-31.
+Base tip d91dbec (detached worktree /tmp/gw-v14-p7 per brief; branch
+card/11857). TESTS-ONLY: the commit pathspec carries
+tests/test_kit_fx.py + this log + LEDGER.md — ZERO production files.
+
+DEBT: V12-PLAN:297 (F5 row, "v5_fx_probe tracer rows unchanged (kit
+leg)") promised the kit-presentation probe; V14-PLAN §2 verified it
+NEVER executed. This card pays it per its brief: the shipped kit
+presentation crossing exercised as RUNNING behavior, HONEST ROUTE if a
+leg exposes an unimplemented promise (it did — FINDING below; production
+NOT touched).
+
+== KITS FILE + ROWS ======================================================
+The kits data file is godot/data/items.json — 15 rows; the 3
+slot=="relic" kits: mark_of_fervor (primary damage), orb_of_the_deep
+(primary hp), medallion_of_the_gate (primary fire_rate). Declared
+reading of the brief's "kit": the shipped assign/unassign writers are
+the C11 kit crossing — mission.gd:350-356 -> mission_relics.gd assign
+(:15)/unassign (:31) (guard order phase > uid > relic > taken) ->
+defense_obj.gd assign_relic (:97)/clear_relic (:102), the pinned bonus
+application site. mission.setup() copies the bank's slot=="relic" rows
+into the mission-local relic_pool (mission.gd:149-151; C11 pool =
+clear-not-move). Data pinned by test_kit_data_rows (ids + primaries).
+
+== PROBE (tests/test_kit_fx.py NEW, 480 lines < 600) ====================
+Engine tier over the REAL mission.tscn, ONE probe run via
+conftest.run_probe_script (tmp-probe into tmp_path, R5/P1 idiom; BN4
+XDG_DATA_HOME isolation; E5: _ready HAND-driven, and the presentation
+pump is the SHIPPED public fx_step driven 120 frames = 2 s > the 0.5 s
+longest fx lifetime). Seeded through shipped mutators only (set_deck +
+2 bank_add -> ack baseline 3). Legs driven through the SHIPPED entry
+points (m.assign_relic / m.unassign_relic); pool row read through the
+preloaded shipped module (MISSION_RELICS.defense_by_uid). In-probe
+KF-FAIL guards + KF-OK-LAST: a silent skip cannot go green.
+
+GREEN TRANSCRIPT (rc=0, stderr 0 bytes — re-ran at the FINAL tree):
+  KF-BOOT kits=2 pool=2 tower=gate_blockade tier_hp=400.000 fx=0 sparks0=0 ack=3 list=1 mirror=0
+  KF-ASSIGN ok=true relic=1 bonuses=hp:3.000 hp_max=403.000 hp=400.000 mirror=1 pool=2 ack=3
+  KF-PRESENT live_after_assign=0 live_after_pump=0 swapped=0 parented=1 sparks_delta=0 ack=3
+  KF-FINDING kit_presentation=NONE kit_fx_delta=0 kit_live_after_pump=0 kit_node_changed=0
+  KF-CONTROL live_mid=1 live_end=0 spawned_delta=1
+  KF-STACK ok=false why=taken relic=1 mirror=1 ack=3
+  KF-INVALID ok=false why=relic relic=1 mirror=1 pool=2 ack=3
+  KF-UNASSIGN ok=true relic=0 bonuses=none hp_max=400.000 hp=400.000 mirror=0 pool=2 ack=3
+  KF-ACK start=3 end=3 delta=0
+  KF-OK
+
+STATE READ-BACKS (python asserts re-derive from DATA, never from the
+implementation's own logic):
+- KF-ASSIGN (property rows): relics_assigned C5 mirror 0->1; row
+  relic_uid = the pool kit uid; relic_bonuses == {hp: 3.000} (items.json
+  orb primary, scripted 3.0 F3-shape fixture input, NOT a balance
+  literal); hp_max 400.000 -> 403.000 == towers.json
+  gate_blockade.tiers[0].hp + 3.0 EXACTLY; hp STAYS 400.000 — the
+  declared clamp reading (defense_obj :96 "clamped, never healed");
+  relic_pool still 2 (C11 clear-not-move); saved_ack unmoved.
+- KF-PRESENT (node/effect rows — state, not pixels): live fx 0 at the
+  assign call AND 0 after the hand-driven 2 s pump; world node same
+  instance id, still parented (no swap — node swaps ride upgrades only);
+  spawned_sparks counter delta 0.
+- KF-UNASSIGN: full revert read back — relic_uid 0, bonuses {}, hp_max
+  back to the bare tier row 400.000, mirror 0, pool 2, ack unmoved.
+- KF-ACK: delta 0 across the WHOLE matrix — the kit crossing is
+  mission-local, no C13 save write ever emitted (P1 ack semantics).
+
+== THE FINDING (the deliverable per the V12 debt) =======================
+KF-FINDING kit_presentation=NONE kit_fx_delta=0 kit_live_after_pump=0
+kit_node_changed=0
+FINDING: the promised kit PRESENTATION effect is NOT implemented in
+shipped code. The kit assign/unassign writers are PURE STATE crossings;
+the one presentation director (fx_director.gd) spawns ONLY from
+_observe_enemies/_observe_fires (hp-drop sparks, despawn poofs, shot
+tracers, damage numbers) — no kit path feeds it. The leg is pinned to
+ACTUAL shipped behavior (tests test what IS): KF-PRESENT + KF-FINDING
+assert the measured zero, and the source-truth leg
+(test_kit_presentation_source_truth) pins STRUCTURALLY that
+mission_relics.assign/unassign, defense_obj.assign_relic/clear_relic and
+mission.gd's delegators contain ZERO presentation calls
+(_spawn/fx_/make_sprite/make_text/SPRITE_BANK/WORLD_TEXT/add_child/emit
+banned in the bodies) — any future implementation MUST re-pin these rows
+instead of riding the old green silently.
+NON-VACUITY: KF-CONTROL proves the SAME instrument (+ SAME pump)
+observes a REAL shipped effect (_spawn_spark — the exact call
+_observe_enemies makes) BEGIN (live=1, spawned_sparks+1) and reach its
+OBSERVABLE END (live=0 after the pump). Without it the all-zero
+KF-PRESENT row could stay green on a blind probe — the classic false
+green this closes.
+
+== PLANTED-RED x1 (break a kit guard, scratch line-sed) =================
+Plant: sed line-sed at the asserted RULE — mission_relics.gd:24 taken-
+guard -> "if false:" (guard neutralized; working-tree scratch only).
+RED TRANSCRIPT (pytest 1 failed; probe rc=1):
+  KF-BOOT kits=2 pool=2 tower=gate_blockade tier_hp=400.000 fx=0 sparks0=0 ack=3 list=1 mirror=0
+  KF-ASSIGN ok=true relic=1 bonuses=hp:3.000 hp_max=403.000 hp=400.000 mirror=1 pool=2 ack=3
+  KF-PRESENT live_after_assign=0 live_after_pump=0 swapped=0 parented=1 sparks_delta=0 ack=3
+  KF-FINDING kit_presentation=NONE kit_fx_delta=0 kit_live_after_pump=0 kit_node_changed=0
+  KF-CONTROL live_mid=1 live_end=0 spawned_delta=1
+  KF-STACK ok=true why=NONE relic=2 mirror=1 ack=3
+  KF-FAIL stack leg: shipped rule is refuse-taken, got { "ok": true, "uid": 1, "relic": 2 }
+  assert 1 == 0  (probe rc)          -> 1 failed in 5.60s
+Honest shape named: with the guard broken the SECOND kit REPLACES the
+first (relic uid 1 -> 2) — the silent-replace regression class the pin
+guards; the brief's stacking reading is answered by the SHIPPED code:
+REFUSED ("taken"), not replaced, pinned by KF-STACK.
+REVERT: the same line-sed restored the original line; BYTE-VERIFIED:
+sha256(before-plant) == sha256(after-revert) AND `git diff --
+godot/scripts/mission_relics.gd` EMPTY. Green re-run: 3 passed in 5.43s
+(transcript above regenerated again at the final tree: rc=0, stderr 0B).
+
+== GATES AT FINAL TREE ==================================================
+- BASE DECLARED: measured baseline at this checkout state (d91dbec)
+  BEFORE my file: 320 collected (matches the P5b LEDGER row "suite 320
+  rc=0" — no sibling base drift at this tree).
+- FULL SUITE: python3 -m pytest tests/ -q = 323 passed in 185.74s ONE
+  attempt (320 baseline + 3 mine >= 322 required), rc=0.
+- hygiene: tools/check_hygiene.py = "0 hit(s)", exit 0 (24 notes = the
+  pre-existing baseline set; tests/ files are outside its source walk —
+  my file added ZERO notes).
+- fixtures: git diff --stat -- tests/fixtures/ EMPTY (0 bytes; porcelain
+  0 lines) — no sim/mission-step change (kit matrix is build-phase
+  state + presentation observation).
+- GOVERNED 17 (check_hygiene.GOVERNED_LITERALS, measured at this tree).
+- my test file: 480 lines < 600 cap (one concern per file).
+- mission.gd / test_mission_clicks.py: NOT touched (git status: only
+  tests/test_kit_fx.py + this log + LEDGER.md).
+- Scratch (.tmp/kf_probe_scratch.gd + homes) removed — nothing else in
+  the tree.
+
+== DECLARED READINGS ====================================================
+- "kits data file (godot/data/)": NO file literally named kits exists;
+  items.json slot=="relic" rows are the shipped kits (named above, 15
+  rows / 3 kits; test pin). The brief's assign/unassign-writer +
+  presentation-effect mapping names the C11 crossing uniquely.
+- Brief DoD order "last line VERIFY_EXIT=0, verdict line above" is
+  applied (the generic profile wording "last line = VERDICT" is the
+  general case; this card's explicit line wins).
+- F3 non-duplication doctrine: phase/uid refusals + same-kit DUP stay in
+  test_relic_negatives.py; this file adds the presentation dimension,
+  the DIFFERENT-kit STACK leg and the INVALID-kit-id gap only.
+- The V14-PLAN §3 P7 bullet's doc-half (ARCHITECTURE §Verification kits
+  row + v5_fx_probe re-baseline) is NOT in this card's commit pathspec
+  (tests + log + LEDGER) — routed to the orchestrator as residual
+  V12-debt bookkeeping, not silently dropped here.
+
+# VERDICT: PASS
+VERIFY_EXIT=0
