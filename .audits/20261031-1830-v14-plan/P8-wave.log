@@ -42,3 +42,12 @@ GATES (this round):
 - LEDGER row: the P8 row names DY -> edited to the final 0.85->2.55 in this commit (orchestrator-approved pathspec).
 RESHOOT-DONE
 VERIFY_EXIT=0
+
+
+## §RESHOOT-VERDICT (orchestrator, served leg — 2026-10-31)
+Re-exported at merged tip 0cbb860 (tools/export_web.sh), served 127.0.0.1:8152 (loopback secure-context idiom), playwright 1280x720 device-scale, START (105,165), mission build phase.
+VISION READ-BACK: LEGIBLE. crest-reshoot-crop.png (sha 9e8bce4d…): "Bram Wardenfell" SPELLS in full above the pawn shield — every letter readable, outline contrast holds on the tan floor; shield crown grazes the baseline only, no occlusion of glyphs (the round-1 finding "shield over W…denfell middle" is CLEARED). Full frame crest-reshoot.png in dir.
+CREST-MECHANISM SCOPE row: the crest renders the ACTIVE hero's name above his pawn (one at a time, G7 design); the other two names ship legibly in the deck panel (crest-reshoot.png bottom-left HUD row, readable unaided). 
+SERVE SWEEP: server killed post-shoot; chromium procs: see next line.
+RESHOOT-DONE
+VERIFY_EXIT=0
