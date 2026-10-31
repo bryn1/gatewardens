@@ -29,4 +29,16 @@ PLANTED-RED x1 (fleet gate rule — the leg must prove it can fail):
 CONSTRAINTS SUMMARY: camera diff EMPTY / mission.gd 0 lines / GOVERNED_LITERALS 17 / no new node or script / crest stays above the pawn head at all 3 heroes (interplay arithmetic + engine row) / name x2 with stronger outline / world_text override DECLARED and default byte-identical for G6/G3.
 SERVED LEG (orchestrator, after merge): 1280px re-shoot at default D=64, describe-image read-back spells a hero name.
 P8-DONE
+
+## §RESHOOT round (orchestrator re-shoot at merged tip 0c2b736 -> one const nudge)
+ORCHESTRATOR FINDING (quoted): "name now SPELLS ('Bram W…denfell' legible, outline reads well) — BUT the hero's own shield emblem occludes the MIDDLE of the name (crop shows 'Bram' left + 'denfell' right, shield over 'Ward' core). Plan clause: crest must not clip into the pawn. ONE const nudge: CREST_NAME_DY 1.9 -> 2.55 (lift the name band above the shield crown; CREST_Y/pawn untouched)."
+CHANGE: hero_pawn.gd CREST_NAME_DY 1.9 -> 2.55 (header comment re-truthed: block bottom DY-H = 1.45 > sheet top 0.6 — the interplay leg arithmetic still holds; the band rises clear of the pawn art the re-shoot measured). CREST_Y 2.4 / CREST_NAME_H 1.1 / CREST_NAME_OUTLINE 10 / pawn / world_text — all UNTOUCHED. No test pin moves (the interplay leg pins the DY-H >= SHEET_H/2 relation, not a DY value; engine rows read consts live).
+BRANCH BASE: card/11835 fast-forwarded f6c89af -> 0c2b736 (the merged tip; P1 place-refusal matrix rides along — no rewrite, f6c89af is in the merged history), so this round re-runs the suite AT THE MERGED TREE.
+GATES (this round):
+- crest legs: tests/test_hero_crest.py 4 passed rc=0 (interplay: 2.55 - 1.1 = 1.45 >= 0.6 holds).
+- full suite: 289 passed in 181.52s rc=0 (>=289 required: 288 at the round-1 tip + the P1 matrix leg from 0c2b736).
+- hygiene: python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)" rc=0.
+- fixtures + camera files + mission.gd + mission.tscn diff vs the ff base 0c2b736: EMPTY (the ONLY tree change this round: hero_pawn.gd 7+/3- const + truth comments).
+- LEDGER row: the P8 row names DY -> edited to the final 0.85->2.55 in this commit (orchestrator-approved pathspec).
+RESHOOT-DONE
 VERIFY_EXIT=0

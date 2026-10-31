@@ -30,13 +30,17 @@ const MATS := {
 # v1.4 P8 (MC 11835): the P4 served measure read the 0.55 name line as
 # ~4-6px glyph smudges at default D=64 — ILLEGIBLE. The name rides the
 # SAME crest mechanism at x2 height; the DY lift keeps the taller block
-# entirely above the mini sheet (block bottom = DY - H = 0.8 > the
+# entirely above the mini sheet (block bottom = DY - H = 1.45 > the
 # sheet's +SHEET_H/2 = 0.6 top even in the top-anchored worst case),
 # and a stronger outline carries the white glyphs over the bright tan
-# floor (the world_text outline_px override, one mechanism).
+# floor (the world_text outline_px override, one mechanism). RESHOOT
+# round (P8-wave.log §RESHOOT): the served re-shoot spelled the name
+# but the pawn's own shield crown painted over its middle — the name
+# band lifts clear of the pawn art (DY 1.9 -> 2.55); CREST_Y, H, the
+# outline and the pawn are untouched.
 const CREST_Y := 2.4           # crest anchor height above the pawn origin
 const CREST_SHEET_H := 1.2     # mini hero sheet world height
-const CREST_NAME_DY := 1.9     # name line above the crest anchor (P8)
+const CREST_NAME_DY := 2.55    # name line above the crest anchor (P8 re-shoot)
 const CREST_NAME_H := 1.1      # name line world height — x2 the P4 pin
 const CREST_NAME_OUTLINE := 10 # px outline over OUTLINE_PX for the floor
 
