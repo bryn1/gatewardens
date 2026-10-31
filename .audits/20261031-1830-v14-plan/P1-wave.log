@@ -1,0 +1,137 @@
+P1-wave.log — v1.4 P1 place-refusal matrix (MC 11829, wave W1, tests-only)
+Seat: coder profile (child of hermes-standby session-391bd348). Date 2026-10-31.
+Base tip: 181e811 (detached, per-card worktree /tmp/gw-v14-p1 — V14-PLAN P2-C
+engine-tier isolation; static/ web-export copied in, test_served legs ran).
+SPEC: .audits/20261031-1830-v14-plan/V14-PLAN.md §3 P1. DELIVERABLE:
+tests/test_place_refusals.py ONLY (+ this log + LEDGER row in-commit).
+Zero production edits — the ONE PLANTED-RED mutates the asserted RULE in
+the working tree as throwaway scratch, reverted with `git checkout --` and
+diff-verified byte-identical against the git index immediately after the
+transcript (the F3-wave.log line-sed revert rule verbatim; at this moment
+index == HEAD == 181e811, my test file is the only untracked path).
+
+== HONEST READING DECLARATIONS ============================================
+- Coverage map (plan "no duplicate legs, gap legs only"): why:"green" and
+  why:"id" are ALREADY pinned by test_family_picker (FP-REFUSE, FP-ID) —
+  NO duplicate legs here. why:"phase" (both routes), why:"slot" (off-list
+  + full exhaustion) and why:"cap" were the GAPS; "cap" is unreachable on
+  shipped gatefall data (cap 60 > 11 ground-waypoint slots — measured
+  BOOT row), so the gap leg drives mission.gd's cap guard with a harness
+  defense_cap write, restored in the next line.
+- Combat entry = the F3 precedent write (test_relic_negatives.py:235
+  "drive-real-entry-points write", its :237 restore twin): phase_kind +
+  in_combat — the pair _enter_combat writes before its start_wave
+  side-effects (wave machinery orthogonal to the place gates). NO world
+  step while the phase lies: one step() would let the waveless combat
+  state "finish" a wave that never started; the E2E press legs replay the
+  shipped pump PAIR verbatim (m.bridge.drain_presses() + DefensePanel.
+  poll, mission.gd step_bookkeeping). Deterministic, zero wave flakiness.
+- The combat legs run BEFORE the fill (11 free slots, green 250 above
+  EVERY towers.json cost): phase is the ONLY blocking gate — the section 2
+  planted-red PROVES the non-vacuity: with the guard dropped the KEY
+  route really places (ok=true uid=2 cost=100, green 250->150, list=2).
+- Green top-up before the fill is a HARNESS WRITE (declared; the placer
+  header itself names "harness callers"): the occupied gate, not the
+  economy, is the leg. Arithmetic: start 300, control -50, top-up
+  (10*50 + 50), fill -10*50 -> final EXACTLY 300 (row re-check python-side).
+- ACK baseline honesty: state.set_deck is a shipped C13 mutator, so ONE
+  boot write mirrors write_seq into saved_ack BEFORE the matrix (ack=1;
+  the ack-counting test_return_hub pins, WIN=3/LOSE=4). "ack-delta 0" =
+  ZERO FURTHER save writes across the matrix — the save file (user://
+  name READ from save_store.gd, never hardcoded in the test) exists in
+  the BN4-isolated data_home tree ONLY from that boot write; a failed
+  write would printerr (EMPTY-stderr guard).
+- REFUSE-CONFIRM prints armed=0 AFTER the routed press: the REFUSAL
+  itself never disarms (shipped _confirm reading) — during COMBAT it is
+  handle_press's trailing refresh letting poll's G5b lock disarm the aim
+  (REFUSE-LOCKUI pins the lock itself: 5/5 rows disabled, armed aim
+  disarmed by poll's sync BEFORE the press drains).
+
+== 1. GREEN (shipped tree) ==============================================
+$ python3 -m pytest -q tests/test_place_refusals.py
+  1 passed in 5.63s
+$ [conftest harness reused verbatim] conftest.run_probe_script(
+      <tmp>/gw_place_refusal_probe.gd, (), <tmp>/user_home)   # machine rows
+  rc= 0
+  REFUSE-BOOT slots=11 cap=60 green=300 list=0 ack=1
+  REFUSE-CTRL ok=true cost=50 green=250 list=1 nodes=1 ack=1 ghost=-1 armed=0
+  REFUSE-CAP ok=false why=cap green=250 list=1 nodes=1 ack=1 ghost=-1 armed=0
+  REFUSE-SLOTOUT ok=false why=slot green=250 list=1 nodes=1 ack=1 ghost=-1 armed=0
+  REFUSE-KEYM ok=false why=phase green=250 list=1 nodes=1 ack=1 ghost=-1 armed=0
+  REFUSE-KEYME2E green=250 list=1 nodes=1 ack=1 ghost=-1 armed=0
+  REFUSE-CONFIRM ok=false why=phase green=250 list=1 nodes=1 ack=1 ghost=-1 armed=0
+  REFUSE-LOCKUI rows=5 disabled=5 green=250 list=1 nodes=1 ack=1 ghost=-1 armed=0
+  REFUSE-FILL placed=10 green=300 list=11 nodes=11 ack=1 ghost=-1 armed=0
+  REFUSE-SLOT ok=false why=slot why2=slot green=300 list=11 nodes=11 ack=1 ghost=-1 armed=0
+  REFUSE-ACK start=1 end=1 delta=0
+  REFUSE-OK
+  stderr: ''   (EMPTY — no parse noise, no exception; REFUSE-OK is the
+  LAST row and every leg carries its REFUSE-FAIL guard, so a silent skip
+  cannot print it.)
+  # Rows: (d) GREEN CONTROL REFUSE-CTRL (BUILD-phase place lands, cost =
+  # towers.json min EXACTLY, node valid+parented); (a) phase refusal BOTH
+  # shipped routes (KEY: bridge KeyM -> place_selected -> placer.place;
+  # CLICK: picker row's pressed receiver _on_family_pressed arms, then
+  # _confirm's exact placer.place_id(armed_id,1) call) + KEYME2E (real
+  # press drained through the shipped pump pair) + LOCKUI (G5b lock);
+  # (b) slot-off-list + FILL every slot + place-AGAIN refused twice, no
+  # double-place, zero-free ghost -1; (c) cap gap leg; ack-delta 0.
+
+== 2. PLANTED-RED: drop the phase guard at BOTH shipped sites ============
+$ grep -c 'String(m.phase_kind) != "build"' godot/scripts/defense_placer.gd
+  2                       (the rule lives in place() AND place_id();
+                           place() DELEGATES to place_id(), so dropping
+                           only one site still refuses and FALSE-GREENS)
+$ sed -i '/String(m.phase_kind) != "build"/{N;d}' godot/scripts/defense_placer.gd
+$ grep -c 'phase_kind' godot/scripts/defense_placer.gd
+  0                       (PLANTED: both phase guards removed)
+$ python3 -m pytest -q tests/test_place_refusals.py    # -> RED as required
+  AssertionError: probe rc=1
+  OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  REFUSE-BOOT slots=11 cap=60 green=300 list=0 ack=1
+  REFUSE-CAP ok=false why=cap green=250 list=1 nodes=1 ack=1 ghost=-1 armed=0
+  REFUSE-SLOTOUT ok=false why=slot green=250 list=1 nodes=1 ack=1 ghost=-1 armed=0
+  REFUSE-KEYM ok=true why=NONE green=150 list=2 nodes=2 ack=1 ghost=-1 armed=0
+  REFUSE-FAIL key-route leg wanted why=phase got { "ok": true, "uid": 2, "cost": 100 }
+  REFUSE-FAIL key-route refusal moved state
+  1 failed
+  -> the KEY-route combat leg goes RED EXACTLY as designed: without the
+     guard the combat KeyM press PLACES FOR REAL (ok=true uid=2 cost=100,
+     gold 250->150, list=2, nodes=2) — the matrix is non-vacuous and the
+     in-probe REFUSE-FAIL guard bites (the state-write guard names the
+     same leg second; fail-fast ordering noted, same mechanism).
+$ git checkout -- godot/scripts/defense_placer.gd
+$ diff <(git show :godot/scripts/defense_placer.gd) godot/scripts/defense_placer.gd
+  REVERT_VERIFIED   (byte-identical; guard count back to 2; porcelain
+                    shows ONLY my untracked test file — no scratch)
+
+== 3. GREEN re-check after the revert =====================================
+$ python3 -m pytest -q tests/test_place_refusals.py
+  1 passed in 5.52s
+
+== 4. GATES AT THE WORKTREE TREE ==========================================
+$ python3 -m pytest -q
+  288 passed in 195.70s (0:03:15)      # PYTEST_EXIT=0, ONE attempt
+  # COUNT HONESTY: 287 baseline (the WITH-EXPORT collect per the PAPERWORK
+  # SWEEP ledger row — static/ web-export copied into this worktree per
+  # the brief; clean-checkout collect = 282) + this card's 1 leg = 288.
+$ python3 tools/check_hygiene.py
+  check_hygiene: 0 hit(s)              # HYGIENE_EXIT=0; 24 informational
+  # notes = the base-181e811 set; tests/test_place_refusals.py (457 lines,
+  # tests tier < 600 cap) adds NO new note (verified by grep of the note
+  # lines: no place_refusals hit).
+$ git diff --stat tests/fixtures/      # EMPTY
+$ git status --porcelain tests/fixtures/   # EMPTY (engine-tier probes never
+                                   # write fixtures — BN4 XDG_DATA_HOME isolate)
+$ git status --porcelain tests/test_mission_clicks.py godot/scripts/mission.gd
+                                       # EMPTY — the two files this card
+                                       # reads but must never edit
+$ git status --porcelain               # pre-commit, whole tree:
+  ?? tests/test_place_refusals.py      # ONLY my new file (+ this log + the
+                                       # LEDGER line, all staged by pathspec)
+$ python3 -c "import sys;sys.path.insert(0,'tools');import check_hygiene as h;print('GOVERNED_LITERALS len =',len(h.GOVERNED_LITERALS))"
+  GOVERNED_LITERALS len = 17           # ZERO new governed literals (unchanged)
+$ wc -l tests/test_place_refusals.py
+  457 tests/test_place_refusals.py     # tests tier, under the 600 hard cap
+
+VERIFY_EXIT=0
