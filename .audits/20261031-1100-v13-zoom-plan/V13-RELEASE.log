@@ -1,0 +1,15 @@
+# v1.3 RELEASE tail (orchestrator, 2026-10-31)
+TAG: v1.3 -> 03b3302 (LEDGER-row commit), pushed. Tags v1/v1.1/v1.2/v1.2.1 unmoved (git tag -l: v1 v1.1 v1.2 v1.2.1 v1.3).
+EXE: tools/export_windows.sh at the tag in worktree /tmp/gw-v13-tag (GW_GODOT pinned 4.7.2): PE32+ GUI x86-64,
+  114,325,296 B, sha256 2fdd613bde622900cc78552d1ebaf5ff54ddd702947bf0af9995963350f2bf76.
+  HONEST ROW: a FIRST build of the same tag produced sha cc36afa7... — the export is NOT byte-reproducible (embedded
+  stamps). The SHIPPED asset bytes were therefore the VM120-TESTED bytes (below), not a later rebuild.
+VM120 (shared-seat etiquette: occupancy checked first, quiet): transfer via LAN http, IN-GUEST Get-FileHash ==
+  2FDD613B... (byte-identical); boot --fullscreen PID 356: ALIVE=True RESP=True CPUdelta=11343.75ms; cleanup in same
+  call: PROC_GONE=True FOLDER_GONE=True; transfer server killed (ports 8149/8150 swept).
+RELEASE: https://github.com/bryn1/gatewardens/releases/tag/v1.3 --notes-file extracted from committed RELEASE_NOTES.md
+  v1.3 section (69 ln); asset Gatewardens.exe:114325296 attached. Body grep-verify: grant quote ^1, "No shop" ^1,
+  "wheel-only" ^1. GitHub-Release doctrine 3 rows met AT the tag: notes artifact committed (R13 1496fc92), README
+  current AT tag (R13), doc-sync sweep grep-to-zero (R13.log).
+WORKTREE: /tmp/gw-v13-tag removed after upload.
+V13-RELEASE-DONE
