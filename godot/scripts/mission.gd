@@ -151,9 +151,9 @@ func setup(tables_in, state_in, save_store_in, bridge_in, map_id,
 			relic_pool.append(row.duplicate(true))
 	$EnemyRunner.setup(difficulty)
 	$PhaseController.setup(self)
-	# W7 hero hook (DECLARED, MC 11274.1.14): the rig builds the per-hero
-	# pawns + hero_combat from the injected data; its visuals are children
-	# of the rig body, the camera rig on this root is never touched (F8).
+	# W7 hero hook (DECLARED, MC 11274.1.14): builds per-hero pawns + hero_combat from injected data; visuals are rig-body
+	# children. F8: the camera rig on this root is never touched by this route — its one runtime move is the owner-granted
+	# zoom distance via camera_zoom.gd (pin MC 11719 grant "Go 1 and zoom control for 2"); pan/rotate/pitch: never touched.
 	var rig := HERO_RIG.new()
 	rig.name = "HeroRig"
 	add_child(rig)

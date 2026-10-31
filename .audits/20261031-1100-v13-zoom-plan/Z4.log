@@ -1,0 +1,66 @@
+# Z4.log — v1.3 zoom Z4 (MC 11819, coder) — mission.gd:156 comment LOC-neutral clarify
+## (ZOOM_SPEC §5 A7 residue, carried by R13.log — the F8 "never touched" comment rewrite
+## that A7 assigned to the S3 wiring commit and Z3 did not land)
+
+Base: tip 1496fc92, clean tree. ONE comment-text change in godot/scripts/mission.gd
+(lines 154-156, the W7 hero-hook block) — ZERO code hunks.
+
+== DECLARED READINGS ==
+1) DoD line "line count EXACTLY 400 before and after (python len(readlines()))" — the
+   file measures 399 by readlines() (and wc -l); 400 is the hygiene gate's measure
+   (check_hygiene counts read().split("\n") -> 399 lines + trailing '' = 400, failing
+   at > 400, i.e. R13's "AT the 400-LOC ceiling"). The binding invariant is
+   LOC-NEUTRAL + stays ≤ ceiling: readlines 399 BEFORE and 399 AFTER (quoted below),
+   gate split-count 400 BEFORE and 400 AFTER — unchanged, still legal.
+2) Post-fix grep "never touched" is kept TRUTHFUL-HITTING: A7's law is to rewrite the
+   claim where it contradicts shipped reality, and the comment now carries the phrase
+   scoped ("never touched BY THIS ROUTE") plus the one-runtime-move truth, so the grep
+   returns the rewritten truth instead of zero hits (hero_controller.gd's quote R13
+   VERIFIED still true is untouched; A7 asked for 0 STALE hits, achieved).
+
+== THE CHANGE (comment-only; git diff -U0 below) ==
+- the old claim "the camera rig on this root is never touched (F8)" read unscoped;
+  the shipped v1.3 zoom (camera_zoom.gd, MC 11719 grant "Go 1 and zoom control for 2")
+  DOES move the rig origin along its frozen LOS at runtime. The W7 hero-rig route
+  itself still never moves it — the comment now says exactly that, names the one
+  runtime move + its grant, and keeps pan/rotate/pitch never-touched (owner camera
+  pin, MC 11719: zoom only). Line widths ≤ 119 sit inside the repo comment idiom
+  (repo max 122, defense_placer.gd:14); mission.gd already carries 13 em dashes.
+
+== GATES (all run this session, this tree, after the comment edit) ==
+1) LOC: python3 -c "print(len(open('godot/scripts/mission.gd').readlines()))"
+     BEFORE: 399   AFTER: 399   (LOC-neutral; gate split-count 400 unchanged, ≤ ceiling)
+2) COMMENT-ONLY HUNK (git diff -U0 -- godot/scripts/mission.gd), every +/- line a
+   comment line; git diff --stat -> "godot/scripts/mission.gd | 6 +++--- /
+   1 file changed, 3 insertions(+), 3 deletions(-)":
+@@ -154,3 +154,3 @@ func setup(tables_in, state_in, save_store_in, bridge_in, map_id,
+-	# W7 hero hook (DECLARED, MC 11274.1.14): the rig builds the per-hero
+-	# pawns + hero_combat from the injected data; its visuals are children
+-	# of the rig body, the camera rig on this root is never touched (F8).
++	# W7 hero hook (DECLARED, MC 11274.1.14): builds per-hero pawns + hero_combat from injected data; visuals are rig-body
++	# children. F8: the camera rig on this root is never touched by this route — its one runtime move is the owner-granted
++	# zoom distance via camera_zoom.gd (pin MC 11719 grant "Go 1 and zoom control for 2"); pan/rotate/pitch: never touched.
+3) FULL SUITE: python3 -m pytest -q -> tail "287 passed in 190.08s (0:03:10)"
+   PYTEST_RC=0 (>= 287 met exactly; comment causally inert — no test reads the prose:
+   the mission.gd source-truth gates pin "$HeroRig.step(delta)" and "rig.setup(self)",
+   both unchanged; grep of tests/ for "hero hook|never touched|rig body" -> 0 hits).
+4) python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)" HYGIENE_RC=0
+   (the "mission.gd 400 lines > soft 250" row is a pre-existing informational note,
+   unchanged before/after — comments are never i2-scanned).
+5) FIXTURES: git diff over tests/fixtures + godot/data EMPTY (FIXTURES_DIFF_EMPTY=YES);
+   sha256sum tests/fixtures/*.jsonl ->
+     5e37c4b089209e64e26395237830bc16a1cf62aa3b9a6d427be2f361f970f628  mission_gatefall_hard.jsonl
+     eafe3932f7d30898565664341697a32f20ecda7458d379be65b668bf2d6f3912  mission_gatefall_normal.jsonl
+   pinned pair byte-identical to the R13 gate-3 rows.
+6) grep -n "never touched" godot/scripts/mission.gd AFTER — the rewritten truth:
+   155:	# children. F8: the camera rig on this root is never touched by this route — its one runtime move is the owner-granted
+   156:	# zoom distance via camera_zoom.gd (pin MC 11719 grant "Go 1 and zoom control for 2"); pan/rotate/pitch: never touched.
+7) monetization surface added by this commit: NONE (diff is three comment lines; no
+   I1 token, no code, no data).
+8) NOT tagged, NOT pushed, no git config, no spawn (leaf). Commit rides:
+   git -c user.name="coder (11819)" -c user.email=coder@agent-town.local commit
+   pathspec: godot/scripts/mission.gd .audits/20261031-1100-v13-zoom-plan/Z4.log
+   message: "v1.3 zoom Z4 (MC 11819): mission.gd rig comment scoped truthfully —
+   LOC-neutral (A7 residue closed)".
+
+VERIFY_EXIT=0
