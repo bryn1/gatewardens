@@ -1,0 +1,142 @@
+P5-wave.log — v1.4 P5 selection ring on the ONE existing ring mechanism
+(MC 11837, wave W2). Seat: coder profile (child of hermes-standby
+session-391bd348). Date 2026-10-31.
+Base tip: 23b4b78 (detached, per-card worktree /tmp/gw-v14-p5 — V14-PLAN
+P2-C engine-tier isolation; static/ web-export present, test_served legs
+ran). Branch card/11837.
+SPEC: .audits/20261031-1830-v14-plan/V14-PLAN.md row P5 + §W2. BUILD:
+godot/scripts/selection_ring.gd (NEW driver) + range_ring.gd (color arg +
+cached material + selection-entry header truth) + mission.tscn (DECLARED
+scene mount) + tests/test_selection_ring.py (NEW, 1 leg) +
+tests/test_mission_clicks.py (count-pin retarget, declared below).
+
+== HONEST READING DECLARATIONS ============================================
+- mission.gd ZERO new lines — VERIFIED (camera/fixtures/mission.gd
+  diff = 0 files). The LOC 400 gate sits at gate-metric 400 (399 wc
+  lines; the gate counts text.split("\n")) — the ceiling error fires at
+  >400, so the very next line would tip it: the brief's fallback
+  applies and the PUMP IS THE SCENE MOUNT (root-last Node3D child, the
+  fx_director mount ruling verbatim — "the root's _process runs step()
+  first, then this node's _process observes the finished frame"; no
+  code line is needed for a scene child, so no pump line was even
+  unavoidable).
+- "ARMED slot/hover" realizes as the GHOST SLOT: v1 ships no free-
+  cursor hover — the ghost IS the aim (G5 invariant armed ⇔ ghost; the
+  G4 header's own wording). The armed leg reads placer.ghost +
+  placer.slots through the same door _sync_ring uses.
+- Coexistence with the G4 ghost chokepoints is IDEMPOTENT by design:
+  the armed leg re-asserts exactly what _sync_ring writes (same slot,
+  same tier_range(armed_id, GHOST_TIER), same RING_COLOR yellow), so
+  the event-driven driver and the per-frame pass never disagree; G4's
+  probe + source-truth pins are untouched and green at this tree.
+- SELECTED color: the card's legs pin ARMED-vs-SELECTED colors, so the
+  G4 yellow stays the ARMED tone and the SELECTED tone is the new
+  SELECTED_COLOR constant in range_ring.gd (presentation constants stay
+  with the caller per the lit_material D-1 ruling; ONE material build
+  per color, cached). The plan row's older "same yellow ring" wording
+  is superseded by the card's color legs — declared, not silently
+  chosen.
+- Deselect teardown rides the shipped panel.select_defense(0) door
+  (defense_panel.gd:79 "0 = no defense selected"); the player has no
+  separate deselect control (sell's reset is the same field) — declared
+  reading.
+- PLANTED-RED exposed a harness flaw BEFORE the red was accepted: the
+  first plant printed P5-FAIL but the probe then still printed P5-OK
+  with quit(0) overwriting quit(1) — rc came back 0 (the exact G2/G4
+  completion-flag lesson). Guard added (no P5-OK after a FAIL row),
+  THEN the cycle was run properly. Honest incident row.
+- mission.tscn mount is DECLARED (pathspec row) and its byte-count pin
+  follows: test_mission_clicks.py script-ext-row count 6 -> 7 with a
+  dated comment (F6's dated-move precedent; the plan row itself
+  anticipated byte-count legs moving with this card). The sidecar
+  consistency gate governs the new row too (its generated uid passes).
+- Priority rule shipped + DECLARED: ARMED > SELECTED > HIDDEN. An armed
+  row with no placeable ring (ghost -1 or the range-0 gate_blockade
+  treatment, DA A4.1) HIDES — the armed STATE wins; it never falls
+  through to the selection. Disarm falls back to the standing selection
+  (P5-RMB row), deselect hides (P5-TEARDOWN).
+
+== 1. GREEN (shipped tree) ==============================================
+$ python3 -m pytest -q tests/test_selection_ring.py
+  1 passed in 5.58s
+$ conftest.run_probe_script(<tmp>/p5_selection_ring_probe.gd, (),
+      <tmp>/home)   # P1/F3 tmp-probe idiom, P5-* machine rows
+rc= 0  STDERR_BYTES= 0
+  P5-MOUNT mounted=1
+  P5-HIDE0 node=0 visible=0 armed=0 selected=0
+  P5-ARM fam=ballista vis=1 color=ARMED posok=1 want=16.0 scale=16.0
+  P5-SEL uid=1 vis=1 pre=0 color=SELECTED posok=1 want=16.0 scale=16.0
+  P5-PRI color=ARMED posok=1 selected=1 sep=56.57
+  P5-RMB armed=0 fallback=SELECTED selected=1
+  P5-TEARDOWN node=1 visible=0 armed=0 selected=0
+  P5-OK
+Rows: hidden-default / armed(color+pos+DATA radius) / selected-only
+(pre=0 pins NOTHING but the driver painted the selection leg — the
+select press is no ghost chokepoint) / armed-while-selected priority
+(ARMED color at the ghost slot, tower at sep=56.57 u away, selection
+intact) / disarm-fallback + disarm+deselect teardown. want= re-derived
+probe-side from towers.json (DATA leg compares implementation vs DATA,
+never vs itself); python re-checks both want and scale against
+towers.json T1 (ballista 16.0). IN-PROBE P5-FAIL guards + completion
+flag; P5-OK LAST.
+
+== 2. PLANTED-RED x1 (priority inversion) ===============================
+Plant (throwaway scratch in the DRIVER, STAGED FIRST — F4 lesson — so
+`git checkout --` reverts the plant only):
+  sed 's/if bool(p\.armed):/if bool(p.armed) and int(p.selected_uid) == 0:/'
+  (selected now outranks armed when both — the inversion the priority
+  row exists to catch)
+RED transcript (same harness, same seed):
+rc= 1  STDERR_BYTES= 0
+  P5-MOUNT mounted=1
+  P5-HIDE0 node=0 visible=0 armed=0 selected=0
+  P5-ARM fam=ballista vis=1 color=ARMED posok=1 want=16.0 scale=16.0
+  P5-SEL uid=1 vis=1 pre=0 color=SELECTED posok=1 want=16.0 scale=16.0
+  P5-FAIL PRI: want ARMED at the ghost slot apart from the tower, got
+      SELECTED at (-40.0, 0.05, 0.0) sep=0.0
+EXACTLY the priority row goes RED (HIDE0/ARM/SEL stay green — the
+inversion only shows when armed AND selected coexist); the ring sits
+on the tower (sep=0.0) under the plant.
+$ git checkout -- godot/scripts/selection_ring.gd && git diff --exit-code
+  godot/scripts/selection_ring.gd   -> REVERT_VERIFIED (twice: the
+  guard-fix cycle and the transcript capture both ran the revert)
+GREEN re-run beside the red: the section-1 transcript (byte-identical
+rows), pytest 1 passed.
+
+== 3. GATES AT THE FINAL TREE ===========================================
+$ git checkout -b card/11837 (from detached 23b4b78)
+$ git diff --cached --stat HEAD   (pathspec commit, no push):
+ godot/scenes/mission.tscn           |   6 +-    (DECLARED mount + load_steps 10->11)
+ godot/scripts/range_ring.gd         |  46 +++--  (color arg + cached mat + header truth)
+ godot/scripts/selection_ring.gd     |  89 +++++  (NEW)
+ godot/scripts/selection_ring.gd.uid |   1 +     (godot --import generated)
+ tests/test_mission_clicks.py        |   4 +-    (declared count-pin 6->7, dated comment)
+ tests/test_selection_ring.py        | 398 +++++  (NEW)
+ (+ LEDGER.md row + this log in-commit; author coder (11837))
+$ python3 -m pytest -q
+  290 passed in 185.75s  rc=0 ONE attempt (289 with-export baseline +
+  this card's leg — clean-checkout collect per the PAPERWORK row's
+  5-leg module-skip note).
+$ python3 tools/check_hygiene.py
+  check_hygiene: 0 hit(s)  (24 notes = base set; ZERO new notes)
+$ git diff --name-only HEAD -- tests/fixtures/          -> EMPTY (byte-pinned)
+$ git diff --name-only HEAD -- godot/scripts/camera_zoom.gd  -> EMPTY
+  (camera diff EMPTY; ZOOM grant untouched — the Z3 pin legs green in
+  the suite run)
+$ git diff --name-only HEAD -- godot/scripts/mission.gd -> EMPTY (ZERO lines)
+$ python3 -c "...GOVERNED_LITERALS..."                 -> 17 (unchanged;
+  the new driver file is NOT governed — fx_director/range_ring class)
+LOC GATE-METRIC ROWS (len(text.split("\n")), ceiling 400/600):
+  mission.gd          400 -> 400  (zero lines; ceiling error fires >400)
+  selection_ring.gd   NEW 90      (well under 400, <250 soft: no note)
+  range_ring.gd        90 -> 112  (+selection color/cached material)
+  mission.tscn         54 -> 57   (mount row + ext row + load_steps)
+  defense_panel.gd    366 -> 366  (plan LOC-watch row: untouched)
+  defense_placer.gd   336 -> 336  (plan LOC-watch row: untouched)
+  test_selection_ring.py            399 (tests tier, 600 cap)
+  test_mission_clicks.py            600 -> 600 (retarget is NET-ONE-
+    COMMENT-LINE-GROWTH then trimmed back; 600 == the tests-tier hard
+    ceiling boundary — the ceiling error fires at >600; honest note:
+    ANY future line into this file needs one out; the hygiene gate
+    proved 0 hits at this tree.)
+VERIFY_EXIT=0
