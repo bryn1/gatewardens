@@ -1,9 +1,18 @@
 # V14-PLAN — v1.4 scope: dispose the open backlog, wave-decompose (MC 11827 · plan seat · 2026-10-31)
 
+REV c2 (2026-10-31, post-DA): DA-verdict FIX round (card-11827.out/DA-verdict.md, # VERDICT: FIX)
+applied — hp-tint row RE-DISPOSED DEFER per the binding orchestrator call (P1-A); the fx_director
+walk truth-named as a drop-guarded per-drop pass (P1-B); W1 prescribed per-card worktrees (P2-C);
+LEDGER shared-write precedent stated (P2-D); six nits fixed. Every changed claim re-measured this
+session — instruments in §7 CHANGELOG-c2. Design core (dispositions, kits, constraint rows)
+unchanged — DA verified 8 of 10 rows intact.
+
 Base: HEAD `78f9be0` = tag `v1.3` + three doc-only release-tail rows (`git log v1.3..HEAD`
 VERIFIED: RN marker / release log / paperwork sweep — zero code delta). This plan edits NO repo
 code; READ-ONLY over the repo except this file. Length reason (file hygiene): one plan, one
-subject — the disposition table and its waves are one contract; kept whole by the V121 precedent.
+subject — the disposition table and its waves are one contract; kept whole by the V121 precedent
+(REV c2 grew it to 328 ln past the 300 soft line; the same reason governs — the §7 changelog rows
+point INTO the same table, splitting would separate a finding from its fix).
 
 V121-PLAN §2 re-verification (the brief's named rows, read this session):
 - **D1 SHIPPED — VERIFIED.** LEDGER:158-160 (zoom Z2 `camera_zoom.gd` wheel-only; Z3 mount) +
@@ -16,19 +25,25 @@ V121-PLAN §2 re-verification (the brief's named rows, read this session):
 
 ## 0 Verified anchors (every number measured this session at 78f9be0, not memory)
 
-- Gate metric (`tools/check_hygiene.py:197-198` `read(path).split("\n")`): `mission.gd` **400 =
-  AT the ceiling — cards add ZERO lines to it**; `hud.gd` 385; `game_state.gd` 396 (untouchable);
-  `defense_panel.gd` 366; `defense_placer.gd` 336; `fx_director.gd` 261; `defense_rows_ui.gd`
-  185; `sprite_bank.gd` 145; `range_ring.gd` 89; `hero_pawn.gd` 91.
-  `tests/test_mission_clicks.py` **600 = at the tests-tier 600 ceiling** — no card may grow it.
-- Suite: `python3 -m pytest --collect-only -q` → **287 tests collected**; v1.3 row: 287 green.
-  Hygiene at HEAD: `check_hygiene: 0 hit(s)`, HYGIENE_EXIT=0 (23 informational notes = baseline).
-  System `pytest 9.0.3` (measured — matters for the mutmut card).
+- Gate metric (`tools/check_hygiene.py:199-200` `lines = read(path).split("\n")`, so
+  metric = `len(read(path).split("\n"))`, NOT `wc -l` — every LOC below read with that metric this
+  session): `mission.gd` **400 = AT the ceiling — cards add ZERO lines to it**; `hud.gd` 385;
+  `game_state.gd` 396 (untouchable); `defense_panel.gd` 366; `defense_placer.gd` 336;
+  `fx_director.gd` 261; `defense_rows_ui.gd` 186; `sprite_bank.gd` 145; `range_ring.gd` 90;
+  `hero_pawn.gd` 91. `tests/test_mission_clicks.py` **600 = at the tests-tier 600 ceiling** — no
+  card may grow it.
+- Suite: `python3 -m pytest -q --collect-only -q` prints PER-FILE count rows (no single
+  "287 tests collected" line — `tail -1` is a file row, e.g. `tests/test_wave_telegraph.py: 6`);
+  the SUM of the per-file counts = **287** (measured: sum=287); v1.3 row: 287 green.
+  Hygiene at HEAD: `check_hygiene: 0 hit(s)`, HYGIENE_EXIT=0 (24 informational notes = baseline,
+  counted this session). System `pytest 9.0.3` (measured — matters for the mutmut card).
 - REUSE idioms read this session: `range_ring.gd` (ONE unit TorusMesh, engine-managed PrimitiveMesh
   + `lit_material.gd` make() — the header's web-raster law: "the class family the G2 fix moved to
   … rasterizes under GL Compatibility/web"; the ring's three ghost chokepoints are its ONLY
-  drivers); `fx_director.gd` (visual-only observer, per-frame walk over `runner.entities` AND
-  `m.defense_list` in `fx_step`, MAX_FX=64 cap, mission.tscn LAST scene child); `world_text.gd`
+  drivers); `fx_director.gd` (visual-only observer; its `m.defense_list` walk is NOT unconditional
+  — it lives in `_observe_fires` BEHIND the drop guard `if drops.is_empty(): return`
+  (fx_director.gd:169-170, walk at :171), i.e. a PER-DROP pass that runs only on frames where an
+  enemy hp dropped; MAX_FX=64 cap, mission.tscn LAST scene child); `world_text.gd`
   (the ONE Label3D mechanism); `defense_rows_ui.gd` (W17c selectable rows + W17e dirty-guarded
   sync pass — the shipped per-frame UI-sync hook); `lit_material.gd` (the ONE ground-material
   builder, v1.3 W3 fold).
@@ -103,7 +118,7 @@ V121-PLAN §2 re-verification (the brief's named rows, read this session):
 | row (source) | disposition | mechanism it REUSES / reason |
 |---|---|---|
 | **selection ring on a PLACED tower** (V121 D4; DD row 6; the declared G4 finding range_ring.gd:14-20) | **SHIP — card P5 (W2)** | The ring itself EXISTS: `range_ring.gd` ONE TorusMesh PrimitiveMesh + `lit_material` (the PrimitiveMesh/rasterize-proven web path, G2 lesson honored). New leg = the selection trigger through the SAME single-site `_sync_ring` discipline + the DECLARED priority rule armed-ghost > selected > hidden. Replaces nothing (zero selection visuals today). |
-| **tower hp tint** (V121 D4; DD row 8) | **SHIP — card P2 (W1)** | Rides `fx_director`'s EXISTING per-frame `m.defense_list` walk (no new observer, no mission.tscn growth): reads `obj.hp/hp_max` (public reads), writes ONLY the defense's own Sprite3D `modulate` (engine presentation property; greybox MeshInstance3D left neutral — declared). Sim-state writes: zero (fixtures-empty leg proves it). |
+| **tower hp tint** (V121 D4; DD row 8) | **DEFER — RE-DISPOSED from SHIP at REV c2 per the binding orchestrator call (DA P1-A)** | Reason (orchestrator call, verbatim): "RE-DISPOSE the hp-tint row — DEFER with reason 'no damage-source for defenses in v1 (DA P1-A); ships only dead presentation; re-opens the moment any tower-targeting mechanic lands'". The defense `take_damage` has NO live caller: production sweep (grep `take_damage` godot/scripts/*.gd godot/sim/*.gd, VERIFIED c2) = `mission.gd:374` ONLY, and its `rec` is `core_main`/`core_subs` (`_on_reach`, mission.gd:371-374) — `core_obj` records OUTSIDE `defense_list` (list entries are defense_obj dicts, appended at mission.gd:341); all other callers are `mission_smoke_w8.gd` harness legs. The ONLY hp writes in the repo are `core_obj.gd:29` and `defense_obj.gd:157` inside their own `take_damage` (grep of every `.hp` assignment c2 — no fx/hazard/bomb path writes defense hp). Mirrors this table's own cd-overlay REJECT test — "a cd overlay would paint a mechanism that has no source": the live hp tint can never paint in a real mission. On re-open the card MUST add the idle-frame leg DA P1-B names: a tint pass as its OWN unconditional pass in `fx_step` + state change with NO enemy drops that frame → tint changes within one `fx_step`. |
 | **icon grey/red/cd states** (V121 D4; DD row 9) | **SHIP the grey/red half — card P6 (W3). cd-overlay half REJECTED (declared):** no build-cooldown state EXISTS in the sim (no cd field on towers.json rows / placer) — a cd overlay would paint a mechanism that has no source. | Presentation-only over the shipped W17e poll sync (`defense_rows_ui` sync pass precedent, `sync_marks` idiom): red when `cost > green`, grey when phase ≠ build; state READS the shipped fields, the shipped refusals stay the only enforcement (negative leg). Tint Color consts in `sprite_bank` (ungoverned home — panel/rows_ui are I2-governed). |
 | **ready-up / early-call** (V121 D4; DD row 12, P4) | **DEFER** | A new SIM mechanic (early wave start + bonus) in the I2-governed phase_controller + a balance number the owner has never ruled; P4 in DD-REFERENCE; no owner artifact. Not v1.4. |
 | **minimap** (V121 D4; DD row 13, P4) | **DEFER** | DD-REFERENCE's own row: "Defer — value arrives when map 2+ or bigger arenas ship". One map, one static-ish rig where the whole arena reads; a second navigation/overview mechanism answers no question the shipped rig asks. |
@@ -127,13 +142,13 @@ VERIFY_EXIT=0.
 
 | wave | cards (∥ = parallel) | shared-file / dependency reason |
 |---|---|---|
-| **W1** | **P1 ∥ P2 ∥ P3 ∥ P4** | disjoint: tests/test_place_refusals.py NEW only • fx_director.gd(+new test) • NO repo change (venv + log) • NO repo change (browser artifacts + log) |
-| **W2** | **P5** (selection ring) | defense_panel.gd + defense_placer.gd + range_ring.gd — shares defense_panel.gd with P6, so P6 is NOT in W1 |
+| **W1** | **P1 ∥ P3 ∥ P4** (P2 DEFERred at REV c2 — see §2) | CODE-disjoint: tests/test_place_refusals.py NEW only • zero CODE change (venv + log) • zero CODE change (browser artifacts + log). **LEDGER.md is NOT disjoint** — every repo card appends it: the shipped precedent is the v1.2 F1 row, verbatim "my commit stages LEDGER.md PARTIAL (staged blob = HEAD + the F1 row only) so the F2 row lands atomically in the F2 commit, untouched here" (LEDGER:95, pathspec-staged partial commit — sibling rows land atomically in their own commits); W1 cards use this idiom, never an unqualified disjointness claim. **Engine-tier isolation (DA P2-C, binding): every W1 card runs in its OWN git worktree** (`git worktree add` off the card base, one per card — session-worktree style; the product tree stays untouched until the cards' commits land, then they rebase+land sequentially). Rationale MEASURED: two overlapping pytest runs race the shared `godot/.godot` import cache — `test_return_hub.py` measured 1 passed/2 errors OVERLAPPED vs 3 passed SOLO (DA verdict §P2-C; c2 solo re-run: 3 passed in 6.67s). A per-card worktree carries a per-card import cache, so the fan stays parallel AND gate-isolated. |
+| **W2** | **P5** (selection ring) | defense_panel.gd + defense_placer.gd + range_ring.gd + g4 test/probe extension — shares ZERO files with any W1 card. AFTER-W1 is DECLARED CONSERVATIVE, reason honestly named (DA P3-4): engine-load budget + suite isolation (P2-C), not a file dependency. Its real same-file pair is WITH P6: shares defense_panel.gd, so P6 is NOT in W2. |
 | **W3** | **P6** (icon states) | defense_rows_ui.gd + defense_panel.gd (one drive line) + sprite_bank.gd — AFTER P5 (same file, panel byte-quiet at P5's tip) |
-| **W4** | **P7** (kit leg + docs) | AFTER P2 (fx_director changed under it — the byte-stability claim must read the FINAL tree) |
+| **W4** | **P7** (kit leg + docs) | AFTER all repo-touching cards (P5, P6 land first — the byte-stability claim must read the FINAL tree that ships; fx_director itself is edited by NO v1.4 card after the P2 DEFER) |
 | conditional | **P8** (crest fix) | ONLY IF P4 verdict ILLEGIBLE; hero_pawn.gd + world_text.gd (disjoint vs W2-W3 — can slot beside them after P4 lands) |
 
-Lane pre-flight before W1's 4-way fan; children are leaves.
+Lane pre-flight before W1's 3-way fan; children are leaves.
 
 **Per-card DoD (checkable legs — the load-bearing ones):**
 
@@ -147,28 +162,28 @@ Lane pre-flight before W1's 4-way fan; children are leaves.
   stderr EMPTY. Planted-red ×2: phase-guard dropped → phase leg RED; slot-guard dropped → slot
   leg RED; `git checkout --` + byte-identical diff rows. DoD: 287+new legs green, hygiene 0,
   fixtures diff EMPTY.
-- **P2 (W1) hp tint** — files: `fx_director.gd` + NEW `tests/test_hp_tint.py` + NEW
-  `sim/g7_hp_tint_probe.gd`(+.uid) + log. Tint pass inside the existing `fx_step` walk (ONE
-  site, header doctrine extended DECLARED: "writes stay confined to engine presentation
-  properties of observed visual nodes"). Buckets = fx_director consts (e.g. hp_frac thresholds
-  in-file, header-declared — never in a governed file); full hp = neutral Color(1,1,1). Legs:
-  damaged defense → Sprite3D modulate != neutral; healed-to-full → neutral again (transition
-  leg); TIER-UP node swap (defense_obj rebuilds `node`) → tint re-applies within one frame
-  (upgrade-during-combat leg); greybox path untouched (negative); DEAD defense frees clean
-  (teardown leg); fixtures diff EMPTY + mission public fields byte-stable across a tinted run
-  (sim-untouched proof). Planted-red ×2: bucket comparison inverted → RED; tint branch removed →
-  tint leg RED. describe-image/served leg orchestrator (C-6 class).
-- **P3 (W1) mutmut tooling** — files: NONE in the repo (git porcelain empty except the log);
-  artifacts: `P3-mutmut.log` + venv recipe + MEASURED kill-rate table. Legs: (1) reproduce the
-  pytest-9.0.3 incompatibility once (measured transcript, then pin `pytest<9` + mutmut versions
+- **P2 — DEFERRED at REV c2 (hp tint), NO v1.4 card.** The former W1 card is withdrawn per DA
+  P1-A/P1-B and the binding orchestrator call (§2 row). Its re-open DoD must include the tint as
+  its OWN unconditional `fx_step` pass (NOT "the existing walk" — that walk is the drop-guarded
+  `_observe_fires` pass, §0) + the idle-frame leg: state change with NO enemy drops that frame →
+  tint changes within one `fx_step`.
+- **P3 (W1) mutmut tooling** — files: zero CODE change; artifacts: `P3-mutmut.log` + venv recipe +
+  MEASURED kill-rate table in the run dir (repo `.audits/` file — the honest reading; the LEDGER
+  row per constraint 9) + worktree (P2-C). Legs: (1) reproduce the pytest-9.0.3 incompatibility
+  once (measured transcript, then pin `pytest<9` + mutmut versions
   in the venv recipe — the recipe lands in the log, venv OUTSIDE the repo tree); (2) mutmut run
   scoped to `tools/check_hygiene.py` + `server/static_app.py` against the full pytest suite;
   (3) kill-rate row = killed/survived/suspicious counts, VERBATIM machine output; (4) survived
   mutants triaged P-class — P0/P1 survivors are FILED as new rows for the orchestrator, NOT
   silently fixed in this card; (5) the GDScript half closes with the declared REJECT text +
-  §0's file-evidence. DoD: log carries the measured ratio line + the recipe + zero repo diffs.
-- **P4 (W1) crest legibility MEASURE** — files: NONE in the repo; artifacts: served PNGs +
-  describe-image transcript + pixel-census rows in `P4-crest-legibility.log` (run dir).
+  §0's file-evidence; (6) RESTORE PATH PINNED (DA P3-7): mutmut 3.x rewrites source IN PLACE — the
+  card stages its tree clean first (the v1.2 F4 "stage before plant" lesson), and names the mid-run
+  restore command (`mutmut restore`, fallback `git checkout -- <file>` verified against the staged
+  index) BEFORE the first mutate, so the zero-repo-diffs DoD is recoverable at any point.
+  DoD: log carries the measured ratio line + the recipe + zero repo diffs.
+- **P4 (W1) crest legibility MEASURE** — files: zero CODE change (served PNGs +
+  describe-image transcript + pixel-census rows land in the run dir `P4-crest-legibility.log`,
+  repo `.audits/` file — the honest reading; the LEDGER row per constraint 9) + worktree (P2-C).
   Legs: serve the current export at 1280×720, mission booted to combat, default D=64 (the shipped
   default — camera UNtouched, constraint 1); unproject the active crest point, crop (the
   v1_world_shot crop idiom); pixel census = glyph-block height in px + contrast rows;
@@ -206,7 +221,7 @@ Lane pre-flight before W1's 4-way fan; children are leaves.
   comparison swapped → red/grey legs swap-RED; sync removal → states leg RED.
 - **P7 (W4) kit leg** — files: `docs/ARCHITECTURE.md` §Verification kits (add the v5_fx_probe
   row: unique leg + exact run command, the v11_boss_shot doc-leg form verbatim) + run-dir `gen/`
-  capture + LEDGER + `P5`… `P7-kit-leg.log`. Legs: run `sim/v5_fx_probe.gd` with the conftest-
+  capture + LEDGER + `P7-kit-leg.log`. Legs: run `sim/v5_fx_probe.gd` with the conftest-
   pinned canonical binary (GW_GODOT-overridable), rc0 + stderr EMPTY; diff vs
   `.audits/20261027-1500-visual-target/gen/probe-v5-fx-green.log` — TRACER/SPARK/POOF/MOUNT rows
   byte-stable (any non-stability is named + re-declared, e.g. CAP live_max shift from G6 numbers
@@ -239,13 +254,15 @@ Lane pre-flight before W1's 4-way fan; children are leaves.
 
 ## 5 Shape of the result
 
-7 SHIP cards (P1-P7) + 1 conditional fix card (P8, only if P4 measures ILLEGIBLE) + 1
-already-ruled REJECT + 2 DEFERs, in 4 waves (4-parallel, 1, 1, 1) with the declared conditional. Zero mission.gd lines, zero new scene mounts,
-zero new governed literals, zero new visual mechanisms — every shipped row rides a named existing
-mechanism (the one ring, the one observer, the one poll sync, the one crop/describe instrument,
-the one Label3D factory). Plan seat authored ZERO repo code; this document is the artifact.
+6 SHIP cards (P1, P3, P4, P5, P6, P7) + 1 conditional fix card (P8, only if P4 measures ILLEGIBLE)
++ 1 already-ruled REJECT + 3 DEFERs (ready-up, minimap, hp-tint — the last re-disposed at REV c2),
+in 4 waves (3-parallel, 1, 1, 1) with the declared conditional. Zero mission.gd lines, zero new
+scene mounts, zero new governed literals, zero new visual mechanisms — every shipped row rides a
+named existing mechanism (the one ring, the one poll sync, the one crop/describe instrument, the
+one Label3D factory, the one fx pipeline read by the kit leg). Plan seat authored ZERO repo code;
+this document is the artifact.
 
-## 6 Plan-file verification (run this session at 78f9be0, commands echoed above)
+## 6 Plan-file verification (round-1 legs at 78f9be0, commands echoed above)
 
 Disposition rows present for ALL ten backlog rows; waves W1-W4 with per-card checkable DoDs
 (P1-P7 + conditional P8) and artifact paths under `.audits/20261031-1830-v14-plan/`; owner-decision
@@ -254,5 +271,58 @@ verbatim, monetization-ever, 400 ceiling, fixtures EMPTY, tags FROZEN, >=287 sui
 ceiling, GOVERNED_LITERALS). Repo untouched read-only check: `git status --porcelain` = plan dir
 only; `git diff --stat tests/fixtures/` EMPTY; suite collects 287 at HEAD; hygiene 0 hits at HEAD.
 All legs rc=0.
+
+## 7 CHANGELOG-c2 (MC 11827 cycle 2 — DA-verdict findings → fixes; every fix re-measured THIS session)
+
+Full verdict: `/home/claudecode/.local/state/knut-dispatch/card-11827.out/DA-verdict.md`
+(`# VERDICT: FIX`). Instruments below are c2-session measurements.
+
+- **P1-A (fatal, hp-tint row)** → row RE-DISPOSED SHIP→DEFER per the ORCHESTRATOR CALL, quoted
+  verbatim in the §2 row: "RE-DISPOSE the hp-tint row — DEFER with reason 'no damage-source for
+  defenses in v1 (DA P1-A); ships only dead presentation; re-opens the moment any tower-targeting
+  mechanic lands'". c2 proof of the source gap (kept SHIP was offered only on a found live source —
+  none exists): `grep -rn take_damage godot/scripts/*.gd godot/sim/*.gd` → production callers =
+  `mission.gd:374` ONLY (its `rec` = `core_main`/`core_subs`, `_on_reach` :371-374, cores are NOT
+  in `defense_list` — defense_list entries are defense_obj dicts appended at mission.gd:341);
+  every `.hp` write in the repo = `core_obj.gd:29` / `defense_obj.gd:157` inside their own
+  `take_damage` (no fx/hazard/bomb/splash path touches defense hp — splash/pierce extend
+  defense→enemy damage only, defense_obj.gd:177; hero AoE hits enemies, hero_combat.gd:93-96);
+  remaining `take_damage` callers are `mission_smoke_w8.gd` harness legs. Hedged no, DEFER.
+  P2 removed from W1 (3-way fan) and its DoD bullet replaced by the re-open prescription.
+- **P1-B (drop-guarded walk)** → no fx_director-riding row survives (P2 DEFERred), so no card
+  needs the idle-frame leg today; the c1 misdescription is still fixed: §0 now names the walk
+  truthfully — `_observe_fires` behind `if drops.is_empty(): return` (fx_director.gd:169-170,
+  VERIFIED c2; walk at :171) = a per-drop pass, not a per-frame walk — and the §2 DEFER row + the
+  §3 P2 stub carry the re-open idle-frame leg requirement.
+- **P2-C (shared import cache)** → WAVES §3 prescribes ONE option: per-card git worktrees for the
+  engine-tier cards, product tree untouched until commits land. c2 instrument: solo
+  `python3 -m pytest tests/test_return_hub.py -q` = 3 passed in 6.67s (overlapped RED — 1 passed/2
+  errors — is the DA's c1 measurement, quoted in §3).
+- **P2-D (LEDGER not disjoint)** → §3 W1 row states the partial-staged-LEDGER precedent verbatim
+  (v1.2 F1 row, LEDGER:95, VERIFIED c2): pathspec-staged partial commit, sibling rows land
+  atomically in their own commits.
+- **Nit P3-1 (LOC metric)** → §0 cites the gate metric `len(read(path).split("\n"))` at
+  check_hygiene.py:**199-200** (VERIFIED c2 — :197-198 are comments); c2 values: `defense_rows_ui.gd`
+  186, `range_ring.gd` 90 (c1 read 185/89 = `wc -l`); 400/385/396/366/336/261/145/91/600 re-read
+  identical under the same metric.
+- **Nit P3-2 (notes baseline)** → §0: 24 informational notes (counted this session,
+  `python3 tools/check_hygiene.py` → 24 `note:` lines, `check_hygiene: 0 hit(s)`, HYGIENE_EXIT=0).
+- **Nit P3-3 (collect output form)** → §0: per-file rows only, no "287 collected" line;
+  `tail -1` = `tests/test_wave_telegraph.py: 6`; SUM of per-file counts = 287 (measured c2).
+- **Nit P3-4 (W1→W2 rationale)** → §3 W2 row names the real reason (engine-load budget / suite
+  isolation, DECLARED CONSERVATIVE — P5 shares zero files with any W1 card) and keeps the genuine
+  P6-after-P5 panel dependency as the same-file reason.
+- **Nit P3-5 (stray "P5" in P7 bullet)** → removed.
+- **Nit P3-6 ("NO repo change" vs run-dir logs)** → §3 W1 row + P3/P4 bullets now read "zero CODE
+  change" with the artifacts honestly placed in the repo `.audits/` run dir + LEDGER row.
+- **Nit P3-7 (mutmut in-place rewrite)** → P3 leg (6) pins the restore path (stage-clean first —
+  the v1.2 F4 stage-before-plant lesson — then `mutmut restore`, fallback `git checkout --`
+  against the staged index) before the first mutate.
+- **P3-DD citation nit (DD-REFERENCE path)** → §0 already spells the run-dir path
+  (`.audits/202610281826-9924ad48/out/DD-REFERENCE.md`); unchanged — resolves under Games/, outside
+  the repo, as stated.
+
+c2 hygiene re-check of this file at HEAD `61220e1`: `git status --porcelain` = this plan dir only
+(no other repo delta from this READ-ONLY run); no commits made; no spawns (leaf).
 
 VERIFY_EXIT=0
