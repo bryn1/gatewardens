@@ -38,12 +38,15 @@ const ICON_FOR := {
 # GOVERNED file — a string hex is blanked by the I2 gate's BN1 pre-pass,
 # so no number literal exists to govern; DECLARED against the plan's
 # sprite_bank wording, the card pathspec keeps the tints with their one
-# painter). GREY = UNAFFORDABLE (cost > green: darken/desaturate, equal
-# channels under white); RED = COMBAT phase refusing an otherwise
-# buildable row (the live phase_kind writers are phase_controller
-# _enter_build/_enter_combat); NEUTRAL = affordable + BUILD, the rest
-# identity (ui_tween's rest value). Presentation ONLY — the shipped
-# refusals (can_afford, the placer phase gate) stay the one enforcement.
+# painter). MAP = THE PLAN ROW (RECUT 2026-10-31, orchestrator ruling:
+# "the PLAN row governs (it is the DA-ratified artifact; my card brief
+# was the drifted side)" — the first build had the two halves swapped):
+# RED = UNAFFORDABLE (cost > green); GREY = phase != build, the lock
+# over rows that cannot build now (the live phase_kind writers are
+# phase_controller _enter_build/_enter_combat); NEUTRAL = affordable +
+# BUILD, the rest identity (ui_tween's rest value). Presentation ONLY —
+# the shipped refusals (can_afford, the placer phase gate) stay the one
+# enforcement.
 const TINT_GREY := Color("808080")
 const TINT_RED := Color("ff6666")
 const TINT_NEUTRAL := Color("ffffff")
@@ -193,25 +196,27 @@ func sync_marks() -> void:
 			b.text = text.substr(2)
 
 
-# P6 (MC 11854): the picker-row state tint — UNAFFORDABLE (cost > green,
-# the shipped can_afford static the panel's own gate uses) GREY, COMBAT
-# phase RED on the rows that COULD build (the state read mirrors the
-# placer's phase gate; the live writers are phase_controller
-# _enter_build/_enter_combat), affordable+BUILD NEUTRAL. DECLARED
-# readings: affordability wins the overlap — an unaffordable row is not
-# "buildable", so combat RED never paints it (brief: RED-tint the
-# BUILDABLE rows); costs read row["cost"] (towers.json through the panel
-# picker_rows), no number is re-declared here (I2). Cheap by the W17e
-# contract: modulate is touched only where the tint actually changed.
+# P6 (MC 11854): the picker-row state tint, THE PLAN ROW's map (RECUT
+# 2026-10-31, orchestrator ruling — plan row governs, the card brief
+# drifted): UNAFFORDABLE (cost > green, the shipped can_afford static
+# the panel's own gate uses) RED; phase != build GREY (the read is the
+# plan row's literal and the panel's own locked door — byte-quiet);
+# affordable+BUILD NEUTRAL. DECLARED readings: the cost signal wins the
+# overlap (an unaffordable row answers RED even mid-combat — the same
+# affordability-first precedence as the first build, the RECUT swapped
+# colors, not order); costs read row["cost"] (towers.json through the
+# panel picker_rows), no number is re-declared here (I2). Cheap by the
+# W17e contract: modulate is touched only where the tint actually
+# changed.
 func _paint_states() -> void:
-	var combat := String(m.phase_kind) == "combat"
+	var locked := String(m.phase_kind) != "build"
 	for row: Dictionary in panel.picker_rows:
 		var b: Button = row["btn"]
 		var want := TINT_NEUTRAL
 		if not SIM_ECONOMY.can_afford(int(m.green), int(row["cost"])):
-			want = TINT_GREY
-		elif combat:
-			want = TINT_RED
+			want = TINT_RED              # RECUT: cost > green -> RED
+		elif locked:
+			want = TINT_GREY             # RECUT: phase != build -> GREY
 		if b.modulate != want:
 			b.modulate = want
 

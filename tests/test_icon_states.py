@@ -5,19 +5,23 @@ painter) + THIS file + LEDGER/log — defense_panel.gd, mission.gd,
 camera and the fixtures stay byte-EMPTY (gate rows in
 .audits/20261031-1830-v14-plan/P6-wave.log).
 
-STATE MAP (the card's; DECLARED against the older plan-row wording,
-which pre-dates the DA phase-source verification the card cites):
-UNAFFORDABLE (cost > green, read through the shipped can_afford static)
--> GREY (darken/desaturate modulate, the hud._tint_down named-tone
-idiom); COMBAT phase (phase_kind, live writers phase_controller
-_enter_build/_enter_combat) -> RED on the rows that COULD build;
-affordable + BUILD -> neutral identity white. Overlap reading (literal
-in the brief — RED-tint the BUILDABLE rows): affordability wins, an
-unaffordable row is not buildable so combat never paints it red.
-Presentation ONLY: the two ENFORCEMENT rows re-run the shipped
-refusals UNDER the painted state (grey rows still answer why:"green",
-red rows still answer why:"phase", zero state writes) — the tints
-never enforce anything.
+STATE MAP = THE PLAN ROW (RECUT 2026-10-31 by orchestrator ruling,
+verbatim: "the PLAN row governs (it is the DA-ratified artifact; my
+card brief was the drifted side). Re-cut to the plan mapping:
+cost>green (unaffordable) -> RED; phase != build -> GREY;
+affordable+BUILD -> neutral." — the first build of this card had the
+two halves swapped; the color pins below ARE the map, re-pinned with
+the ruling): UNAFFORDABLE (cost > green, read through the shipped
+can_afford static) -> RED; phase != build (phase_kind — live writers
+phase_controller _enter_build/_enter_combat; the read is the panel's
+own locked door) -> GREY (darken/desaturate modulate, the hud._tint_down
+named-tone idiom); affordable + BUILD -> neutral identity white.
+Overlap reading (same precedence before and after the RECUT — colors
+swapped, order did not): the cost signal wins, an unaffordable row
+answers RED even mid-combat. Presentation ONLY: the two ENFORCEMENT
+rows re-run the shipped refusals UNDER the painted state (RED-drilled
+rows still answer why:"green", GREY-locked rows still answer
+why:"phase", zero state writes) — the tints never enforce anything.
 
 Harness rows (machine lines, the P1 tmp-probe idiom — conftest
 .run_probe_script into tmp_path, R5; E5: the probe hand-drives the
@@ -28,11 +32,14 @@ the F3 :235/:237 phase_kind+in_combat write/restore pair):
               here from towers.json: the cost numbers stay DATA);
   DRILL       harness green write BELOW the cheapest cost (declared
               cap-leg idiom: write, check, restore next act) -> every
-              row grey, tints compared hex-exact python-side;
-  ENFG        the grey rows stay refused (why=green, green/list fixed);
+              row RED (unaffordable — RECUT 2026-10-31, plan map),
+              tints compared hex-exact python-side;
+  ENFG        the RED rows stay refused (why=green, green/list fixed);
   GREENBACK   green restored -> neutral again;
-  COMBAT      F3 combat write -> every affordable row RED;
-  ENFP        the red rows stay refused (why=phase, green/list fixed);
+  COMBAT      F3 combat write (phase != build) -> every row GREY
+              (phase lock — RECUT; every row affordable at g0, so the
+              GREY half covers the whole picker);
+  ENFP        the GREY rows stay refused (why=phase, green/list fixed);
   PHASEBACK   phase restored -> neutral again;
   TEARDOWN    clean — rows neutral, green + phase byte-equal to the
               BOOT reads, defense list empty.
@@ -44,12 +51,14 @@ STRUCTURALLY here (grey: equal channels under white = desaturated +
 darkened; red: red channel dominant) — the probe-side constant compare
 can never agree with a plant and stay green.
 
-PLANTED-RED x1 (P6-wave.log transcript, byte-verified revert): the
-affordability predicate inverted in _paint_states (sed "not
-SIM_ECONOMY.can_afford" -> "SIM_ECONOMY.can_afford") -> DRILL goes RED
-(drilled-green rows answer white, not grey), P6-OK never prints,
-pytest rc 1 -> git checkout -- + diff-vs-index REVERT_VERIFIED -> the
-green re-run.
+PLANTED-RED x1 (P6-wave.log transcripts, byte-verified revert — run
+once per build, the RECUT re-ran it on the affordability-RED branch):
+the affordability predicate inverted in _paint_states (sed "not
+SIM_ECONOMY.can_afford" -> "SIM_ECONOMY.can_afford") -> the FIRST read
+goes RED (at boot green the affordable rows answer with the UNAFFORD-
+ABLE tone — the inverted branch is exactly the RECUT's RED painter),
+P6-OK never prints, pytest rc 1 -> git checkout -- + diff-vs-index
+REVERT_VERIFIED -> the green re-run.
 """
 
 import json
@@ -191,18 +200,18 @@ func _init() -> void:
 			cheap_id = String(row["id"])
 
 	# DRILL — harness green write below the CHEAPEST cost: every row
-	# UNAFFORDABLE -> grey (the overlap reading needs no combat here:
-	# affordability paints first in BUILD).
+	# UNAFFORDABLE -> RED (RECUT 2026-10-31 plan map; the overlap needs
+	# no combat here: affordability paints first in BUILD).
 	m.green = cheap_cost - 1
 	_pump(p)
 	t = _tints(p)
 	print("P6-DRILL green=%d white=%d grey=%d red=%d tints=%s" % [
 			int(m.green), int(t[0]), int(t[1]), int(t[2]), String(t[3])])
-	if int(t[1]) != p.picker_rows.size() or int(t[0]) != 0 \\
-			or int(t[2]) != 0:
-		_fail("drill below every cost did not grey every row")
+	if int(t[2]) != p.picker_rows.size() or int(t[0]) != 0 \\
+			or int(t[1]) != 0:
+		_fail("drill below every cost did not RED-flag every row")
 		return
-	# ENFG — the tint is presentation ONLY: under grey the shipped green
+	# ENFG — the tint is presentation ONLY: under RED the shipped green
 	# refusal still answers, writing nothing.
 	var gres: Dictionary = placer.place_id(cheap_id, 1)
 	print("P6-ENFG ok=%s why=%s green=%d list=%d" % [
@@ -213,7 +222,7 @@ func _init() -> void:
 			or String(gres.get("why", "NONE")) != "green" \\
 			or int(m.green) != cheap_cost - 1 \\
 			or int(m.defense_list.size()) != 0:
-		_fail("grey rows did not stay enforcement-refused")
+		_fail("RED drilled rows did not stay enforcement-refused")
 		return
 	m.green = g0                       # restore twin (cap-leg idiom)
 	_pump(p)
@@ -225,19 +234,20 @@ func _init() -> void:
 		_fail("green restore did not return the rows to neutral")
 		return
 
-	# COMBAT — F3 :235 pair write; every row affordable at g0, so the
-	# RED half covers the whole picker (no overlap cases to hide in).
+	# COMBAT — F3 :235 pair write; phase != build GREYS the whole
+	# picker (RECUT plan map; every row affordable at g0, so no overlap
+	# cases hide in the RED branch here).
 	m.phase_kind = "combat"
 	m.in_combat = true
 	_pump(p)
 	t = _tints(p)
 	print("P6-COMBAT white=%d grey=%d red=%d tints=%s" % [
 			int(t[0]), int(t[1]), int(t[2]), String(t[3])])
-	if int(t[2]) != p.picker_rows.size() or int(t[0]) != 0 \\
-			or int(t[1]) != 0:
-		_fail("combat phase did not RED-tint the buildable rows")
+	if int(t[1]) != p.picker_rows.size() or int(t[0]) != 0 \\
+			or int(t[2]) != 0:
+		_fail("phase != build did not GREY-lock the rows")
 		return
-	# ENFP — under red the shipped phase refusal still answers.
+	# ENFP — under GREY the shipped phase refusal still answers.
 	var pres: Dictionary = placer.place_id(cheap_id, 1)
 	print("P6-ENFP ok=%s why=%s green=%d list=%d" % [
 			str(bool(pres.get("ok", false))),
@@ -246,7 +256,7 @@ func _init() -> void:
 	if bool(pres.get("ok", false)) \\
 			or String(pres.get("why", "NONE")) != "phase" \\
 			or int(m.green) != g0 or int(m.defense_list.size()) != 0:
-		_fail("red rows did not stay enforcement-refused")
+		_fail("GREY locked rows did not stay enforcement-refused")
 		return
 	m.phase_kind = "build"             # F3 :237 restore twin
 	m.in_combat = false
@@ -332,12 +342,13 @@ def test_icon_states_matrix(tmp_path, class_cache):
         and int(boot["grey"]) == 0 and int(boot["red"]) == 0, boot
     assert boot["tints"] == ",".join([neutral + "ff"] * rows), boot
 
-    # DRILL: grey everywhere, hex-exact python-side.
+    # DRILL: RED everywhere (unaffordable — RECUT 2026-10-31 ruling,
+    # plan map; the pins ARE the map), hex-exact python-side.
     drill = _only(out, "P6-DRILL")
     assert int(drill["green"]) == min_cost - 1, drill
-    assert int(drill["grey"]) == rows and int(drill["white"]) == 0 \
-        and int(drill["red"]) == 0, drill
-    assert drill["tints"] == ",".join([grey + "ff"] * rows), drill
+    assert int(drill["red"]) == rows and int(drill["white"]) == 0 \
+        and int(drill["grey"]) == 0, drill
+    assert drill["tints"] == ",".join([red + "ff"] * rows), drill
 
     # ENFG: the shipped refusal is still the ONLY enforcement.
     efg = _only(out, "P6-ENFG")
@@ -349,12 +360,13 @@ def test_icon_states_matrix(tmp_path, class_cache):
         and int(back["white"]) == rows and int(back["grey"]) == 0 \
         and int(back["red"]) == 0, back
 
-    # COMBAT: red on every buildable row (all affordable at start
-    # green), hex-exact.
+    # COMBAT: phase != build GREYS every row (all affordable at start
+    # green, so the RED branch is absent by state — RECUT 2026-10-31
+    # ruling, plan map), hex-exact.
     combat = _only(out, "P6-COMBAT")
-    assert int(combat["red"]) == rows and int(combat["white"]) == 0 \
-        and int(combat["grey"]) == 0, combat
-    assert combat["tints"] == ",".join([red + "ff"] * rows), combat
+    assert int(combat["grey"]) == rows and int(combat["white"]) == 0 \
+        and int(combat["red"]) == 0, combat
+    assert combat["tints"] == ",".join([grey + "ff"] * rows), combat
 
     enfp = _only(out, "P6-ENFP")
     assert enfp["ok"] == "false" and enfp["why"] == "phase", enfp

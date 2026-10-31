@@ -130,3 +130,67 @@ LOC GATE-METRIC ROWS (len(text.split("\n")), ceiling 400/600):
   test_mission_clicks.py 600 -> 600 (WATCH ROW honored: ZERO lines
     added — the new file is the leg's home)
 VERIFY_EXIT=0
+
+== 4. RECUT (2026-10-31, orchestrator ruling — commit 2 of card/11854) ==
+RULING (verbatim, from the orchestrator session after the §1-3 build
+reported its DECLARED READING (1)): "the PLAN row governs (it is the
+DA-ratified artifact; my card brief was the drifted side). Re-cut to
+the plan mapping: cost>green (unaffordable) -> RED; phase != build ->
+GREY; affordable+BUILD -> neutral." §1-3 above stand as HONEST HISTORY
+of the first (drift-mapped) build, unedited (append-only).
+BEFORE/AFTER COLOR MAP:
+  unaffordable (cost > green)  : GREY 808080  -> RED ff6666
+  phase != build (combat lock) : RED ff6666   -> GREY 808080
+  affordable + BUILD           : neutral ffffff (unchanged)
+  overlap precedence           : cost-first, UNCHANGED (colors swapped,
+                                 order did not — unaffordable answers
+                                 RED even mid-combat)
+SHIPPED AS: the two const assignments swapped in _paint_states (the
+const NAMES stay color-true: TINT_GREY grey, TINT_RED red); the phase
+read moved to the plan row's literal `!= "build"` — the panel's own
+locked door (defense_panel.gd:217, byte-quiet). sync_marks hook, cost
+DATA read, BN1-blanked hexes: all unchanged.
+TEST RE-PIN (the pins ARE the map, dated ruling comments in the file):
+DRILL -> red=5, COMBAT(phase-lock) -> grey=5; ENFG/ENFP comments to the
+new tones; machine-row TAGS stable (P6-DRILL/P6-COMBAT).
+GREEN transcript (RECUT tree, same harness, same seed):
+rc= 0  STDERR_BYTES= 0
+  P6-BOOT rows=5 costs=100,50,80,160,140 white=5 grey=0 red=0
+      green=300 phase=build
+      tints=ffffffff,ffffffff,ffffffff,ffffffff,ffffffff
+  P6-DRILL green=49 white=0 grey=0 red=5
+      tints=ff6666ff,ff6666ff,ff6666ff,ff6666ff,ff6666ff
+  P6-ENFG ok=false why=green green=49 list=0
+  P6-GREENBACK green=300 white=5 grey=0 red=0
+  P6-COMBAT white=0 grey=5 red=0
+      tints=808080ff,808080ff,808080ff,808080ff,808080ff
+  P6-ENFP ok=false why=phase green=300 list=0
+  P6-PHASEBACK white=5 grey=0 red=0
+  P6-TEARDOWN white=5 grey=0 red=0 green_same=1 phase=build list=0
+  P6-OK
+PLANTED-RED x1 ON THE AFFORDABILITY-RED BRANCH (same sed, staged-first
+above the staged re-cut):
+rc= 1  STDERR_BYTES= 0
+  P6-BOOT rows=5 costs=100,50,80,160,140 white=0 grey=0 red=5
+      green=300 phase=build
+      tints=ff6666ff,ff6666ff,ff6666ff,ff6666ff,ff6666ff
+  P6-FAIL BOOT not neutral-default: ff6666ff,ff6666ff,ff6666ff,...
+(the affordable rows answer with the UNAFFORDABLE RED — exactly the
+inverted branch; P6-OK never prints, pytest rc1 "1 failed")
+$ git checkout -- godot/scripts/defense_rows_ui.gd && \
+  git diff --exit-code godot/scripts/defense_rows_ui.gd
+  -> REVERT_VERIFIED; green re-run 1 passed (row set byte-equal).
+GATES RE-QUOTED AT THE RECUT TREE:
+$ python3 -m pytest -q          -> 321 passed in 188.25s rc=0 ONE attempt
+$ python3 tools/check_hygiene.py -> check_hygiene: 0 hit(s)
+$ git diff --name-only e44f4f2 -- tests/fixtures godot/scripts/
+  camera_zoom.gd godot/scripts/mission.gd godot/scripts/
+  defense_panel.gd godot/sim tools/check_hygiene.py  -> EMPTY
+$ GOVERNED_LITERALS -> 17 (no new governed file; hexes unchanged home)
+LOC GATE-METRIC (RECUT): defense_rows_ui.gd 186 -> 235 (first build
+230; ceiling fires >400, soft ~250 kept); test_icon_states.py 386
+(tests tier, 600 cap); defense_panel.gd 366, mission.gd 400,
+test_mission_clicks.py 600 — all byte-quiet.
+LEDGER: own row's color wording edited to the final map (that row
+only, per the ruling instruction).
+VERIFY_EXIT=0
