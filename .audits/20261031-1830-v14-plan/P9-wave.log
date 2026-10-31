@@ -1,0 +1,100 @@
+# P9-wave.log — v1.4 P9 hygiene POSITIVE CONTROLS (MC 11838, [type:test]) — finding F-1 routed from P3 §5c
+Date 2026-10-31. Tree /tmp/gw-v14-p9 @ af51acd (detached base) -> branch card/11838. TESTS-ONLY: ZERO production edits; tools/check_hygiene.py byte-untouched (§5 row).
+
+## 1. DECLARED READING (card ambiguity resolved openly, same universe definition P3 used)
+The card says "tests/test_hygiene*.py" — NO file of that name exists at this tip. The card's
+own pointer ("in-process universe asserts ABSENCE only", "165/173 survivors of the P3
+mutation pass, P3-wave.log §5c") identifies the same object P3 §5b named the IN-PROCESS
+HYGIENE UNIVERSE: the tests that import tools/check_hygiene.py (test_purity, test_bridge_contract,
+test_hud, test_economy_numbers et al. — all absence-shaped: zero raw hits / token-not-present)
+plus test_scaffold's subprocess green/red pair (declared substitute for main() per P3 §5c's
+own boundary row). "Core detectors — the real ones the module exposes" = the module's exported
+functions and compiled patterns: blank_code, words, tripwire_hit, walk, rel, read,
+literal_violations, main, BARE_RAND_RE/QUAL_RAND_RE. Reading used: positive controls for THAT
+set, riding the SAME import idiom (sys.path.insert + import check_hygiene as hyg — one
+mechanism per concern; no new mechanism anywhere).
+
+## 2. WHAT SHIPS — tests/test_hygiene_positive_controls.py (NEW, 30 legs)
+Detector -> crafted MUST-FIRE control (each input matches the function's real input type;
+tmp files under pytest tmp_path, nothing written into the repo):
+- blank_code gd family : #, //, /* */, // pair ENDING the text (kills G-NXT-IDX 9/12),
+  escaped-quote string (G-STRSCAN escape guard), newline/length preservation spine (G-SPINE 3, 63)
+- blank_code py family: triple-quote docstring block + plain string (kills G-PY 25-37 cluster; F-2 gap)
+- blank_code js family: backtick template blanked; gd PASS-THROUGH leg (backtick is not a string
+  in gd) — kills family-guard flips 18/21/23
+- blank_code cfg / html: ';'-and-'#' comments; <!-- --> incl. unterminated-to-EOF; gd pass-through
+- words            : camel / Pascal / snake splits asserted exactly
+- tripwire_hit     : ALL THREE modes — identifier ("shop" fires, "shop_id"/"my_shop" must NOT),
+  word ("purchase_count", "MyGem"), phrase ("get_cash_store_total", "CashStore", "battle_pass_id")
+  + negative set (store, keeper, priceless, gemstone, cash, store_cash, iaplayer, timer)
+- literal_violations: 7.5 flags; STRUCT_VALS set clean; BN1 pair (9.9 in a comment / "cost 12.5"
+  in a string must NOT flag while 2.5 does — non-vacuous pair)
+- walk             : planted tmp tree, coverage-count == 3 (nested, ext case .PY, SKIP_DIRS
+  __pycache__/.godot excluded, .md excluded) + missing-dir empty leg
+- rel / read       : rel repo-relative after REPO pin; read on INVALID-UTF-8 bytes -> U+FFFD
+  no raise (G-READ-BOUND 2/3/5/6/9/10 only observable here)
+- BARE_RAND_RE     : bare randf()/randi() YES, .randf()/xrandf NO, QUAL_RAND_RE YES
+- main()           : planted tmp REPO -> EXACT "check_hygiene: 5 hit(s)" transcript row —
+  [bare-rand] godot/bad.gd:1, [tripwire] 'purchase' in purchase_id, [ceiling] 401>400,
+  [autoload], [rename] VS_STATE — plus BOTH note walkers (sanctioned-draw note, soft-250 note);
+  BN1 leg (comment tokens cannot trip -> 0 hits); boundary leg (EXACTLY 400 lines stays green)
+- ABSENCE LEGS KEPT: shipped scan universe coverage-count >= 50 positive BEFORE the shipped-tree
+  zero-claim; shipped tree main() rc 0 ending "check_hygiene: 0 hit(s)" — the old contract stands
+  beside the new firing half.
+
+## 3. MUTANT-PROOFNESS — two P3 survivors re-run LIVE (copies in /tmp scratch, copy-only mutation, copies DELETED after)
+GW_HYGIENE_MUTANT_DIR is a TESTS-ONLY importlib sys.path seam (documented in the file header);
+default leg unchanged. Both mutations are the EXACT condition-inversions P3 §5b recorded as
+survivors — proving they die now:
+
+### MUTANT A = hygiene.walk__mutmut_12: `... .lower() in accept_exts` -> `... not in accept_exts`
+$ GW_HYGIENE_MUTANT_DIR=/tmp/gw-mc11838-mutants/detA python3 -m pytest tests/test_hygiene_positive_controls.py -q
+E   AssertionError: assert 1 == 3
+E    +  where 1 = len(['/tmp/pytest-of-claudecode/pytest-4765/test_walk_positive_coverage_ne0/sub/notes.md'])
+E   AssertionError: assert 'check_hygiene: 5 hit(s)' in 'godot/project.godot:1: [autoload] present — forbidden (C1/R3)\ncheck_hygiene: 1 hit(s)\n'
+FAILED tests/test_hygiene_positive_controls.py::test_walk_positive_coverage_nested_case_and_skips
+FAILED tests/test_hygiene_positive_controls.py::test_main_fires_every_error_class_on_planted_tree
+2 failed, 28 passed in 0.15s
+
+### MUTANT B = hygiene.blank_code__mutmut_41: `if text[j] == "\\":"` -> `if text[j] != "\\":"`
+$ GW_HYGIENE_MUTANT_DIR=/tmp/gw-mc11838-mutants/detB python3 -m pytest tests/test_hygiene_positive_controls.py -q
+E   AssertionError: assert ('var t = 2' in 'var s =              \n         \n')
+E   AssertionError: assert ('premium' not in 'var s =    ...n         \n' ... and 'var u = 3' in ...)
+E   AssertionError: assert ('import x' in 'import x\n   \n                    \n   \n     \n' and 'y = 2' in 'import x\n   \n                    \n   \n     \n')
+E   AssertionError: assert ('wallet' not in 'x =              \n     \n' ... and 'y = 1' in 'x =              \n     \n')
+FAILED tests/test_hygiene_positive_controls.py::test_gd_string_with_escaped_quote_blanked
+FAILED tests/test_hygiene_positive_controls.py::test_gd_single_quote_string_blanked
+FAILED tests/test_hygiene_positive_controls.py::test_py_triple_quote_family_blanked
+FAILED tests/test_hygiene_positive_controls.py::test_py_plain_string_blanked
+4 failed, 26 passed in 0.19s
+
+Scratch copies DELETED post-run (rm -rf /tmp/gw-mc11838-mutants); repo gate file byte-untouched (§5).
+
+## 4. HONEST LIMITS (named, not hidden)
+- Under BOTH mutants the two SHIPPED-TREE legs stayed GREEN (detA: inverted walk still finds
+  >=50 non-code files in static/; detB: no banned token happens to leak from the shipped corpus).
+  That is exactly the false-green F-1 named — the planted-tree positive legs carry the kills;
+  the absence legs are kept for the contract, never credited as detectors.
+- This card kills the two DEMONSTRATED survivors and gives every exported detector a firing
+  control; it does not re-run mutmut over the whole 173 (P3's scorecard stays the baseline;
+  the positive-control machinery now exists for a future kill-rate re-pass).
+- main() subprocess mutants (234, mutmut no-tests) stay covered by test_scaffold's subprocess
+  green/red pair per P3 §5c's declared boundary — UNCHANGED.
+
+## 5. GATE ROWS (real runs at THIS tree, post-edit)
+```
+$ python3 -m pytest -q                       # full suite, one attempt
+319 passed in 191.97s (0:03:11)              # 289 base (with-export collect) + 30 new legs  rc=0
+$ python3 tools/check_hygiene.py | tail -1
+check_hygiene: 0 hit(s)                      # HYGIENE_RC=0 — new file clean under its own gate
+$ git diff -- tools/check_hygiene.py         # EMPTY — gate byte-untouched (mutants were /tmp copies only)
+$ git status --short -- tests/fixtures/      # EMPTY — fixtures diff
+$ GW_HYGIENE_MUTANT_DIR=... (detA / detB)    # RED transcripts quoted verbatim in §3
+```
+git diff --cached --stat (staged = test + log + LEDGER ONLY):
+ LEDGER.md                               |   1 +
+ tests/test_hygiene_positive_controls.py | 332 ++++++++++++++++++++++++++
+ <P9-wave.log>                           | 100 ++++++++++++++++++++++++++
+
+# VERDICT: PASS — F-1 positive controls shipped, both demonstrated condition-inversion survivors die, zero production edits, suite 319 rc=0
+VERIFY_EXIT=0
