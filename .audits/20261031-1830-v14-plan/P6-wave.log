@@ -194,3 +194,18 @@ test_mission_clicks.py 600 — all byte-quiet.
 LEDGER: own row's color wording edited to the final map (that row
 only, per the ruling instruction).
 VERIFY_EXIT=0
+
+## §SERVED-HUD LEG (orchestrator, MC 11854 acceptance append — post-close)
+Served export at 4948eab, loopback :8154, headless chromium (playwright-core 1.63.0-alpha, chromium-1243), shipped
+route clicks only (START -> panel row arm -> board click place, x2 Ballista), console clean.
+PIXEL ROW CENSUS (row-bg mean RGB, x930-1120 y per row): BUILD neutral: Ballista(84,83,78) Gate(95,96,97) Barbed(115,123,115)
+Bombard(119,109,99) Hailspire(116,104,87). AFTER 2 purchases (green 100 < 160/140): Bombard -> (100,55,43), Hailspire ->
+(129,87,60) = RED-dominant shift (R-G 45-49 vs 8-20 neutral); affordable rows UNCHANGED. COMBAT (wave started): affordable
+rows -> (29,29,31)/(32,33,36)/(53,68,53) grey-neutral (panel dim = v1.2 idiom + GREY 808080 map); unaffordable Bombard/
+Hailspire KEEP red per the declared COST-FIRST PRECEDENCE (correct per map). VISION PASS (describe-image qwen3.8-flash-
+next, i1-rows crop): reads top-three vs bottom-two as DISTINCT ("uniform dark charcoal" vs "lighter brownish-tan") —
+direction agrees, hue vocabulary softer than "red" at this tint: honest note, tint is subtle-but-measurable.
+STATES CONFIRMED SERVED: neutral / unaffordable-RED / combat-GREY, precedence cost-first — feature user-visible TRUE.
+Server killed; frames + repro icon-leg-11854.cjs archived here.
+SERVED-LEG-DONE
+VERIFY_EXIT=0
