@@ -1,0 +1,188 @@
+# WR-wave.log — MC 11897 (11870.7) v1.5 W-R: v5_fx_probe re-baseline at the W1-final tree
+# seat: test profile (leaf — no spawns) · tree /tmp/gw-v15-wr @ 0d3c506 · 2026-11-01
+# binding plan row: V15-PLAN-c2.md §3 W-R (+ §1 A5, §2 row 3, §7 risk 4) — read full first
+# card DoD lines (quoted): "WR-wave.log ... VERIFY_EXIT=0 last; probe kit rc=0 stderr EMPTY at
+# final tree 0d3c506; every counter shift vs old baseline explained row-by-row (shifts without
+# cause = FINDING rows, never silent); tests/test_v5_fx_baseline.py wrapper committed
+# (planted-red via doctored COPY -> RED); ARCHITECTURE §kits baseline row re-truthed; LEDGER row;
+# suite >=340 rc=0."
+# HEADLINE: the kit is RED at the final tree — deterministically, since 2026-10-29 (G6). The
+# rc=0 DoD leg CANNOT honestly pass at 0d3c506, and the fix is outside this card's writable set
+# (cap drop-priority is a PINNED cost rule, V15-PLAN §2 row 8d). Everything else landed against
+# the MEASURED truth. # VERDICT: FAIL — this wave log ends VERIFY_EXIT=1 on that honest reading.
+
+== §0 BASE ROW (card: "suite measure-base + green >=340") =====================================
+$ python3 -m pytest tests -q --collect-only  -> 340 tests collected          (at 0d3c506, pre-add)
+$ python3 -m pytest tests -q                 -> 340 passed in 187.31s rc=0   (measure-base, this
+  session, with-export box — the WK2 row's 336 is the pre-W-Q-tree number; base here = 340).
+whoami=claudecode (unprivileged idiom honored). Import prime (F14): --headless --import rc0.
+
+== §1 THE KIT AT THE FINAL TREE — the documented ARCHITECTURE §kits command ================
+$ xvfb-run /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 \
+    --rendering-driver opengl3 --path godot -s res://sim/v5_fx_probe.gd
+run1: RC=1  stderr=0 BYTES (stderr EMPTY holds — the true parse signal is clean)
+run2: RC=1  stderr=0 BYTES
+raw transcripts: gen/probe-v5-fx-v15-run{1,2}.raw.{out,err}
+machine rows (run1; run2 byte-identical — cmp MACHINES_IDENTICAL):
+  V5FX-MOUNT child=1 after_runner=1
+  V5FX-TRACER n=362 frames=40000
+  V5FX-SPARK n=79725
+  V5FX-POOF n=7
+  V5FX-FAIL fx sheet never seen on a live node (id=fx_proj_ice path=res://assets/v11/fx_proj_ice.png)
+frames=40000 = the probe's guard limit: the loop break condition (>=1 tracer/spark/poof AND the
+FOUR ART sheets seen live) is NEVER met — the ice sheet never goes live, the walk runs to the
+guard, and the probe's own leg order (ART check before CAP/SETTLE/TEARDOWN) quits(1) there.
+So the DoD line "probe kit rc=0 at the final tree" is FALSE at 0d3c506 — reported, not patched.
+NOTE (stdout hygiene): the engine writes GL/ALSA warnings into STDOUT on this box; the old
+baseline file carries only banner + machine rows — the same house extraction was used here
+(head -1 + V5FX rows -> gen/probe-v5-fx-v15-red.log); raw stdout kept in full beside it.
+
+== §2 DETERMINISM + THE ZERO-AT-REST CLAUSE (plan §3 W-R "declared, then MEASURED") =========
+main.gd:89 rng.randomize() (OS entropy) is the mission RNG — yet FOUR independent processes
+(kit run1, kit run2, diag census run x2) produced BYTE-IDENTICAL machine rows/counters at this
+tree (and the attribution runs below reproduce their era-tips byte-exactly). Determinism at
+0d3c506: VERIFIED by N=4 reproduction (declared limit: an empirical pin, not a proof — a future
+flake lands as leg-2 RED + this row gets the bound-form re-pin).
+ZERO AT REST, declared: the kit probe crosses no kit-assign (grep "assign_relic"
+godot/sim/v5_fx_probe.gd = 0 hits — wrapper leg 4 pins it), so _observe_kits sees no crossing.
+MEASURED, stronger than a grep: the machine rows at the G6 tip (3fe513a — _observe_kits DOES
+NOT EXIST there) are BYTE-IDENTICAL to 0d3c506 (where the pass runs every frame): n=362/79725/7.
+The W-K pass contributes ZERO to every kit counter — measured, not asserted.
+
+== §3 ROW-BY-ROW SHIFT TABLE vs the 2026-10-27 baseline (the card: never silent) ===========
+baseline file: .audits/20261027-1500-visual-target/gen/probe-v5-fx-green.log (untouched — sha256
+d65d6b598a3424a83abb48576e1a1378b3f6a4be24ff6672bf7215cd9cf135fa re-verified before/after every
+red; wrapper leg 3 makes any future overwrite RED mechanically)
+| row                     | 2026-10-27 baseline      | 0d3c506 (this run)          | cause |
+| V5FX-MOUNT child=1 ...  | same                     | same                        | unchanged — mount leg still green |
+| V5FX-TRACER n frames    | n=848 frames=270         | n=362 frames=40000          | TWO causes: (a) the break never fires (ART unmet) so the walk runs the FULL guard — "frames" is the guard, not the fight length; (b) tracer SPAWNS collapsed 848/270f (≈3.1/f) -> 362/40000f (≈0.009/f): the within-frame cap race — G6's numbers ride MAX_FX=64 ("numbers COUNT") and the drop-pass pre-empts the fires pass (§5) |
+| V5FX-SPARK n            | n=318                    | n=79725                     | accumulation over a 148× longer walk (baseline broke at frame 270); per-frame rate ≈ 2/f = the hp-drop census (each drop = 1 spark + 1 number, DIAG §5) |
+| V5FX-POOF n             | n=5                      | n=7                         | same longer walk; despawn-death census (breachers poof nothing) — material-free accumulation |
+| V5FX-ART                | n=4 paths=pinned         | V5FX-FAIL fx_proj_ice       | FINDING 11897-F1 (§6) — the ice sheet NEVER goes live in 40,000 frames; mechanism §5, attribution §4 |
+| V5FX-CAP live_max=63    | present                  | NOT REACHED                 | consequence of ART-first quit(1) — FINDING 11897-F2 (§6): cap/leak legs unverifiable at this tree until ART is re-shaped |
+| V5FX-SETTLE             | present (settle 12)      | NOT REACHED                 | ditto |
+| V5FX-TEARDOWN           | present (freed=1)        | NOT REACHED                 | ditto |
+| V5FX-OK                 | present (last)           | absent                      | the kit does not complete — rc=1 |
+Every row shift has a written cause; nothing silent. No CAP/live_max NUMERIC shift was measurable — the CAP leg is unreachable (the plan's risk-4 "CAP/live_max shifts" expectation was structurally superseded by the leg never running).
+
+== §4 ATTRIBUTION — counter-runs at era-tips (the "shift without cause" test) ==============
+$ git worktree add --detach /tmp/gw-11897-preG6 5304d87 ; import ; kit  -> RC=0, stderr 0B
+  rows BYTE-IDENTICAL to the 2026-10-27 baseline (n=848 frames=270, n=318, n=5, ART pinned,
+  live_max=63, settle 12, teardown, OK) — gen/probe-v5-fx-v15-attrib-preG6-5304d87.log
+  => (a) THE BASELINE WAS REAL and my harness reproduces it at its own era — the "tester ran it
+     wrong" reading is DISPROVEN (same box, same binary, same documented command);
+     (b) the tree at 5304d87 (2026-10-28, the baseline's own last-green era) is GREEN.
+$ git worktree add --detach /tmp/gw-11897-g6 3fe513a ; import ; kit  -> RC=1, stderr 0B
+  rows BYTE-IDENTICAL to today's RED at 0d3c506 (n=362 frames=40000, n=79725, n=7, FAIL ice)
+  — gen/probe-v5-fx-v15-attrib-g6-3fe513a.log
+  => THE BREAK LANDED WITH G6 (3fe513a, v1.2.1, 2026-10-29 — TWO DAYS after the baseline's last
+     green; "predates G6" in the ARCHITECTURE row was exactly the pointed claim — now measured).
+Code-level attribution agrees: git log -S"_spawn_number" -- godot/scripts/fx_director.gd =
+3fe513a ONLY; the full budget-path diff 5304d87..HEAD touches only G6's numbers/counter, W-K's
+zero-at-rest kit pass and comments — no other cap-budget hunk. The zoom wave, W-Q, W-T1, W-T2
+and WK2 are innocent by the byte-identity G6-tip == 0d3c506 (WK2 is sheet plumbing BEHIND the
+cap check — spawn-drop happens at _fx.size() >= MAX_FX, before any sheet code runs).
+The kit has therefore been RED, unrun, since 2026-10-29 — across all of v1.2.1→v1.4→v1.5.
+
+== §5 MECHANISM — the census diag (gen/diag-v5fx-capstarve.log + gen/diag_v5fx_capstarve.gd) =
+SCRATCH replication of the kit walk + READ-ONLY fire-candidate census (the shipped director's
+own fx_step is driven; the external drop-map replicates _observe_enemies' hp-drop formula; the
+script is archived for reproducibility; harness license declared in its header):
+DIAG-DEF idx=0 id=ballista         cand=38980 sat=0 space=38980
+DIAG-DEF idx=1 id=ballista         cand=38817 sat=0 space=38817
+DIAG-DEF idx=2 id=bombard          cand=39098 sat=0 space=39098
+DIAG-DEF idx=3 id=bombard          cand=39107 sat=0 space=39107
+DIAG-DEF idx=4 id=hailspire_tower   cand=38125 sat=0 space=38125
+DIAG-DEF idx=5 id=hailspire_tower   cand=38501 sat=0 space=38501
+DIAG-TRACER n=362 DIAG-SPARK n=79725 DIAG-POOF n=7 DIAG-NUMBER n=48998 live_max=63
+Reading (honest about what the census can and cannot see): EVERY tower (both hailspires
+included) is a valid fire candidate ~38-39k of 40k frames, and the cap is NEVER full at
+FRAME START (sat=0 — _advance_fx drains expired fx at the END of fx_step). Yet 362 tracers
+spawned in ~230k candidate frames (0.16%) and ZERO ice. The starvation is therefore
+WITHIN-FRAME: fx_step order is _observe_enemies (spark + damage number PER HP DROP — 79,725 +
+48,998 = the G6-era budget) -> _observe_fires (walks defense_list IN PLACEMENT ORDER: ballista×2,
+bombard×2, hailspire×2 — the probe's own TOWER_IDS order) -> _advance_fx (drain LAST). By the
+time the fires pass runs, the drop-pass has spent the 64-slot cap; the rare leftover slots go to
+the FIRST towers in the list; the two hailspires (placed last) never get one -> ice spawned ZERO
+times, bolts ≈ 0.9%. live_max=63 pins the mid-frame saturation the frame-start census can't see.
+(Diag limitation declared: cand/sat is sampled at frame start, so intra-frame instants are
+measured only indirectly — via live_max + the counters; code-read §5-args + the byte-identical
+G6 attribution carry the causal claim together.)
+
+== §6 FINDING ROWS (the card: shifts-without-cause are findings; here the ART leg itself) ====
+11897-F1 (P1, presentation class, product) — AT MAX_FX SATURATION the projectile presentation
+  is effectively DEAD: tracers spawn on 0.9% of candidate frames (bolts) / 0% (hailspire ice —
+  the sheet has NEVER gone live in a saturated walk since G6). The shipped known-limit wording
+  (fx_director header :41-42, RELEASE_NOTES) declares the starvation direction BACKWARDS:
+  "on busy waves numbers can be starved by tracers/sparks" — MEASURED: numbers + sparks starve
+  THE TRACERS. Fix routes, NOT this card's call: (a) cap drop-priority / within-fx_step ordering
+  — a PINNED cost rule per V15-PLAN §2 row 8d ("re-ordering drop priority changes a PINNED cost
+  rule") => owner ruling territory; (b) the kit license shape (feed rate / tower order in
+  sim/v5_fx_probe.gd) — cheap, kit-side, but pins a weaker claim. Either fix makes the kit green
+  and MUST re-pin tests/test_v5_fx_baseline.py (the re-pin clause; the old red rows here must be
+  shown REDDENING on the fixed tree BEFORE re-pinning — fleet law, F-B precedent).
+11897-F2 (P2, verification debt, CLOSED by this card except the routing) — the manual kit has
+  been RED since 2026-10-29 while v1.4 declared it NOT-RUN: the DC-1 ruling (kits OUT of CI)
+  stands UNCHANGED — the cadence guard was the re-baseline card, and v1.4 skipped the cadence.
+  Mechanical guards now landed: wrapper leg 3 (old-baseline sha256) + legs 1/2 (a future green
+  or drift cannot ride silently).
+11897-F3 (P3, docs, FIXED in this commit, DECLARED) — docs/ARCHITECTURE.md §kits carried
+  "KF-FINDING kit_presentation=NONE" AFTER W-K shipped fx_spark_hit: a CONTRADICTED claim
+  (W-K's writable set never included the docs row — the doc-tail gap class, not a W-K defect
+  claim). De-staled in place with a dated sync line citing the WK-wave.log re-pin proof. This
+  card's writable row is "docs/ARCHITECTURE.md §kits" — reading DECLARED: the §kits section,
+  both rows it governs (the v5_fx baseline row + the contradicted kit-FINDING row), docs-only.
+
+== §7 THE WRAPPER + PLANTED-REDS ============================================================
+tests/test_v5_fx_baseline.py NEW (185 ln < 600; 4 legs, file-reads only — 0.04s, DC-1-clean:
+the kit itself stays OUT of the pytest tier per MC 11575 W3; the live kit runs are THIS card's
+hand legs, archived byte-for-byte in gen/; the brief's "runs the kit via the documented command"
+clause executed at the card bench — a red 40k-frame walk inside every suite pass would break the
+suite rc=0 gate AND DC-1 simultaneously; declared reading, wrapper docstring states it).
+Legs: (1) machine rows vs the re-declared RED baseline (order, FAIL last, V5FX-OK absent,
+CAP/SETTLE/TEARDOWN pinned ABSENT-at-red); (2) counters pinned (n=362/frames=40000/79725/7 — the
+DoD counters clause; shifts need re-run + re-pin together); (3) old 2026-10-27 baseline sha256 +
+its green rows intact (never-quietly-overwrite made MECHANICAL); (4) written-cause source truth
+(fx_step drop-before-fires order, numbers-count cap door, MAX_FX 64 both files, PROJ_FOR ice +
+sheet on disk, zero-at-rest grep). Env override GW_V5FX_BASELINE (the GW_GODOT precedent) makes
+the COPY-based planted-reds possible without touching tracked bytes.
+GREEN: $ python3 -m pytest tests/test_v5_fx_baseline.py -q -> 4 passed in 0.04s
+PLANTED-RED P1 (doctored COPY: counter n=362 -> 848 — the old-baseline number, the tempting edit):
+  $ GW_V5FX_BASELINE=/tmp/wr11897/doctored1.log pytest tests/test_v5_fx_baseline.py -q
+  FAILED ::test_v5fx_v15_machine_rows_pinned - AssertionError   (rows != pinned set)
+  FAILED ::test_v5fx_v15_counters_pinned - assert 848 == 362
+PLANTED-RED P2 (doctored COPY: the FAIL row swapped to V5FX-OK — the fabrication class):
+  FAILED ::test_v5fx_v15_machine_rows_pinned - AssertionError   (V5FX-OK present in a red baseline)
+  FAILED ::test_v5fx_v15_counters_pinned - IndexError          (no V5FX-FAIL row left)
+PLANTED-RED P3 (old-baseline overwrite demo — on a COPY, sha re-derived):
+  P3_RED: 2026-10-27 baseline OVERWRITTEN (sha 21a4a1de... != d65d6b59...) — restore it; new
+  runs land NEW files beside it
+BYTE-VERIFIED REVERTS: $ sha256sum -c -> gen/probe-v5-fx-v15-red.log OK; old baseline OK;
+  git status --porcelain .audits/20261027-1500-visual-target/ EMPTY (tracked bytes untouched —
+  every red ran against tmp copies; no sed touched any tracked file, so no bytecode-cache
+  hazard class applies here; green re-ran 4/4 before and after).
+
+== §8 GATES AT THE FINAL TREE (this commit's tree) ===========================================
+base (pre-add):          pytest tests -q = 340 passed rc=0 (187.31s) — §0
+final:                   pytest tests -q = 344 passed rc=0 (186.58s) — 340 + 4 wrapper legs >= 340 ✓
+check_hygiene:           0 hit(s) rc=0 — 24 notes = the base set exactly (no new notes; wrapper 185 ln)
+tests/fixtures/ diff:    EMPTY ✓
+GOVERNED_LITERALS:       17 ✓
+old baseline file:       sha256 d65d6b59... OK ✓ (never touched)
+kit stderr:              0 bytes both runs ✓ (the stderr-EMPTY clause PASSES — the failure is
+                         a V5FX-FAIL machine row, not a parse signal)
+kit rc:                  1 ✗ — the DoD rc=0 leg, §1/§4/§6: unachievable at 0d3c506 within the
+                         writable set; FINDING rows routed.
+porcelain (pre-commit):  tests/test_v5_fx_baseline.py + .audits/.../gen/* + WR-wave.log +
+                         docs/ARCHITECTURE.md + LEDGER.md — the card pathspec, nothing else.
+
+== §9 VERDICT ===============================================================================
+DoD line-by-line: WR-wave.log delivered (this file — VERIFY_EXIT below is 1, honest); kit
+rc=0@final tree FAILED-AS-MEASURED (stderr-EMPTY sub-clause passes); counter shifts explained
+row-by-row §3; wrapper committed with doctored-COPY planted-reds §7; ARCHITECTURE §kits row
+re-truthed (both baselines, honestly) + F3 de-stale; LEDGER own row; suite 344 rc=0 >= 340.
+The card's single failing leg is the one the tree itself fails — the gate worked: it was built
+to catch re-baseline drift and it caught a dead manual leg that three milestone-tips of
+"declared NOT RUN" could not surface.
+# VERDICT: FAIL
+VERIFY_EXIT=1

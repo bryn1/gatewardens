@@ -154,22 +154,40 @@ are verified per card + by describe-image reads, not by the number tier.
 - `sim/v5_fx_probe.gd` — the FX TRACER-COUNTER kit (row added by the v1.4 docs tail, MC 11859 —
   the kit finally gets its documented home). Run from the repo root:
   `xvfb-run /home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64 --rendering-driver opengl3 --path godot -s res://sim/v5_fx_probe.gd`.
-  BASELINE STATE, stated honestly: its last byte-stable
-  run vs `gen/probe-v5-fx-green.log` is 2026-10-28 (LEDGER clean-code W3 row) — that baseline
-  PREDATES G6 (damage numbers now share the MAX_FX cap, fx_director.gd:35) and the zoom wave;
-  v1.4 did NOT re-baseline it — the V12-PLAN:297 kit-presentation debt was instead paid as the
-  pytest-tier kit probe (row below, MC 11857) and the tracer re-baseline is DECLARED NOT RUN at
-  the v1.4 tip (P7-wave.log routes the doc-half here as bookkeeping, not as a silent re-pin).
-  Any future run must expect CAP/live_max shifts from the G6 sharing, explain them line-by-line,
-  and re-declare the new baseline — never quietly overwrite the 2026-10-28 one.
+  BASELINE STATE, RE-TRUTHED by the v1.5 W-R re-run (MC 11897, 2026-11-01 — versioned truth,
+  BOTH baseline files stand, neither overwritten): the 2026-10-27 green
+  `.audits/20261027-1500-visual-target/gen/probe-v5-fx-green.log` (last byte-stable run 2026-10-28,
+  LEDGER clean-code W3 row) BYTE-REPRODUCES exactly at its own-era tip (5304d87 — WR-wave.log)
+  but is NOT the current tree's shape: at the v1.5 W1-final tree (0d3c506) the kit runs RED,
+  deterministically (three byte-identical processes) — the ART leg never completes, `fx_proj_ice`
+  never goes live within the full 40,000-frame guard walk, so CAP/SETTLE/TEARDOWN/OK never print.
+  The RE-DECLARED baseline is `.audits/20261101-0843-v15-plan/gen/probe-v5-fx-v15-red.log`
+  (measured red transcript, never a fabricated green); `tests/test_v5_fx_baseline.py` pins both
+  files (sha256 on the old — the never-quietly-overwrite rule is now MECHANICAL). ROOT CAUSE,
+  attributed by counter-runs (WR-wave.log §4): the break landed with G6 (3fe513a, 2026-10-29 —
+  two days after the baseline's last green) — damage numbers share the MAX_FX cap ("numbers
+  COUNT toward the same cap"), the drop-pass (spark + number per hp drop) pre-empts the fires
+  pass INSIDE one `fx_step`, and the fires pass walks `defense_list` in placement order: tracers
+  starve (n=848@270f baseline era → 362@40000f) and the last-placed hailspires spawn ice ZERO
+  times. FINDING 11897-F1 (the starvation runs the REVERSE of the shipped known-limit wording —
+  numbers+sparks starve the tracers, not "numbers starved by tracers/sparks") + 11897-F2 (the
+  kit leg has been dead since v1.2.1; the v1.4 DECLARED-NOT-RUN row hid it) routed via
+  WR-wave.log; re-ordering drop priority is a PINNED cost rule (V15-PLAN §2 row 8d — owner/fix
+  card, not a test card's call). The zoom wave and every v1.5 W1 card are innocent: the machine
+  rows are byte-identical G6-tip vs 0d3c506.
 - Kit PRESENTATION lives at the PYTEST tier, not a manual kit (v1.4 P7, MC 11857):
   `tests/test_kit_fx.py` drives the C11 kit assign/unassign crossing over the real mission
-  (shipped mutators + the public `fx_step` pump). Its FINDING rows are the documented truth:
-  `KF-FINDING kit_presentation=NONE` — the promised kit presentation effect is NOT implemented
-  in shipped code (the writers are pure state crossings; fx_director spawns only from
-  enemy/fire observation); a source-truth leg bans presentation tokens in the writer bodies, so
-  a future implementation MUST RE-PIN the KF-PRESENT/KF-FINDING rows — it cannot ride the old
-  green. Non-vacuity control KF-CONTROL: the same instrument observes a REAL shipped spark begin
+  (shipped mutators + the public `fx_step` pump). Its FINDING row is the documented truth —
+  RE-PINNED at v1.5 W-K (MC 11876; the W-R doc-sync 2026-11-01 de-stales this row, which still
+  carried the v1.4 P7 shape after W-K shipped): `KF-FINDING kit_presentation=NONE` was the v1.4
+  truth (writers were pure state crossings); W-K shipped the observer-side presentation, so the
+  row now pins `kit_presentation=fx_spark_hit kit_fx_live=1 kit_fx_after_pump=0 kit_sparks_delta=1
+  kit_node_changed=0 kit_rtex=1 kit_tw=1` — one spark sheet through the ONE `_spawn_spark` site,
+  painted by the UNCONDITIONAL `_observe_kits` pass, and the re-pin PROOF (old asserts REDDENED
+  on the new tree before re-pinning) stands in WK-wave.log (plan F-B leg). The source-truth legs
+  (writer-body presentation ban + dead-shape detector + zero-writes/cap-door) stay, so any
+  future shape change MUST RE-PIN the KF-PRESENT/KF-FINDING rows — it cannot ride the old green.
+  Non-vacuity control KF-CONTROL: the same instrument observes a REAL shipped spark begin
   and reach its observable end.
 - Superseded kits retire to `sim/archive/` — `git mv` keeps history, the first line carries the
   `SUPERSEDED — DO NOT USE` label with the successor chain (versioned-truth law; NEVER delete).

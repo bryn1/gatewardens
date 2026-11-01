@@ -1,0 +1,8 @@
+DIAG-DEFS
+DIAG-DEF idx=0 id=ballista cand=38980 sat=0 space=38980
+DIAG-DEF idx=1 id=ballista cand=38817 sat=0 space=38817
+DIAG-DEF idx=2 id=bombard cand=39098 sat=0 space=39098
+DIAG-DEF idx=3 id=bombard cand=39107 sat=0 space=39107
+DIAG-DEF idx=4 id=hailspire_tower cand=38125 sat=0 space=38125
+DIAG-DEF idx=5 id=hailspire_tower cand=38501 sat=0 space=38501
+DIAG-TRACER n=362 DIAG-SPARK n=79725 DIAG-POOF n=7 DIAG-NUMBER n=48998 live_max=63
