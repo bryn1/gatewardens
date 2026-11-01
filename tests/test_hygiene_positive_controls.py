@@ -8,7 +8,9 @@ among them: walk 2/7/12, blank_code 15-23, G-STRSCAN/G-PY clusters). This file
 is the POSITIVE CONTROL: every core detector the module exposes gets crafted
 input that MUST fire it, asserting the expected shape — blank_code per family
 (gd #, //, /* */, comment-at-EOF, escape-in-string, newline keep; py triple
-quote; js backtick + gd pass-through; cfg ';'; html '<!--'), words, the
+quote; js backtick + block-comment + gd pass-through; cfg ';'; html '<!--';
+css /* */ — the v1.5 W-T2 (MC 11879) true residual, its two legs at the home
+below), words, the
 tripwire in ALL THREE modes (identifier / word / phrase, with the negatives
 that keep each mode honest), literal_violations, walk (coverage count > 0 on
 a planted tmp tree, ext case, SKIP_DIRS), rel, read (non-UTF-8 replace), the
@@ -165,6 +167,33 @@ def test_html_comment_blanked_elsewhere_passthrough():
     unter = "<p>tail <!-- open"
     assert "open" not in hyg.blank_code(unter, "html")
     assert "<!-- keep -->" in hyg.blank_code("<!-- keep -->", "gd")
+
+
+def test_css_block_comment_family_blanked():
+    # W-T2 residual leg 1 (v1.5, MC 11879): "css" NEVER got a call before —
+    # it sat only inside the block set ("gd","js","css"). This input MUST
+    # fire the css branch; a mutant dropping "css" from the set dies here.
+    text = ".t { color: 2px gem /* hidden premium */ }\n.b { margin: 4px }\n"
+    out = hyg.blank_code(text, "css")
+    assert "hidden" not in out and "premium" not in out
+    assert ".b { margin: 4px }" in out
+    assert out.count("\n") == text.count("\n")              # line numbers true
+    assert len(out) == len(text)                            # G-SPINE
+    assert "open" not in hyg.blank_code(".x { /* open", "css")   # EOF run
+    assert "/* keep */" in hyg.blank_code("/* keep */", "py")
+    # passthrough control (html-leg shape): py is NOT in the block set, so
+    # the marker survives there — only where true (gd/js/css all blank it).
+
+
+def test_js_block_comment_branch_blanked():
+    # W-T2 residual leg 2 (v1.5, MC 11879): the js family's only leg used
+    # backticks + // — the /* */ branch was never entered under "js", so the
+    # P3 remove-"js"-from-the-block-set mutant survived. This leg kills it.
+    text = "let a = 1; /* multi\nline premium */ let b = 2;\n"
+    out = hyg.blank_code(text, "js")
+    assert "premium" not in out and "let b = 2;" in out
+    assert out.count("\n") == text.count("\n")
+    assert len(out) == len(text)
 
 
 # ---------- words + tripwire_hit: all three modes ----------

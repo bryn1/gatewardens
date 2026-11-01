@@ -1,0 +1,97 @@
+# WT2-wave.log — v1.5 W-T2 blank_code TRUE residual at the P9 home (MC 11879, [type:test]) — RE-SCOPED per V15-PLAN-c2 §2-2a + §3 "W-T2" (DA F-A)
+Date 2026-11-01. Tree /tmp/gw-v15-wt2 @ 7847351 -> branch card/11879. TESTS-ONLY: ONE product-tree file
+APPENDED (tests/test_hygiene_positive_controls.py) + this log + LEDGER.md row; tools/check_hygiene.py
+byte-untouched (§5, sha256 f0045a2a… throughout).
+
+## 1. DECLARED READINGS (card/plan ambiguity resolved openly, never silently)
+- BINDING SCOPE: c1's grounds were FALSE at tip (P9 shipped 30 legs in-suite at v1.4); the TRUE
+  residual at check_hygiene.py:96-135 read at this tip is EXACTLY (i) the css family — "css" only
+  ever appears inside the block set ("gd","js","css"), no leg ever PASSES it — and (ii) the js
+  block-comment branch — js's only leg (:140-144) uses backticks + //, never /* */, so the P3
+  remove-"js"-from-set mutant survived. +2 legs, no re-widening, no new fixture file (the P9 file
+  IS the home; one mechanism, replace-do-not-add honored — the plan's named choice).
+- PASSTHROUGH-CONTROL READING: the plan row says "`/* keep */` survives a NOT-'gd' call only where
+  true — mirror the file's html-leg shape". gd/js/css ALL blank `/* */` (they ARE the block set),
+  so a "keep"-survives assert is only TRUE for a family OUTSIDE the set; "py" is that witness
+  (mirrors the html leg's `<!-- keep -->` in-"gd" row, :167). An in-"gd" assert of that shape
+  would assert a FALSE behavior (gd blanks it) — reading used: survive-under-py.
+- JS PLANTED-RED BEYOND THE NAMED CSS ONE: the card names the css mutant as THE planted-red; the
+  js leg exists precisely to kill the remove-"js"-from-set mutant (plan §2-2a), so proving THAT
+  mutant dies is the leg's non-vacuity proof, not a widening — transcript evidence only, adds no
+  leg, no file. Both mutants run through the file's OWN GW_HYGIENE_MUTANT_DIR seam (no second
+  harness).
+- SUITE-COUNT READING: the card's "expect 332 ln -> ~360, legs +2" = THIS file's LOC (332 -> 361
+  measured) and the suite delta (+2). Plan §5's 337-338 projection assumes ALL W1 cards landed
+  cumulatively; this card measures its OWN tree: base 324 -> 326 rc=0, delta exactly +2.
+
+## 2. WHAT SHIPS — 2 legs appended INSIDE the families section of the P9 file (its idiom:
+inline fixture strings, no tmp_path, blank-token NOT-in + code-stays + newline/length spine)
+- test_css_block_comment_family_blanked: multi-line `/* hidden premium */` passed as "css" ->
+  blanked, code intact, newlines + length kept (G-SPINE); unterminated `/* open` runs to EOF
+  (html-leg shape); passthrough control `/* keep */` survives "py" (family guard: py NOT in the
+  block set — a set-widening mutant dies there).
+- test_js_block_comment_branch_blanked: `/* multi\nline premium */` passed as "js" -> blanked,
+  newlines + length kept — the branch the js family's set membership never entered in-suite.
+- Docstring inventory updated REPLACE-NOT-DELETE (header now names js block-comment + css
+  with the card id) — the file's own claim-list stays true; nothing retired silently.
+
+## 3. MUTANT-PROOFNESS — the file's OWN GW_HYGIENE_MUTANT_DIR seam, copy-only, IN-PROBE FAIL GUARDS G1-G9 (a violated guard aborts the probe loudly; all fired, none tripped)
+G1 seam copy byte-identical to repo gate at creation (sha256 f0045a2a43c60136…);
+G2 UNMUTATED copy runs the WHOLE file GREEN through the seam rc0 (32 passed) — later RED is the
+   mutation, never the seam; G3/G6 sed landed (grep shows the set row, count of old set == 0);
+G4/G7 RED runs rc1 with the TARGET LEG named in FAILED; G5/G8 reverts byte-verified (sha256 equal
+   to repo hash) + post-revert rerun GREEN; G9 repo gate `git diff -- tools/check_hygiene.py` =
+   0 lines; scratch copies DELETED post-run (P9 idiom).
+
+### MUTANT CSS: `family in ("gd", "js", "css")` -> `("gd", "js")` (the P3 F-2 css gap, live)
+$ GW_HYGIENE_MUTANT_DIR=/tmp/gw-mc11879-mutants/wt2 python3 -m pytest tests/test_hygiene_positive_controls.py -q
+E       AssertionError: assert ('hidden' not in '.t { color:...gin: 4px }\n'
+E         'hidden' is contained here:
+E           .t { color: 2px gem /* hidden premium */ }
+FAILED tests/test_hygiene_positive_controls.py::test_css_block_comment_family_blanked
+1 failed, 31 passed in 0.16s
+G4b: the js leg stayed GREEN under this mutant; G4c: shipped-tree legs GREEN — the kill is PRECISE
+(zero .css files exist under the scanned dirs, find-measured: the css family is dead code in
+production input today, so the family can ONLY die through this leg — the exact F-2 truth).
+-> byte-verified revert (G5) -> rerun GREEN.
+
+### MUTANT JS: `family in ("gd", "js", "css")` -> `("gd", "css")` (the remove-"js"-from-set survivor)
+$ GW_HYGIENE_MUTANT_DIR=/tmp/gw-mc11879-mutants/wt2 python3 -m pytest tests/test_hygiene_positive_controls.py -q
+E       AssertionError: assert ('premium' not in 'let a = 1; ...let b = 2;\n'
+E         'premium' is contained here:
+E           let a = 1; /* multi
+E           line premium */ let b = 2;
+FAILED tests/test_hygiene_positive_controls.py::test_js_block_comment_branch_blanked
+1 failed, 31 passed in 0.16s
+G7b: the js BACKTICK leg stayed GREEN (the backtick family-guard branch is `family == "js"`,
+untouched by this mutation — no family-guard leak either way).
+-> byte-verified revert (G8) -> rerun GREEN.
+
+## 4. HONEST LIMITS (named, not hidden)
+- The passthrough control witnesses ONE family outside the set ("py"); cfg/html stay witnessed by
+  their own existing legs, not by this one.
+- Under the JS mutant the two shipped static/*.js worklet files could in principle flip the
+  shipped-tree leg (a tripwire word surviving inside /* */); at THIS tree they did not (0 failed
+  beyond the named leg) — the absence legs stay detectors-by-contract, never credited (P9 §4).
+- This card closes the css + js-block TRUE residual only; it does not re-run mutmut over the
+  whole blank_code set (P3's scorecard stays the baseline; the positive-control machinery is the
+  reusable part).
+
+## 5. GATE ROWS (real runs at THIS tree; PLAN LAW rows)
+```
+$ python3 -m pytest -q        # MEASURE-BASE, before any edit, tree 7847351
+324 passed in 202.27s (0:03:22)                                              rc=0
+$ python3 -m pytest -q        # GREEN ROW, at the final tree, ONE attempt
+326 passed in 191.12s (0:03:11)                                              rc=0   # delta +2 exact
+$ wc -l tests/test_hygiene_positive_controls.py
+361                                                            # 332 -> 361 (card: ~360)
+$ python3 tools/check_hygiene.py | tail -1
+check_hygiene: 0 hit(s)                                                      # HYGIENE_RC=0
+$ git diff -- tools/check_hygiene.py           # EMPTY — gate byte-untouched (mutants were /tmp copies)
+$ git status --short -- tests/fixtures/        # EMPTY — fixtures diff
+GOVERNED_LITERALS 17 unchanged (gate file byte-untouched = the constant is byte-untouched).
+git diff --cached --stat (staged = test + log + LEDGER ONLY):
+3 files changed — see the commit; staged rows: LEDGER.md 1 +, tests/test_hygiene_positive_controls.py 29 +, WT2-wave.log (this file)
+
+# VERDICT: PASS — css-family + js-block-comment TRUE residual legs shipped AT the P9 home; both named mutants die PRECISELY (1F/31P, target leg named) through the file's own seam with byte-verified reverts; suite 324->326 rc=0; zero production edits
+VERIFY_EXIT=0
