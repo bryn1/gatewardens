@@ -60,12 +60,15 @@ structural guard + tripwire gate are unchanged, 0 hits at this tree).
   outline contrast holds on the floor. Camera untouched (ZOOM-only grant honored — diff EMPTY). —
   P4-wave.log + P8-wave.log
 - **The place-refusal matrix** (MC 11829, tests-only): every gate that refuses a placement —
-  combat phase (BOTH shipped routes), occupied/off-list slot, unknown id, insufficient green,
-  cap-full — now refuses under test, each row asserting green / defense list / save-write /
+  combat phase (BOTH shipped routes), occupied/off-list slot, cap-full — now refuses under test,
+  each row asserting green / defense list / save-write /
   ghost UNCHANGED, and a passing BUILD-phase control row proves the matrix is not vacuous. The
-  cap guard had NO test caller anywhere before this. Planted-red: dropping the phase guard at
-  BOTH sites made the combat key-route really place for real (red transcript beside the green).
-  — P1-wave.log
+  cap guard had NO test caller anywhere before this. Scope truth (DA gate on docs, MC 11859):
+  the unknown-id and insufficient-green refusals were ALREADY pinned before this card
+  (tests/test_family_picker.py) — the matrix adds the rest, not those two. Planted-red: dropping
+  the phase guard at BOTH sites made the combat key-route really place for real (red transcript
+  beside the green).
+  — P1-wave.log §HONEST
 - **Hygiene got positive controls** (MC 11838, tests-only): 30 crafted MUST-FIRE controls for
   every gate detector (per-family comment blanking, the tripwire in all three match modes, the
   walk coverage-count, the planted-tree 5-error-class main() transcript) — because the mutation
