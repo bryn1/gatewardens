@@ -255,7 +255,7 @@ func _init() -> void:
 	var kit_sc0 := float(((fx._fx[0]["node"]) as Sprite3D).scale.x) if kit_live == 1 else 0.0
 	fx.fx_step(1.0 / 60.0)
 	var kit_sc1 := float(((fx._fx[0]["node"]) as Sprite3D).scale.x) if int(fx._fx.size()) >= 1 else 0.0
-	var rtex := 1 if kit_live == 1 and String(((fx._fx[0]["node"]) as Sprite3D).texture.resource_path) == "" else 0
+	var rtex := 1 if kit_live == 1 and String(((fx._fx[0]["node"]) as Sprite3D).texture.resource_path).contains("fx_spark_hit") else 0
 	_pump(fx)
 	var live_pump := int(fx._fx.size())
 	var swapped := 0 if int(obj.node.get_instance_id()) == iid0 else 1
@@ -440,8 +440,8 @@ def test_kit_fx_matrix(tmp_path, class_cache):
 
     # The v1.5 W-K measured shape (re-pin transcripts in WK-wave.log):
     # nothing paints at assign (observer is the painter); ONE fx_step
-    # observes the crossing, the pump ends it. kit_rtex=1 pins the
-    # runtime-texture rebuild; kit_tw=1 the spark's self-driven pulse.
+    # observes the crossing, the pump ends it. kit_rtex=1 pins the BANK
+    # sheet (WK2: runtime rebuild = WEB-breaker); kit_tw=1 the pulse.
     pres = _only(out, "KF-PRESENT")
     assert pres["live_after_assign"] == "0", \
         "kit fx painted synchronously — the observer is the painter: %s" % pres

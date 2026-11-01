@@ -1,0 +1,92 @@
+WK2-wave.log — [type:code] MC 11894 — v1.5 WK2: make the kit spark (and every fx sheet) paint on WEB
+DATE: 2026-11-01 (UTC)  BASE: a775f6e (W-K merged; parent brief: /tmp/gw-briefs/v15-wk2.md)  BRANCH: card/11894
+AUTHOR OVERRIDE honored: commit author "coder (11894)" coder@agent-town.local (brief misnamed 11881; parent line governs)
+INPUT: MC 11876 serve-leg P1 + .audits/20261101-0843-v15-plan/evidence-11876/ harness re-run against a FRESH wk2 export.
+
+== ROOT CAUSE (measured, this card — the WK1 finding was INVERTED) ==
+RC-1 Repro on fresh export (archived harness, wk2 tree): served spark node's texture prints
+   texcls=ImageTexture fmt=1 w=0 — the EMPTY texture belongs to the RUNTIME-REBUILT texture
+   (W-K SHIP-2), not to the bank sheet. fmt=1 w=0 on a Sprite3D = a CompressedTexture2D
+   get_image() answer in the WEB build is an EMPTY VRAM stub -> ImageTexture.create_from_image
+   (stub) = a 0x0 texture -> the W-K "hardening" line REPLACED the healthy bank sheet with an
+   empty one on web. The sheet import was never broken.
+RC-2 Proof the sheet path is healthy on web (matrix run, same frame): the live spark node's
+   texture RESTORED to SPRITE_BANK's fx_spark_hit sheet PAINTS — 582 changed px max-frame /
+   107 px spark-zone vs control (kb-12-zoom.png: orange-red star rays + green +3 at the tower;
+   bank ballista twin at (-36,1,0) paints too as the same-frame control). WK1's "bank twin
+   paints / rebuilt twin dark" rows are fully consistent: rebuilt = the only class that stayed
+   dark (wk-final-matrix.png evidence holds; the interpretation is what changes).
+RC-3 Consequence: on web, W-K's SHIP-2 had killed EVERY fx sprite (spark, poof, tracers) —
+   the WK1 wave log's P1 was real; the fix is at the one consumer line, not the assets.
+
+== FIX (smallest layer — NO asset/.import change, NO new mechanism) ==
+fx_director.gd _spawn_fx: the runtime-rebuild block + _rtex cache are DELETED; the bank sheet
+  from SPRITE_BANK.make_sprite is the texture, period (pre-W-K shape restored + truth comment).
+  Kit observer (SHIP-1) and spark twinkle (SHIP-3) from W-K stay untouched.
+test_kit_fx.py RE-PIN (kit_rtex token MOVED, RED-first per brief): kit_rtex=1 now pins the
+  BANK sheet identity on the node — resource_path contains "fx_spark_hit" — instead of the
+  rebuilt-texture empty-path signature. RED-FIRST transcript: wk2-red-repin.txt (1 failed,
+  4 passed — FINDING row drift, against the pre-fix product) THEN product fix THEN green.
+  LOC: fx_director 322->314 (<=400), test 481->600 (cap 600, at it).
+ASSETS: godot/assets + *.import touched ZERO (git diff confirms) — import params were not the
+  cause; changing them would have masked the real bug.
+
+== THE 4 HARD PROOF LEGS (brief acceptance) ==
+LEG-A served PIXEL PROOF (fix build, zero scratch in the product; loopback 127.0.0.1:54811,
+  fresh export, seeded shipped save via the DECLARED IDBFS-conformant harness, shipped clicks):
+  STATE MARKER FIRST: window.__gwSnapshot {"relics_assigned":1,"bank_count":2,
+  "phase_kind":"build"} BEFORE any census shot; ERRS []; dense shipped-click crossing train
+  (assign + 3 unassign/assign cycles, 180ms — the same button the player uses).
+  CENSUS (window tower-head, threshold sum>30 vs pre-click control k2c-control-clip.png):
+  41 of 48 burst-window frames carry tower-window deltas; 10 DISTINCT compositor frames;
+  peak 88 px (kb-08), pulse sequence 88/76/67/84/81 px across frames 7-11 = the SHIPPED
+  twinkle (kit_tw) visibly pulsing; instrument non-vacuity rows: control vs control = 0 and
+  the SAME window on the PRE-FIX build read 0-4 px (timer noise) — the census can go red.
+  EYES + VISION ROW (both declared): own zoom wk2-spark-zoom.png = orange/red multi-ray
+  cluster at the medallion base; Lane-E describe-image literal (describe_image.py,
+  model=qwen3.8-flash-next): "Directly beneath the medallion, on the green platform, there
+  are a few small reddish-pink pixel clusters (short diagonal strokes)" + "white pixel digits
+  that read as 31" (that frame carried a combat number too) — the star shape is small at this
+  camera distance; the literal row is quoted verbatim, not embellished.
+LEG-B COMBAT FX CONTROL ROW (honest, both builds, same classifier): new-spark-hue px per
+  delivered combat frame 113-153 POST-FIX and 118-155 PRE-FIX — indistinguishable: the band
+  is the ORANGE ENEMY SPRITES themselves (moving), so this classifier does NOT isolate bursts.
+  700ms-interval sampling caught no death-burst cloud on EITHER build (a 0.35s poof between
+  compositor frames) — DECLARED NOT OBSERVED. What IS observed on web post-fix: runtime
+  enemies + wave banner + damage/heal NUMBERS paint (wc2-04-zone.png FIGHT banner + enemies;
+  the numbers ride the SAME _attach_fx pipeline as fx sprites). Whether poof/tracer clouds
+  now light on web is MECHANISM-INFERRED (same sheet factory + same node path as the spark,
+  which now provably paints), NOT claimed pixel. Honest row: kit spark pixel = PROVEN; other
+  bursts = same mechanism, not separately pixel-proven.
+LEG-C desktop suite: python3 -m pytest tests -q -> 336 passed rc0 at the fixed tree
+  (base a775f6e also 336-shape; this card adds no tests, re-pins only; test_kit_fx 5/5 green;
+  >= 326 DoD row SATISFIED 336). Hygiene 0 hits; GOVERNED_LITERALS 17 (fx_director not
+  governed); fixtures diff EMPTY; mission/sim/tscn/panel diff EMPTY; tree diff = exactly
+  godot/scripts/fx_director.gd + tests/test_kit_fx.py (+ LEDGER + this log + evidence).
+LEG-D 4-PLANT DISCIPLINE on the new guard (kit_rtex = bank-sheet identity pin), on FINAL
+  bytes, each red then byte-verified revert then green (wk2-red-matrix.txt + wk2-planted-*.gd):
+    null-tex (texture nulled)      1 failed 4 passed  REVERT_VERIFIED
+    wrong-sheet (poof sheet swap)  1 failed 4 passed  REVERT_VERIFIED
+    rtex-return (W-K rebuild back) 1 failed 4 passed  REVERT_VERIFIED   <- regression killer
+    deadshape (observer inert)     1 failed 4 passed  REVERT_VERIFIED
+  final green 5 passed. Plus the RED-first re-pin (LEG-C row) as the fifth gate-proof.
+
+== SERVE ROUTE / TEARDOWN (fleet law) ==
+Route: python3 -m http.server 54811 --bind 127.0.0.1 -d static (final clean export;
+  SMOKE_ERRS [] fresh-boot hub+mission at the SHIPPED bytes post-fix, no seed, no wrapper);
+  pre-fix comparison served from the wk1 scratch tree on :54812 for the combat control only.
+  Both servers killed after evidence (curl-refused verify). static/seed.bin removed. All
+  diagnostic scratch (texture prints, bank-twin arming, life-hold) lived uncommitted on
+  fx_director and was stripped via git checkout BEFORE the fix edits — final product bytes
+  contain ONLY the fix (git diff shows 2 files; SCRATCH-CLEAN row in transcripts).
+DISCLOSED: the crossing-train click density (assign+3 cycles) is a harness choice on shipped
+  UI — it widens the 0.2s burst window across compositor delivery; every state/pixel claim
+  stands on the final assigned state. The 15-minute null-tex planted run (engine error-retry
+  storm) is disclosed; outcome valid, revert byte-verified.
+
+== VERIFY ==
+Fix ships at ONE consumer line; assets untouched; RED-first re-pin; 4 planted-reds green-
+verified; suite 336 rc0; hygiene 0; governed 17; fixtures EMPTY; served pixel proof with
+state marker first + vision row + non-vacuity census rows; combat control honest; smoke clean;
+teardown complete. Spark on web: PAINTS (was: killed by this fleet's own hardening line).
+VERIFY_EXIT=0

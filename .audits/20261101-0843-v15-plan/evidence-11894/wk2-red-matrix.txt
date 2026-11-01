@@ -1,0 +1,13 @@
+=== PLANTED null-tex ===
+1 failed, 4 passed in 904.99s (0:15:04)
+REVERT_VERIFIED null-tex
+=== PLANTED wrong-sheet ===
+1 failed, 4 passed in 5.60s
+REVERT_VERIFIED wrong-sheet
+=== PLANTED rtex-return ===
+1 failed, 4 passed in 5.50s
+REVERT_VERIFIED rtex-return
+=== PLANTED deadshape ===
+1 failed, 4 passed in 5.78s
+REVERT_VERIFIED deadshape
+5 passed in 5.71s

@@ -105,7 +105,6 @@ var live_max := 0             # high-water mark of live fx nodes
 var _tracked := {}            # entity node instance-id -> snapshot dict
 var _kits := {}               # defense uid -> last-frame relic_uid (W-K)
 var _fx := []                 # live fx bookkeeping, parallel to children
-var _rtex := {}               # fx_id -> runtime-safe texture (W-K fix)
 
 
 func _process(delta: float) -> void:
@@ -261,20 +260,12 @@ func _spawn_fx(fx_id: String, at: Vector3, life: float,
 	var s := SPRITE_BANK.make_sprite(fx_id, h)
 	if s == null:
 		return {}               # bank: id has no committed sheet
-	# W-K SERVE FINDING (MC 11876): web vram import can ship an fx sheet
-	# as an EMPTY render texture (measured fx_spark_hit fmt=1 w=0; live
-	# node, zero pixels). Painted fix at the one sheet consumer: rebuild
-	# ONE runtime ImageTexture per id from the DECODED sheet (desktop
-	# decompress is a no-op). Served proof: WK-wave.log.
-	var rt: Texture2D = _rtex.get(fx_id)
-	if rt == null and s.texture != null:
-		var img := s.texture.get_image()
-		if img != null:
-			img.decompress()
-			rt = ImageTexture.create_from_image(img)
-			_rtex[fx_id] = rt
-	if rt != null:
-		s.texture = rt
+	# WK2 (MC 11894): NEVER rebuild an fx sheet at runtime. In the web
+	# build CompressedTexture2D.get_image() answers an empty VRAM stub,
+	# so the W-K rebuild swapped HEALTHY bank sheets for 0x0 textures —
+	# the invisible kit spark (fmt=1 w=0 was the rebuilt ImageTexture,
+	# not the import). The bank sheet is the texture source; the engine
+	# pins it (kit_rtex) and the served matrix proves it paints.
 	s.position = at
 	return _attach_fx(s, life)
 

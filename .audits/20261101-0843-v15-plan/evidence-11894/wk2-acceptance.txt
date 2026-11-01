@@ -1,0 +1,7 @@
+ROUTE-HIT http://127.0.0.1:54811/index.html
+CONSOLE WKSEED chained
+CONSOLE WKSEED put ok
+CONSOLE WKSEED starting
+BANK 2
+SNAP-ASSIGN {"relics_assigned":1,"bank_count":2,"phase_kind":"build"}
+ERRS []
