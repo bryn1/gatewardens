@@ -27,6 +27,12 @@
 #   fx_proj_ice, bombard = fx_proj_bolt — the bomb T3 sheet is a LATER
 #   VISUAL-TARGET row; the bolt standing in for both is the brief's
 #   declared reading, not an oversight.
+# - KIT CROSSING -> SPARK (v1.5 W-K, MC 11876): a published defense
+#   row whose relic_uid crosses 0 -> uid is the player's "I equipped
+#   a kit" presentation, painted as the SAME shipped fx_spark_hit
+#   through the ONE _spawn_spark site. UNCONDITIONAL in fx_step, not
+#   under the drops-guard: kit assigns are build-phase-only, those
+#   frames never carry drops (V15-PLAN-c2 §3 W-K / DA P1-B).
 # - DAMAGE -> SPARK + NUMBER: any tracked entity whose hp DROPPED
 #   between frames gets one spark AND one short-lived damage number
 #   (v1.2.1 G6, MC 11691) at the SAME point — one event, one position;
@@ -97,7 +103,9 @@ var spawned_numbers := 0      # damage drops + kill-blow finals (G6)
 var live_max := 0             # high-water mark of live fx nodes
 
 var _tracked := {}            # entity node instance-id -> snapshot dict
+var _kits := {}               # defense uid -> last-frame relic_uid (W-K)
 var _fx := []                 # live fx bookkeeping, parallel to children
+var _rtex := {}               # fx_id -> runtime-safe texture (W-K fix)
 
 
 func _process(delta: float) -> void:
@@ -116,6 +124,7 @@ func fx_step(delta: float) -> void:
 		return
 	var drops := _observe_enemies(runner)   # iid -> hp lost this frame
 	_observe_fires(m, runner, drops, delta)
+	_observe_kits(m)
 	_advance_fx(delta)
 	live_max = maxi(live_max, _fx.size())
 
@@ -186,6 +195,33 @@ func _observe_fires(m, runner, drops: Dictionary, delta: float) -> void:
 				PROJ_FOR.get(String(obj.trow["id"]), PROJ_DEFAULT)))
 
 
+# Kit-crossing detection (v1.5 W-K, MC 11876, V15-PLAN-c2 §3): the
+# published defense row's relic_uid crossing 0 -> uid spawns exactly
+# ONE spark. UNCONDITIONAL call in fx_step's top level (DA P1-B): kit
+# assigns are build-phase-only (mission_relics.gd:16) so drops are
+# empty on those frames — a drops-guard would ship this pass dead.
+# A row FIRST observed holding a kit counts as the crossing (absent
+# snapshot defaults to 0): the observer missed it, the kit deserves
+# its one spark once — the lockstep-probe shape, never seen without
+# a kit in the shipped game (rows are placed empty, assigned after).
+# Unassign (uid -> 0) is DECLARED OUT (no symmetric fx, smallest leg;
+# pinned by the KF-UNASSIGN row). Sheet, lift, life and cap are all
+# the shipped fx_spark_hit/_spawn_spark site — zero new mechanisms.
+func _observe_kits(m) -> void:
+	var seen := {}
+	for rec: Dictionary in m.defense_list:
+		var obj = rec["obj"]
+		var uid: int = int(rec["uid"])
+		var now := int(obj.relic_uid)
+		seen[uid] = true
+		if int(_kits.get(uid, 0)) == 0 and now != 0:
+			_spawn_spark(obj.pos)
+		_kits[uid] = now
+	for uid: int in _kits.keys():
+		if not seen.has(uid):
+			_kits.erase(uid)      # sold row: plain ints, nothing held
+
+
 # ---- fx spawn + lifetime (all children of THIS node, header) ----
 
 func _spawn_tracer(from: Vector3, to: Vector3, fx_id: String) -> void:
@@ -198,8 +234,11 @@ func _spawn_tracer(from: Vector3, to: Vector3, fx_id: String) -> void:
 
 
 func _spawn_spark(at: Vector3) -> void:
-	if not _spawn_fx("fx_spark_hit", at + FX_LIFT, SPARK_LIFE,
-			FX_H_SPARK).is_empty():
+	var e := _spawn_fx("fx_spark_hit", at + FX_LIFT, SPARK_LIFE,
+			FX_H_SPARK)
+	if not e.is_empty():
+		e["spark"] = true
+		e["s0"] = (e["node"] as Node3D).scale.x
 		spawned_sparks += 1
 
 
@@ -222,6 +261,20 @@ func _spawn_fx(fx_id: String, at: Vector3, life: float,
 	var s := SPRITE_BANK.make_sprite(fx_id, h)
 	if s == null:
 		return {}               # bank: id has no committed sheet
+	# W-K SERVE FINDING (MC 11876): web vram import can ship an fx sheet
+	# as an EMPTY render texture (measured fx_spark_hit fmt=1 w=0; live
+	# node, zero pixels). Painted fix at the one sheet consumer: rebuild
+	# ONE runtime ImageTexture per id from the DECODED sheet (desktop
+	# decompress is a no-op). Served proof: WK-wave.log.
+	var rt: Texture2D = _rtex.get(fx_id)
+	if rt == null and s.texture != null:
+		var img := s.texture.get_image()
+		if img != null:
+			img.decompress()
+			rt = ImageTexture.create_from_image(img)
+			_rtex[fx_id] = rt
+	if rt != null:
+		s.texture = rt
 	s.position = at
 	return _attach_fx(s, life)
 
@@ -255,6 +308,15 @@ func _advance_fx(delta: float) -> void:
 			_fx.remove_at(i)
 			remove_child(node)
 			node.free()
+		elif bool(e.get("spark", false)):
+			# W-K (MC 11876): the spark pulses its own twinkle — the sheet's
+			# intended look, engine-pinned (kit_tw). The SERVE LEG found the
+			# web export ships fx sheets as empty render textures (WK-wave
+			# .log matrix: bank-sprite twin paints, rebuilt-texture twins do
+			# not) — a product web-export defect OUTSIDE this card's files;
+			# motion here is what fx pixels ride once that fix lands.
+			var t := SPARK_LIFE - float(e["life"])
+			node.scale = Vector3.ONE * (float(e["s0"]) * (1.0 + 0.18 * sin(t * 30.0)))
 		elif e.has("from"):
 			var k := 1.0 - float(e["life"]) / TRACER_LIFE
 			node.position = (e["from"] as Vector3).lerp(e["to"], k)

@@ -1,0 +1,11 @@
+ROUTE-HIT http://127.0.0.1:54803/index.html
+CONSOLE WKSEED chained
+CONSOLE WKSEED put ok
+CONSOLE WKSEED starting
+CONSOLE SCRATCH11876 ack=0 bank=2 gold=0 deck=3
+CONSOLE SCRATCH11876 fs=true dir=/userfs/godot/app_userdata/Gatewardens
+CONSOLE SCRATCH11876 cfg_err=0 bank_keys=["items_json"]
+BANK 2
+CONSOLE SCRATCH11876 hold+bank twin armed
+SNAP-ASSIGN {"relics_assigned":1,"bank_count":2,"phase_kind":"combat"}
+ERRS []

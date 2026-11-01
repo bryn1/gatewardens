@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "<stdin>", line 6, in <module>
+AssertionError: plant anchor x0
+=== PLANTED deadshape ===
+5 passed in 5.91s
+REVERT_VERIFIED deadshape
+=== PLANTED passdel ===
+2 failed, 3 passed in 5.79s
+REVERT_VERIFIED passdel
+Traceback (most recent call last):
+  File "<stdin>", line 6, in <module>
+AssertionError: plant anchor x0
+=== PLANTED rtex ===
+5 passed in 5.44s
+REVERT_VERIFIED rtex
+=== PLANTED twinkle ===
+1 failed, 4 passed in 5.81s
+REVERT_VERIFIED twinkle
+5 passed in 5.63s

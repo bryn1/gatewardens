@@ -1,0 +1,9 @@
+PROBE rc=1 stderr=''
+GREEN  KF-PRESENT live_after_assign == 0
+GREEN  KF-PRESENT live_after_pump == 0
+GREEN  KF-PRESENT swapped == 0 and parented == 1
+RED    KF-PRESENT sparks_delta == 0
+GREEN  KF-PRESENT ack unchanged
+GREEN  KF-FINDING exact NONE string
+KF-PRESENT leg verdict: RED
+RED count: 1

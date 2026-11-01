@@ -1,0 +1,30 @@
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+______________________________ test_kit_fx_matrix ______________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-4902/test_kit_fx_matrix0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_kit_fx_matrix(tmp_path, class_cache):
+        """One engine probe: the full KF-* matrix (rows + asserts below)."""
+        proc = _run_probe(tmp_path, class_cache)
+>       assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+E       AssertionError: probe rc=1
+E         OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         KF-BOOT kits=2 pool=2 tower=gate_blockade tier_hp=400.000 fx=0 sparks0=0 ack=3 list=1 mirror=0
+E         KF-ASSIGN ok=true relic=1 bonuses=hp:3.000 hp_max=403.000 hp=400.000 mirror=1 pool=2 ack=3
+E         KF-PRESENT live_after_assign=0 live_after_pump=0 swapped=0 parented=1 sparks_delta=1 ack=3
+E         KF-FINDING kit_presentation=NONE kit_fx_delta=0 kit_live_after_pump=0 kit_node_changed=0
+E         KF-FAIL control effect did not begin (live=1 sparks=2)
+E         
+E         ERR:
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...delta=0 kit_live_after_pump=0 kit_node_changed=0\nKF-FAIL control effect did not begin (live=1 sparks=2)\n', stderr='').returncode
+
+tests/test_kit_fx.py:347: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_kit_fx.py::test_kit_fx_matrix - AssertionError: probe rc=1
+1 failed, 2 passed in 5.87s

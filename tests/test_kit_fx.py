@@ -1,79 +1,98 @@
-"""v1.4 P7 kit-presentation probe (MC 11857 / V14-PLAN §2 row "v5_fx_probe
-tracer kit leg (V12-PLAN:297, never executed)", wave W4) — TESTS-ONLY,
-ZERO production edits (pathspec commit proves).
+"""v1.5 W-K kit-crossing presentation probe (MC 11876 / V15-PLAN-c2 §3
+W-K) — engine matrix + structural source-truth pins. File history:
+v1.4 P7 FINDING probe (MC 11857, V12-PLAN:297 debt) — the versioned
+truth then was kit_presentation=NONE (pure state writers, fx_director
+spawned ONLY from _observe_enemies/_observe_fires); its re-pin clause
+("Any future kit presentation implementation MUST re-pin these rows —
+it cannot false-green") is what this re-pin honors. The RE-PIN PROOF
+(plan F-B leg 1) ran FIRST: the untouched old file on the new tree
+went RED (probe KF-FAIL "sparks=2" rc1; per-assert driver: old
+sparks_delta==0 RED). DECLARED honest reading: the old exact NONE-
+string assert stays GREEN vacuously (its three print inputs are
+structurally zero in the old probe) — the plan's §3 subclaim that
+the string itself reddens is mechanically false; the full argument
+and both transcripts stand in .audits/20261101-0843-v15-plan/
+WK-wave.log (fleet law: nothing here rounds a RED up).
 
-THE DEBT: V12-PLAN:297 promised the kit leg of the F5 row; the planner
-verified it NEVER ran (V14-PLAN §2: "never executed"; §Verification kits
-grep 0 hits). This card pays it as the PROBE this DoD names: the shipped
-kit (C11 relic) crossing's presentation dimension, exercised as RUNNING
-behavior over the real mission.tscn — the conftest.run_probe_script
-tmp-probe idiom (R5; test_place_refusals.py P1 + test_relic_negatives.py
-F3 are the harness precedents; E5: _ready + the fx pump are HAND-driven
-in headless — fx_step is public exactly for this).
+WHAT SHIPPED AT W-K (the new measured shape): fx_director._observe_kits
+— an UNCONDITIONAL observer pass in fx_step (DA P1-B: kit assigns are
+build-phase-only per mission_relics.gd:16, zero drops those frames, a
+drops-guard would ship it dead) presenting relic_uid 0->uid crossings
+with the ONE existing sheet (fx_spark_hit) through the ONE cap-
+respecting _spawn_spark site. Unassign (uid->0) paints NOTHING —
+symmetric poof DECLARED OUT (pinned by the KF-CAP una_sparks row).
+Zero writer lines moved: _PRESENT_BAN leg untouched and green — the
+observer-side proof (hard leg 5).
 
-KIT NAMING (DoD "kits file + rows", reading DECLARED): the kit data file
-is godot/data/items.json — 15 rows, the 3 slot=="relic" kits are
-mark_of_fervor / orb_of_the_deep / medallion_of_the_gate (test_kit_data
-rows names + pins it). mission.setup() copies the bank's slot=="relic"
-rows into the mission-local relic_pool (mission.gd:149-151); the shipped
-writers are mission.assign_relic/unassign_relic -> mission_relics
-(:15/:31, guards phase>uid>relic>taken) -> defense_obj.assign_relic/
-clear_relic (:97/:102, the pinned bonus application site).
-
-THE FINDING (the deliverable per the V12 debt; production NOT touched,
-HONEST ROUTE of the brief): the promised kit PRESENTATION effect is NOT
-implemented in shipped code. The assign/unassign writers are PURE STATE
-crossings (relic_uid, relic_bonuses, hp_max/hp clamp, C5 mirror) and the
-one presentation director (fx_director.gd) spawns ONLY from _observe_
-enemies/_observe_fires (hp-drop sparks, despawn poofs, shot tracers,
-damage numbers) — no kit path feeds it (VERIFIED: zero fx calls in the
-writer bodies; source-truth leg below pins it STRUCTURALLY). The probe
-pins this honestly: KF-PRESENT + the KF-FINDING row assert the MEASURED
-shipped shape (live fx 0 -> 0 across the assign window AND a hand-driven
-2 s pump; world node untouched), while KF-CONTROL proves the instrument
-is NOT blind — the same _fx read + the same pump take a REAL shipped
-effect (_spawn_spark, the call _observe_enemies itself makes) from
-BEGIN (live=1) to observable END (live=0). Any future kit presentation
-implementation MUST re-pin these rows — it cannot false-green.
+KIT NAMING (DoD "kits file + rows", reading DECLARED at v1.4, stands):
+the kit data file is godot/data/items.json — 15 rows, the 3
+slot=="relic" kits mark_of_fervor / orb_of_the_deep /
+medallion_of_the_gate (the data leg below re-pins). mission.setup()
+copies the bank's relic rows into the mission-local relic_pool
+(mission.gd:149-151); the shipped writers are mission.assign_relic/
+unassign_relic -> mission_relics (:15/:31, guards phase>uid>relic>
+taken) -> defense_obj.assign_relic/clear_relic (:97/:102).
 
 Legs (KF-* rows; in-probe KF-FAIL + quit(1) guards + KF-OK-LAST so a
 silent skip cannot go green):
   KF-ASSIGN   assign kit -> state read back: relic_uid, bonuses
               hp:3.000 (items.json primary, scripted 3.0 F3-input),
-              hp_max = tier row hp + 3.0 EXACT, hp CLAMPED not healed
-              (defense_obj :96 declared reading), C5 mirror 1, pool 2
-              (C11 clear-not-move), saved_ack unmoved.
-  KF-PRESENT  presentation dimension through the shipped pump: live fx
-              0 at assign, 0 after 120 hand-driven fx_step frames
-              (2 s > the 0.5 s longest lifetime); world node same
-              instance, still parented; sparks counter unmoved.
-  KF-FINDING  the pinned FINDING row (exact-string asserted).
-  KF-CONTROL  non-vacuity: the SAME instrument sees a shipped spark
-              begin (1) and reach its observable end (0).
+              hp_max = tier hp + 3.0 EXACT, hp CLAMPED not healed
+              (defense_obj :96), C5 mirror 1, pool 2 (C11 keeps).
+  KF-PRESENT  v1.5 W-K shape: live 0 at assign (the observer is the
+              painter), ONE hand-driven fx_step OBSERVES the crossing
+              (kit live 1), the 2 s pump ends it; world node intact.
+  KF-FINDING  re-declared shipped shape, exact string: fx_spark_hit,
+              live 1 -> 0, sparks_delta 1, node unchanged.
+  KF-CONTROL  non-vacuity on the SAME instrument + pump. Spark counter
+              baseline RE-ANCHORED at the control start — since W-K
+              the kit spark rides the shared spawned_sparks counter.
+  KF-CAP      MAX_FX leg (plan §3 W-K): the cap is PLANTED with the
+              shipped spawn site and DERIVED from behavior (fill 512,
+              plateau cap; drop-past-cap observed, no literal); the
+              same window pins una_sparks == 0 (uid->0 paints nothing
+              — the DECLARED symmetric OUT).
   KF-STACK    stacking per the SHIPPED rule — one relic per defense:
               the second kit is REFUSED "taken" (mission_relics.gd:24),
               NOT replaced; state unmoved, ack delta 0.
   KF-INVALID  unknown kit uid -> refused "relic", state unmoved, ack 0.
   KF-UNASSIGN ok -> everything reverts (relic_uid 0, bonuses gone,
               hp_max back to the bare tier row, mirror 0, pool intact).
-  KF-ACK      ZERO save writes across the whole matrix (the boot ack
-              3 = set_deck + 2 bank_add, the shipped C13 mutators the
-              probe seeded with — P1 pins the same ack semantics).
+  KF-ACK      ZERO save writes across the whole matrix (boot ack 3 =
+              set_deck + 2 bank_add, the shipped C13 seed writes).
+  structural  dead-shape detector (the pass call is ONE one-tab line
+              in fx_step; behind any guard it ships dead) + zero-write/
+              cap-door source truth (no mutator, no injected write,
+              ONE _spawn_spark site) + the UNMOVED _PRESENT_BAN leg.
 
 F3 doctrine honored: NO duplicate legs — phase/uid refusals and the
-same-relic DUP are already pinned by test_relic_negatives.py; this file
-adds the presentation dimension, the different-kit STACK and the
-INVALID-kit-id gap only. PLANTED-RED x1: the :24 taken-guard is broken
-by scratch line-sed (guard -> false) -> KF-STACK goes RED (second kit
-ACCEPTED) -> same-sed revert, byte-verified (git diff vs HEAD EMPTY +
-sha256) -> green re-run; transcripts in .audits/20261031-1830-v14-plan/
-P7-wave.log.
+same-relic DUP are already pinned by test_relic_negatives.py; this
+file adds the presentation dimension, the CAP shape, the different-
+kit STACK and the INVALID-kit-id gap only. PLANTED-REDs (transcripts
++ byte-verified reverts in .audits/20261101-0843-v15-plan/WK-wave.
+log): (1) the W-K pass call deleted from fx_step -> KF-PRESENT RED;
+(2) the pass behind a drops-guard (dead-shape, DA P1-B) -> KF-PRESENT
+RED + structural detector RED. The v1.4 :24 taken-guard plant stands
+in P7-wave.log as this file's first planted-red history.
 """
 
 import json
+import re
+import sys
 from pathlib import Path
 
 import conftest
+
+sys.path.insert(0, conftest.repo_path("tools"))
+import check_hygiene as hyg  # noqa: E402  (reuse: blank_code for greps)
+
+# Mutator/write shapes LOCAL per the repo rule (test_wave_telegraph
+# home; no cross-test imports in tests/).
+MUT_RE = re.compile(r"\b(?:add_|spend_|consume_|set_|equip|place_)\w*\s*\(")
+PLUMBING = {"add_child"}
+WRITE_RE = re.compile(
+    r"\b(?:m|mission|state|game_state)\.[A-Za-z_]\w*"
+    r"(?:\[[^\]]*\])?\s*(?:[+\-*/]?=[^=])")
 
 GODOT = Path(conftest.repo_path("godot"))
 _ITEMS = json.loads((GODOT / "data" / "items.json").read_text(
@@ -229,26 +248,35 @@ func _init() -> void:
 		_fail("relic_uid not on the row")
 		return
 
-	# --- KF-PRESENT: presentation effect through the hand-driven pump. ---
+	# --- KF-PRESENT (v1.5 W-K re-pin): live 0 at assign (observer is
+	# the painter); ONE fx_step observes the crossing; pump ends it. ---
+	fx.fx_step(1.0 / 60.0)
+	var kit_live := int(fx._fx.size())
+	var kit_sc0 := float(((fx._fx[0]["node"]) as Sprite3D).scale.x) if kit_live == 1 else 0.0
+	fx.fx_step(1.0 / 60.0)
+	var kit_sc1 := float(((fx._fx[0]["node"]) as Sprite3D).scale.x) if int(fx._fx.size()) >= 1 else 0.0
+	var rtex := 1 if kit_live == 1 and String(((fx._fx[0]["node"]) as Sprite3D).texture.resource_path) == "" else 0
 	_pump(fx)
 	var live_pump := int(fx._fx.size())
 	var swapped := 0 if int(obj.node.get_instance_id()) == iid0 else 1
 	var parented := 1 if (obj.node as Node).get_parent() != null else 0
-	print("KF-PRESENT live_after_assign=%d live_after_pump=%d swapped=%d parented=%d sparks_delta=%d ack=%d" % [
-			live_assign, live_pump, swapped, parented,
+	print("KF-PRESENT live_after_assign=%d kit_live=%d live_after_pump=%d swapped=%d parented=%d sparks_delta=%d ack=%d" % [
+			live_assign, kit_live, live_pump, swapped, parented,
 			int(fx.spawned_sparks) - spark0, int(state.saved_ack)])
-	# FINDING row (V12-PLAN:297 debt): the promised kit presentation is
-	# NOT implemented in shipped code — this row is the measured proof,
-	# expected VERBATIM by the test (a future implementation MUST trip
-	# it and re-pin, it cannot false-green).
-	print("KF-FINDING kit_presentation=NONE kit_fx_delta=%d kit_live_after_pump=%d kit_node_changed=%d" % [
-			live_assign, live_pump, swapped])
+	# FINDING row RE-DECLARED at v1.5 W-K (was =NONE at v1.4): the
+	# shipped shape paints the spark sheet AT the crossing —
+	# VERBATIM-pinned, a future change must re-pin or false-green.
+	print("KF-FINDING kit_presentation=fx_spark_hit kit_fx_live=%d kit_fx_after_pump=%d kit_sparks_delta=%d kit_node_changed=%d kit_rtex=%d kit_tw=%d" % [
+			kit_live, live_pump,
+			int(fx.spawned_sparks) - spark0, swapped, rtex, int(kit_sc1 != kit_sc0)])
 
 	# --- KF-CONTROL: same instrument, SAME pump, on a known shipped
-	# effect: begin (live 1) -> observable end (live 0). Non-vacuity. ---
+	# effect: begin (live 1) -> observable end (live 0). Spark baseline
+	# RE-ANCHORED here: the kit spark rides the shared counter (W-K). ---
+	var spark_c := int(fx.spawned_sparks)
 	fx._spawn_spark(obj.pos)
 	var live_mid := int(fx._fx.size())
-	var spark1 := int(fx.spawned_sparks) - spark0
+	var spark1 := int(fx.spawned_sparks) - spark_c
 	if live_mid != 1 or spark1 != 1:
 		_fail("control effect did not begin (live=%d sparks=%d)" % [live_mid, spark1])
 		return
@@ -257,6 +285,39 @@ func _init() -> void:
 			live_mid, int(fx._fx.size()), spark1])
 	if int(fx._fx.size()) != 0:
 		_fail("control effect never reached its observable end")
+		return
+
+	# --- KF-CAP (v1.5 W-K, plan §3 MAX_FX leg): PLANT the cap with the
+	# shipped spawn site, DERIVED from behavior (fill 512 -> plateau;
+	# growth stopping IS the drop-past-cap read), then CROSS a fresh kit
+	# crossing while FULL: dropped, never queued (symmetric OUT too). ---
+	var una0 := int(fx.spawned_sparks)
+	if not bool(m.unassign_relic(uid).get("ok", false)):
+		_fail("cap-leg unassign refused")
+		return
+	fx.fx_step(1.0 / 60.0)
+	var una_delta := int(fx.spawned_sparks) - una0
+	var cap0 := int(fx.spawned_sparks)
+	for _i: int in range(512):
+		fx._spawn_spark(obj.pos)
+	var cap := int(fx.spawned_sparks) - cap0
+	var filled := int(fx._fx.size())
+	var ares2: Dictionary = m.assign_relic(uid, poolA)
+	fx.fx_step(1.0 / 60.0)
+	var kit_at_cap := int(fx.spawned_sparks) - cap0 - cap
+	_pump(fx)
+	print("KF-CAP cap=%d filled=%d una_sparks=%d kit_at_cap=%d live_end=%d ok=%s" % [
+			cap, filled, una_delta, kit_at_cap, int(fx._fx.size()),
+			str(bool(ares2.get("ok", false)))])
+	if not bool(ares2.get("ok", false)):
+		_fail("cap-leg re-assign refused " + str(ares2))
+		return
+	if cap == 0 or cap >= 512 or filled != cap:
+		_fail("cap plant not observed (cap=%d filled=%d)" % [cap, filled])
+		return
+	if una_delta != 0 or kit_at_cap != 0 or int(fx._fx.size()) != 0:
+		_fail("cap/symmetric leg broken (una=%d kit=%d end=%d)" % [
+				una_delta, kit_at_cap, int(fx._fx.size())])
 		return
 
 	# --- KF-STACK: second kit on an OCCUPIED row (shipped rule:
@@ -377,21 +438,25 @@ def test_kit_fx_matrix(tmp_path, class_cache):
     assert int(asg["mirror"]) == 1 and int(asg["pool"]) == 2, asg
     assert int(asg["ack"]) == int(boot["ack"]), asg
 
-    # THE FINDING leg (pinned to ACTUAL shipped behavior): the kit
-    # assign spawns NO presentation effect and the hand-driven pump
-    # ends nothing because nothing began; the world node is untouched.
+    # The v1.5 W-K measured shape (re-pin transcripts in WK-wave.log):
+    # nothing paints at assign (observer is the painter); ONE fx_step
+    # observes the crossing, the pump ends it. kit_rtex=1 pins the
+    # runtime-texture rebuild; kit_tw=1 the spark's self-driven pulse.
     pres = _only(out, "KF-PRESENT")
     assert pres["live_after_assign"] == "0", \
-        "a kit presentation effect spawned — re-pin the KF-FINDING row: %s" % pres
+        "kit fx painted synchronously — the observer is the painter: %s" % pres
+    assert pres["kit_live"] == "1", \
+        "kit crossing spawned no presentation (W-K shipped shape): %s" % pres
     assert pres["live_after_pump"] == "0", pres
     assert pres["swapped"] == "0" and pres["parented"] == "1", pres
-    assert pres["sparks_delta"] == "0", pres
+    assert pres["sparks_delta"] == "1", pres
     assert int(pres["ack"]) == int(boot["ack"]), pres
     finding = [ln for ln in out.splitlines()
                if ln.startswith("KF-FINDING ")]
-    assert finding == ["KF-FINDING kit_presentation=NONE "
-                       "kit_fx_delta=0 kit_live_after_pump=0 "
-                       "kit_node_changed=0"], \
+    assert finding == ["KF-FINDING kit_presentation=fx_spark_hit "
+                       "kit_fx_live=1 kit_fx_after_pump=0 "
+                       "kit_sparks_delta=1 kit_node_changed=0 "
+                       "kit_rtex=1 kit_tw=1"], \
         "FINDING row drifted from the measured shipped shape: %s" % finding
 
     # Non-vacuity: the SAME read + pump observe a REAL shipped effect
@@ -401,6 +466,18 @@ def test_kit_fx_matrix(tmp_path, class_cache):
     assert ctl["live_mid"] == "1" and ctl["live_end"] == "0" \
         and ctl["spawned_delta"] == "1", \
         "instrument failed to observe a shipped effect: %s" % ctl
+
+    # W-K MAX_FX + symmetric-OUT legs (cap DERIVED from behavior in
+    # the probe — no literal; drop-past-cap pinned by filled == cap).
+    cp = _only(out, "KF-CAP")
+    assert cp["ok"] == "true" and 0 < int(cp["cap"]) < 512 \
+        and cp["filled"] == cp["cap"], \
+        "cap plant did not observe drop-past-cap: %s" % cp
+    assert cp["una_sparks"] == "0", \
+        "unassign painted fx — symmetric poof is DECLARED OUT: %s" % cp
+    assert cp["kit_at_cap"] == "0", \
+        "kit fx past the cap queued — cap discipline broken: %s" % cp
+    assert cp["live_end"] == "0", cp
 
     # Stacking per the shipped rule (mission_relics.gd:24): REFUSED,
     # not replaced. This pins what IS, honestly (the brief's reading).
@@ -466,6 +543,48 @@ def test_kit_presentation_source_truth():
             for fn in funcs:
                 assert "MISSION_RELICS." in _func_body(text, fn), \
                     "mission.gd %s no longer delegates the crossing" % fn
+
+
+def test_kit_observer_pass_is_unconditional():
+    """Dead-shape detector (plan §3 W-K leg 2, DA P1-B): kit assigns
+    are build-phase-only (mission_relics.gd:16) — ZERO drops those
+    frames — so the pass call must sit at fx_step's TOP LEVEL; behind
+    any guard (or in the guarded bodies) it ships dead."""
+    text = (GODOT / "scripts" / "fx_director.gd").read_text(
+        encoding="utf-8")
+    step = _func_body(text, "fx_step")
+    kit = [ln for ln in step.split("\n") if "_observe_kits(" in ln]
+    assert kit == ["\t_observe_kits(m)"], \
+        "kit pass moved off fx_step's top level — a guarded pass ships " \
+        "dead (kit assigns are build-phase-only, DA P1-B): %r" % kit
+    for guarded in ("_observe_fires", "_observe_enemies"):
+        assert "_observe_kits" not in _func_body(text, guarded), \
+            "kit pass moved into the guarded %s body" % guarded
+    assert "drops" not in _func_body(text, "_observe_kits"), \
+        "kit pass reads the drop map — dead-shape class"
+
+
+def test_kit_observer_zero_writes_and_cap_door_source_truth():
+    """F3 idiom (plan §3 W-K leg 4): the kit pass READS published
+    rows, writes NO injected state (shapes per test_wave_telegraph),
+    and its ONLY spawn path is the shipped _spawn_spark site — the
+    cap lives in _spawn_fx below it, never bypassed."""
+    text = (GODOT / "scripts" / "fx_director.gd").read_text(
+        encoding="utf-8")
+    code = hyg.blank_code(_func_body(text, "_observe_kits"), "gd")
+    muts = [mm.group(0) for mm in MUT_RE.finditer(code)
+            if mm.group(0).rstrip("(").strip() not in PLUMBING]
+    assert muts == [], "kit pass calls a shipped mutator: %s" % muts
+    writes = [mm.group(0) for mm in WRITE_RE.finditer(code)]
+    assert writes == [], "kit pass writes injected state: %s" % writes
+    for tok in ("assign_relic", "clear_relic", "bank_add", "add_child",
+                "make_sprite", "SPRITE_BANK", "emit"):
+        assert tok not in code, \
+            "kit pass bypasses the observer shape (%r)" % tok
+    assert code.count("_spawn_spark(") == 1, \
+        "kit spark must ride the ONE shipped sheet spawn site"
+    assert "_spawn_fx" not in code and "spawned_" not in code, \
+        "kit pass bypasses _spawn_spark or counts on its own"
 
 
 def test_kit_data_rows():

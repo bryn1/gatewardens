@@ -1,0 +1,84 @@
+F.F..                                                                    [100%]
+=================================== FAILURES ===================================
+______________________________ test_kit_fx_matrix ______________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-4909/test_kit_fx_matrix0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_kit_fx_matrix(tmp_path, class_cache):
+        """One engine probe: the full KF-* matrix (rows + asserts below)."""
+        proc = _run_probe(tmp_path, class_cache)
+        assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+        assert proc.stderr == "", \
+            "-s probe stderr must be EMPTY (true parse signal):\n%s" % proc.stderr
+        out = proc.stdout
+        assert "KF-FAIL" not in out, out
+        assert out.rstrip().endswith("KF-OK"), \
+            "KF-OK must be the LAST row (a skipped leg cannot reach it)"
+    
+        boot = _only(out, "KF-BOOT")
+        assert boot["kits"] == "2" and int(boot["pool"]) == 2, boot
+        assert int(boot["fx"]) == 0 and int(boot["mirror"]) == 0, boot
+        assert int(boot["list"]) == 1, "boot control place did not land: %s" % boot
+        # ack baseline: set_deck + 2 bank_add are the shipped C13 writes the
+        # probe seeded with (P1 pins the same semantics at ack0==1 there).
+        assert int(boot["ack"]) == 3, boot
+        tier_hp = _row_tier_hp(boot["tower"])
+        assert float(boot["tier_hp"]) == tier_hp, \
+            "tier hp %s != towers.json tiers[0].hp %s for %s" % (
+                boot["tier_hp"], tier_hp, boot["tower"])
+    
+        asg = _only(out, "KF-ASSIGN")
+        assert asg["ok"] == "true" and int(asg["relic"]) > 0, asg
+        assert asg["bonuses"] == "hp:%.3f" % KIT_SCRIPT_VALUE, \
+            "kit bonus is not the items.json primary add: %s" % asg
+        assert abs(float(asg["hp_max"]) - (tier_hp + KIT_SCRIPT_VALUE)) \
+            < 1e-6, "hp_max did not ride the data add: %s (%s)" % (asg, tier_hp)
+        # The declared clamp reading: a full-hp row is NOT healed by a kit.
+        assert float(asg["hp"]) == tier_hp, asg
+        assert int(asg["mirror"]) == 1 and int(asg["pool"]) == 2, asg
+        assert int(asg["ack"]) == int(boot["ack"]), asg
+    
+        # The v1.5 W-K measured shape (re-pin proof transcripts stand in
+        # WK-wave.log): nothing paints synchronously at assign — the
+        # observer is the painter; ONE fx_step observes the crossing
+        # (kit live 1); the pump ends it; world node untouched.
+        pres = _only(out, "KF-PRESENT")
+        assert pres["live_after_assign"] == "0", \
+            "kit fx painted synchronously — the observer is the painter: %s" % pres
+>       assert pres["kit_live"] == "1", \
+            "kit crossing spawned no presentation (W-K shipped shape): %s" % pres
+E       AssertionError: kit crossing spawned no presentation (W-K shipped shape): {'live_after_assign': '0', 'kit_live': '0', 'live_after_pump': '0', 'swapped': '0', 'parented': '1', 'sparks_delta': '0', 'ack': '3'}
+E       assert '0' == '1'
+E         
+E         - 1
+E         + 0
+
+tests/test_kit_fx.py:447: AssertionError
+___________________ test_kit_observer_pass_is_unconditional ____________________
+
+    def test_kit_observer_pass_is_unconditional():
+        """Dead-shape detector (plan §3 W-K leg 2, DA P1-B): kit assigns
+        are build-phase-only (mission_relics.gd:16) — ZERO drops those
+        frames — so the pass call must sit at fx_step's TOP LEVEL; behind
+        any guard (or in the guarded bodies) it ships dead."""
+        text = (GODOT / "scripts" / "fx_director.gd").read_text(
+            encoding="utf-8")
+        step = _func_body(text, "fx_step")
+        kit = [ln for ln in step.split("\n") if "_observe_kits(" in ln]
+>       assert kit == ["\t_observe_kits(m)"], \
+            "kit pass moved off fx_step's top level — a guarded pass ships " \
+            "dead (kit assigns are build-phase-only, DA P1-B): %r" % kit
+E       AssertionError: kit pass moved off fx_step's top level — a guarded pass ships dead (kit assigns are build-phase-only, DA P1-B): []
+E       assert [] == ['\t_observe_kits(m)']
+E         
+E         Right contains one more item: '\t_observe_kits(m)'
+E         Use -v to get more diff
+
+tests/test_kit_fx.py:555: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_kit_fx.py::test_kit_fx_matrix - AssertionError: kit crossin...
+FAILED tests/test_kit_fx.py::test_kit_observer_pass_is_unconditional - Assert...
+2 failed, 3 passed in 5.61s

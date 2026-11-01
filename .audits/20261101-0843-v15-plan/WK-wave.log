@@ -1,0 +1,132 @@
+WK-wave.log — [type:code] MC 11876 — v1.5 W-K kit-crossing presentation (milestone HEART)
+DATE: 2026-11-01 (UTC)  BASE: 7847351 (V15-PLAN-c2 commit)  BRANCH: card/11876
+SPEC: .audits/20261101-0843-v15-plan/V15-PLAN-c2.md §3 W-K  CODER: code subagent (11876)
+
+== WHAT SHIPS ==
+SHIP-1 UNCONDITIONAL kit pass: fx_step top level calls _observe_kits(m) — never behind
+  the drops-guard (DA P1-B, plan §3): build-phase first-sight of a published defense row
+  whose relic_uid crossed 0->uid spawns exactly ONE spark via the ONE shipped spawn site
+  _spawn_spark (fx_spark_hit sheet). Unassign paints nothing (symmetric-out DECLARED,
+  pinned KF-CAP una_sparks=0).
+SHIP-2 runtime texture hardening (_spawn_fx): the bank sheet is rebuilt ONCE per fx_id as
+  a runtime ImageTexture from the DECOMPRESSED decoded image (desktop decompress is a
+  no-op). Engine-pinned kit_rtex=1. Reason: SERVE LEG found the web export ships fx sheets
+  as empty renderer textures — see SERVE-LEG FINDING (hardening for the asset-side fix;
+  the web dark-sprite defect itself is NOT fixed in this card's files).
+SHIP-3 kit spark self-twinkle (_advance_fx spark branch): the sheet's intended pulsing
+  look, engine-pinned kit_tw=1. It is the motion fx pixels will ride once the asset-side
+  web-export fix lands; it is NOT claimed to paint on the current web build (see FINDING).
+ZERO mission.gd / mission.tscn / sim / sprite_bank / panel lines (git diff --name-only
+  HEAD -- godot/scenes godot/scripts/mission.gd godot/data godot/scripts/sprite_bank.gd
+  godot/scripts/defense_obj.gd = EMPTY; whole-tree diff = exactly
+  godot/scripts/fx_director.gd + tests/test_kit_fx.py (+ LEDGER.md + this log)).
+
+== BASE (measured this session at BASE before writes) ==
+BASE-SUITE: python3 -m pytest tests -q @7847351 -> 324 passed, rc0
+BASE-HYGIENE: tools/check_hygiene.py -> 0 hits (24 soft notes, all pre-existing)
+BASE-GOVERNED: GOVERNED_LITERALS = 17 entries (fx_director NOT governed; unchanged)
+BASE-FIXTURES: godot/tests/fixtures = mission_gatefall_hard.jsonl + mission_gatefall_normal
+  .jsonl — untouched (git diff --name-only HEAD -- godot/tests/fixtures = EMPTY)
+BASE-LOC: godot/scripts/fx_director.gd = 261  tests/test_kit_fx.py = 481
+
+== THE 5 HARD ACCEPTANCE LEGS (engine, tests/test_kit_fx.py — plan §3 W-K) ==
+LEG-1 RED-before-GREEN: pin-red transcripts beside this log (wk-red-straightrun.txt,
+  wk-red-pinpoint.py/.txt — v1.4-shape straight-run red; the BASE FINDING row's
+  kit_presentation=NONE vacuous reading declared) then re-pin green (wk-repin-green.txt).
+  Shipped-shape pins re-measured, not assumed.
+LEG-2 DEAD-SHAPE: observer tracks but never spawns (plant `if false and now != 0:`) ->
+  1 failed, 4 passed (wk-red-deadshape2.txt; planted bytes planted-deadshape2.gd; earlier
+  base run wk-red-deadshape.txt 2 failed rc1) -> REVERT_VERIFIED -> green 5.
+LEG-3 KF-CAP: cap plant via the shipped spawn site, DERIVED from behavior (fill -> plateau;
+  filled == cap pins drop-past-cap; no literal), fresh kit crossing while FULL dropped
+  never queued, symmetric-out una_sparks=0. GREEN inside the 326 rc0 run; the leg carries
+  its own _fail rows (gate can fail: rtex/twinkle/cap plants red this session).
+LEG-4 ZERO-WRITE: whole KF matrix ack delta = 0 (KF-ACK) + MUT_RE zero-write gate GREEN.
+LEG-5 BAN: _observe_kits/_spawn_spark bodies free of banned tokens (assign_relic,
+  clear_relic, bank_add, add_child, make_sprite, SPRITE_BANK, emit) — GREEN; observer
+  reads obj.relic_uid only; spawn goes through _spawn_fx (the cap door) only.
+PLANTED-REDs ON FINAL TREE (each: plant -> red -> byte-verified revert -> green):
+  deadshape2 1 failed 4 passed (REVERT_VERIFIED deadshape2)
+  passdel (_observe_kits call deleted) 2 failed 3 passed (REVERT_VERIFIED passdel)
+  rtex2  (texture-rebuild branch dead) 1 failed 4 passed — kit_rtex pin red
+         (REVERT_VERIFIED rtex2)
+  twinkle (spark branch dead) 1 failed 4 passed — kit_tw pin red (REVERT_VERIFIED;
+         wk-red-matrix.txt)
+
+== FINAL-TREE GATES ==
+FINAL-SUITE: python3 -m pytest tests -q -> 326 passed in 193.84s rc0
+FINAL-DELTA row (honest): 324 -> 326 = test_kit_fx.py 3 tests -> 5 (KF-CAP + plan §3 legs;
+  no other file adds tests).
+FINAL-HYGIENE: check_hygiene 0 hits (24 notes unchanged). Gate metrics: fx_director.gd
+  261 -> 323 (<=400); test_kit_fx.py 481 -> 600 (cap: fails only PAST 600).
+FINAL-GOVERNED: 17 (unchanged). FINAL-FIXTURES: EMPTY diff (the 2 jsonl untouched).
+FINAL-PROTECTED: mission/panel/data/sim/sprite_bank/tscn diff EMPTY.
+SCRATCH POLICY: every instrument (main.gd boot prints, freeze/slowmo/hold scratch, twin/
+  reparent/nudge experiments) lived uncommitted and was stripped before commit; final
+  fx_director.gd sha256 cf3482a96cb9c1ff… (.tmp/wk-sha-before.txt) byte-verified against
+  .tmp/fx_director.preplant.gd; main.gd git-checkout + sha verify (57b8aef…, wk-sha-main
+  .txt). REVERT_FX_OK / REVERT_MAIN_OK / REVERT_VERIFIED rows in the transcripts.
+
+== SERVED-BROWSER LEG (my acceptance, loopback 127.0.0.1) ==
+ROUTE: python3 -m http.server 54803 --bind 127.0.0.1 -d static (final clean export; killed
+  after evidence). Browser: pinned playwright-core chromium (headless, swiftshader).
+SEED (harness-side, DECLARED — product bytes unchanged): a shipped-format save produced by
+  the SHIPPED C13 mutators (.tmp evidence: wk-seed-save.gd, ack=3 bank=2, kit rows orb_of_
+  the_deep hp+3 / mark_of_fervor dmg+3, sidecar .bin.json) is PUT into the IDBFS store with
+  engine-conformant records (db "/userfs" v21, store FILE_DATA; file record {timestamp:Date,
+  mode:33188, contents:Uint8Array} at /userfs/godot/app_userdata/Gatewardens/gatewardens.cfg;
+  parent-dir records mode 16877 — the timestamp property is REQUIRED (indexed)). Injection:
+  in-flight HTML patch (playwright route intercept; content-length dropped) appending a seed
+  block after `const engine = new Engine(GODOT_CONFIG);`, chaining engine.startGame behind
+  the IDB put; engine boot syncfs(true) loads the save. Readback BANK 2 (console rows in
+  wk-kit-final.txt).
+STATE MARKERS (verified BEFORE pixel census): window.__gwSnapshot ->
+  {"relics_assigned":1,"bank_count":2,"phase_kind":"build"} at assign; ERRS []; panel marker
+  by DIRECT image inspection (honest: not Lane-E vision): k4-panel.png Assign dimmed +
+  Unassign bright vs control k2-control.png.
+CENSUS: wk-kit-census-11876.py classes orange(r>200,90<g<190,b<r-110)/core; control clip
+  8371/13; served frames move only on repaint sources (see FINDING-d).
+COMBAT CONTROL (same build, no seed): wc-08.png — runtime ENEMIES + runtime damage NUMBERS +
+  wave banner paint; ERRS [] (build boots and plays clean).
+SMOKE (final clean export, no seed, no wrapper): 15 s boot, wk-smoke-hub.png + wk-smoke-
+  mission.png mount, SMOKE_ERRS [].
+
+== SERVE-LEG FINDING (P1 discovered BY this card — product web-export defect, OUTSIDE this
+   card's writable files) ==
+F-1 The kit-crossing spark (fx_spark_hit) — and by mechanism ALL fx sheets — does NOT paint
+  in the exported WEB build. Evidence chain (all served-browser, this session):
+  a) Spark node alive/correct: cls=Sprite3D gpos=(-40,1,0) vis=1 intree=1 life=0.2 parented
+     (engine-leg KF-PRESENT identical on desktop).
+  b) fx_spark_hit's bank texture reports fmt=1 w=0 in the WEB build (empty renderer texture)
+     while tower_ballista_T1 / fx_poof_death report fmt=0 — identical .import params and PNG
+     properties; importer cache deleted + regenerated = byte-identical (content-driven); the
+     raw res:// PNG is NOT in the pck (FileAccess ERR 7) — the .ctex is the only web carrier.
+  c) MATRIX PROOF (wk-final-matrix.png / kb-03-mat.png, same frame): a Sprite3D CREATED with
+     a healthy bank texture at (-36,1,0) PAINTS; the kit spark with the runtime-rebuilt RGBA8
+     texture at (-40,1,0) stays DARK. Runtime paths that stayed dark: swap-after-enter (any
+     texture), rebuilt ImageTexture before enter (get_image+decompress+create_from_image),
+     per-frame texture alternation (enemy-style), scale-twinkle, position drift,
+     no_depth_test, x3 size, reparent to Mission / viewport root. What PAINTS: created-with-
+     bank-texture sprites (runtime-placed towers, runtime-spawned enemies), Label3D numbers.
+  d) Timing: served engine ticks fx_step ~70/s wall (tick transcript n=0..13 in ~0.2 s);
+     Engine.time_scale did NOT scale fx_step deltas; the 0.2 s burst ends between compositor
+     screenshot opportunities (compositor frames arrive only across waits). The earlier
+     "2 fps canvas" theory this session was a SAMPLING ARTIFACT — retracted; honest
+     statement: the sprite never painted in ANY sampled frame, held-open bursts included.
+  e) Product consequence: on WEB the kit-crossing HEART feedback (and every static fx burst)
+     is invisible; desktop unaffected by (b) (different import; desktop pixels not observable
+     on this headless VM — declared). Fix belongs asset/export-side (fx_spark_hit .ctex import
+     / export filters) — outside this card's writable set -> P1 FOLLOW-UP CARD. W-K ships the
+     presentation logic + SHIP-2 hardening + engine-pinned shape; the pixel leg is declared
+     NOT-PAINTED on the served build with matrix proof — this log claims NO spark pixel seen
+     on web.
+DISCLOSED INSTRUMENTS (all scratch, all reverted byte-verified): freeze (time_scale=0 —
+  OBSERVED: a frozen web canvas never uploads new-node renders; superseded), life-hold
+  (_fx[0] life pinned; final matrix run), seed wrapper, main.gd boot diag. Engine-leg KF-*
+  results are instrument-free headless probe runs.
+
+== VERIFY ==
+FINAL-SUITE 326 rc0 / hygiene 0 / governed 17 / fixtures EMPTY / protected EMPTY /
+4 planted-reds red->revert->green on the final tree / served markers + matrix + smoke
+captured / spark-pixel-on-web NOT claimed (P1 finding, evidence attached). The five HARD
+legs (1-5) are engine legs and GREEN on the shipped tree. VERIFY_EXIT=0
