@@ -105,3 +105,65 @@ TEARDOWN: nothing started that outlives this card (no servers, no scratch trees;
 left only its standard __pycache__, untracked). No push; no git config; no spawn.
 
 VERIFY_EXIT=0
+
+== c2 — DA-GATE FIX ROUND (2026-11-01, same card MC 11909) ==
+TREE: /tmp/gw-v15-docs2 @ 29c0272 (main tip — carries my c2-base docs tail 2634b31 + the MC 11911
+fx_director comment de-stale), branch card/11909-c2, author tech-writer (11909) (-c flags only).
+INPUT: /tmp/gw-da-11909/DA-findings.md + DA-verdict.md (verdict FIX, 3 named rows; everything
+else HELD under attack). Scope per parent brief: ~3 reworded RN sentences + LEDGER rows my
+round touches; no churn; NO code file touched (test_v5_fx_baseline.py read-only for the proof).
+
+PER-FINDING BEFORE -> AFTER (each verified against the named artifact THIS session):
+F-1 (P2) RELEASE-NOTES-v1.5.md kit-re-baseline bullet:
+  BEFORE: "The wrapper test now pins ALL THREE baseline transcripts (2026-10-27 green,
+    2026-11-01 measured-red, W-G green) with sha256 — a future overwrite goes RED mechanically"
+  ARTIFACT: tests/test_v5_fx_baseline.py:90-97 — BASELINE defaults to the W-G green file (row/
+    counter pins, legs 1-2); OLD_SHA256 d65d6b59… pins ONLY the 2026-10-27 file (leg 3); the
+    2026-11-01 red transcript is docstring prose, read by no assert. ARCHITECTURE §kits + the
+    tests-list row already state the narrower truth (untouched).
+  AFTER: "The wrapper test row-pins the ACTIVE green baseline's machine rows and counters (the
+    W-G green transcript) and sha256-pins the 2026-10-27 file — a quiet overwrite of THAT goes
+    RED mechanically — while the 2026-11-01 measured-red transcript stands archived beside them
+    by history, not by pin (tests/test_v5_fx_baseline.py); the green re-pin showed the old rows
+    REDDENING first."
+  COMPANION CALLER (all-callers rule): README.md status row carried the same false clause
+    "wrapper pins all three baseline transcripts by sha256" -> "wrapper row-pins the active green
+    baseline and sha256-pins the 2026-10-27 file". (Not DA-named; same claim — fixing one side of
+    a live contradiction only was not an option.)
+F-2 (P3) RELEASE-NOTES-v1.5.md test-hardening bullet:
+  BEFORE: "the 13 surviving mutants at that branch die at the next sweep."
+  ARTIFACT: WT1-wave.log §9 "The kill itself is the NEXT mutmut sweep's job" (sweep UNRUN; P1/P2/
+    P3 transcripts are kill-SIMULATIONS) + P3-wave.log §5a line 101: send_error_json__mutmut_5
+    ("utf-8"->"UTF-8") = HARMLESS-EQ, no test can kill it.
+  AFTER: "the legs KILL-SIMULATE that branch via planted reds — the sweep itself has NOT run:
+    the next mutmut sweep is expected to kill 12 of the 13 carried survivors, the 13th (a
+    `utf-8`->`UTF-8` codec mutant) being a declared harmless equivalence no test can kill
+    (WT1-wave.log §9 + P3-wave.log §5a)."
+  COMPANION ROW: LEDGER.md W-T1 row keeps its dated words "die at the next sweep" per replace-
+    not-delete and carries an inline [c2 note …] annotation (forward claim; 12-of-13 expected;
+    EQ survivor cannot die).
+F-3 (P3) RELEASE-NOTES-v1.5.md kit-bullet served-proof tail:
+  BEFORE: "plus a Lane-E vision literal read of the star at the medallion base."
+  ARTIFACT: WK2-wave.log:47-49 literal = "Directly beneath the medallion, on the green platform,
+    there are a few small reddish-pink pixel clusters (short diagonal strokes)" — no star in the
+    literal; "the star shape is small at this camera distance".
+  AFTER: 'plus a Lane-E literal read — "a few small reddish-pink pixel clusters (short diagonal
+    strokes)" beneath the medallion, quoted verbatim from WK2-wave.log (the star shape itself is
+    small at that camera distance).' (Quote is a verbatim substring of the logged literal; the
+    RN's census rows keep the pixel-PROVEN weight DA confirmed intact.)
+ALSO-TRUE-BY-THIS-BASE (round touched it, so it is closed here, not silently): DOCS-wave.log R-1
+  + LEDGER docs-row routing claim ("fx_director.gd:41 STILL states the retired starvation
+  direction … routed to a follow-up") — CLOSED by MC 11911 at 29c0272 (comment-only header
+  rewrite; verified at this tree: header now states the measured direction, grep 'starved by
+  tracers' = 0 repo-wide); LEDGER docs-row carries the [CLOSED c2 …] annotation; the c1 log
+  section stands as dated history, unedited.
+
+GATES AT THE c2 TREE (all this session): fresh clean export `bash tools/export_web.sh` rc=0 into
+  the worktree (static/ was absent — the gitignored export is what makes the 345 vs 340 shape, so
+  it was REBUILT, not copied); python3 -m pytest tests -q -> 345 passed in 193.67s rc=0 (>=345
+  MET); check_hygiene 0 hit(s); tests/fixtures/ diff EMPTY; test_served leg count 5 (the +5
+  reconciliation re-verified); porcelain = README.md + RELEASE-NOTES-v1.5.md + LEDGER.md (+ this
+  log at commit time) — ARCHITECTURE NOT touched (its rows were the TRUE side of F-1); no code
+  file touched; 14-token grep-to-zero instrument re-run at this tree: ALL 14 at 0 live hits.
+  No push; no git config; no spawn (leaf).
+VERIFY_EXIT=0

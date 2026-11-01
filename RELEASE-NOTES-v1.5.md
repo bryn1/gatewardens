@@ -33,7 +33,9 @@ unchanged, 0 hits at this tree).
   proof: state marker first (`relics_assigned=1` before any pixel), then the burst-window census —
   **41 of 48 frames carry tower-window deltas, peak 88 px, a 5-frame pulse 88/76/67/84/81 = the
   shipped twinkle visibly pulsing**, control-vs-control 0 px, the pre-fix same window 0–4 px (the
-  census can go red), plus a Lane-E vision literal read of the star at the medallion base. —
+  census can go red), plus a Lane-E literal read — "a few small reddish-pink pixel clusters
+  (short diagonal strokes)" beneath the medallion, quoted verbatim from WK2-wave.log (the star
+  shape itself is small at that camera distance). —
   WK-wave.log + WK2-wave.log
 - **…and the web-fx P1 that sat UNDER it is fixed — root-caused INVERTED** (MC 11894). The v1.4-era
   reading "fx sheets ship as empty web textures" was wrong: the EMPTY texture was produced by THIS
@@ -64,16 +66,20 @@ unchanged, 0 hits at this tree).
   2026-10-27 green baseline — the baseline was real, the harness is honest). The kit's own scenario
   geometry was then fixed (a probe hailspire stood ~1 m outside its own range of the kill zone —
   no allocation policy could have greened it), and the kit runs GREEN: ART n=4 paths=pinned,
-  CAP/SETTLE/TEARDOWN/OK print, rc=0, stderr EMPTY, byte-stable. The wrapper test now pins ALL
-  THREE baseline transcripts (2026-10-27 green, 2026-11-01 measured-red, W-G green) with sha256 —
-  a future overwrite goes RED mechanically; the green re-pin showed the old rows REDDENING first.
+  CAP/SETTLE/TEARDOWN/OK print, rc=0, stderr EMPTY, byte-stable. The wrapper test row-pins the
+  ACTIVE green baseline's machine rows and counters (the W-G green transcript) and sha256-pins
+  the 2026-10-27 file — a quiet overwrite of THAT goes RED mechanically — while the 2026-11-01
+  measured-red transcript stands archived beside them by history, not by pin
+  (tests/test_v5_fx_baseline.py); the green re-pin showed the old rows REDDENING first.
   — WR-wave.log (VERDICT FAIL-as-measured) + WG-wave.log
 - **The verification layer deepened where v1.4's mutation pass proved it thin** (MC 11878 +
   MC 11879). `static_app` — previously reached by the suite only via subprocess — now has 8
   IN-PROCESS legs (byte-exact serves, the exact C10 refusal bodies, the chmod-000 OSError branch
   with an IN-PROBE guard that fails LOUD under a privileged uid, and the exact lstrip-boundary
-  mutant killer via an UPPERCASE-X name); the 13 surviving mutants at that branch die at the next
-  sweep. The hygiene gate's blank_code TRUE residual (the css family + the js block-comment
+  mutant killer via an UPPERCASE-X name); the legs KILL-SIMULATE that branch via planted reds —
+  the sweep itself has NOT run: the next mutmut sweep is expected to kill 12 of the 13 carried
+  survivors, the 13th (a `utf-8`→`UTF-8` codec mutant) being a declared harmless equivalence no
+  test can kill (WT1-wave.log §9 + P3-wave.log §5a). The hygiene gate's blank_code TRUE residual (the css family + the js block-comment
   branch) got two MUST-FIRE controls appended AT the existing positive-controls home — and both
   named P3 survivors die PRECISELY (1F/31P, target leg named) through the file's own mutant seam.
   — WT1-wave.log + WT2-wave.log
