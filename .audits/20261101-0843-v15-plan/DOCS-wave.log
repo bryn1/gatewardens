@@ -1,0 +1,107 @@
+# DOCS-wave.log — [type:tech-writer] MC 11909 — v1.5 docs tail (DOCS-ONLY)
+DATE: 2026-11-01 (UTC)  TREE: /tmp/gw-v15-docs @ 8d30532 (v1.5 tip), branch card/11909
+AUTHOR: commit author "tech-writer (11909)" tech-writer@agent-town.local (-c flags only; git
+config NEVER touched). No push. No spawn (leaf).
+BRIEF: /tmp/gw-briefs/v15-docs.md (binding) — read first, with V15-PLAN-c2.md and all nine wave
+logs (WK, WK2, WQ + §SERVED-APPEND, WT1, WT2, WR, WF, WG + the plan card row), LEDGER tail,
+docs/ARCHITECTURE.md, README.md, RELEASE_NOTES.md v1.4 section (template).
+WRITABLE honored: RELEASE-NOTES-v1.5.md (NEW), README.md, docs/ARCHITECTURE.md (stale rows only),
+LEDGER.md (sweep rows), this log. godot/ sim/ tests/ static/ touched ZERO (porcelain row below).
+
+== DELIVERABLES ==
+D-1 RELEASE-NOTES-v1.5.md — the committed release-notes BODY per the GitHub-Release doctrine:
+    what shipped (every bullet cited to its wave LOG, not to a summary): kit-crossing spark
+    engine+web-pixel-proven (WK+WK2, the INVERTED root cause told plainly), rarity colors as DATA
+    (W-Q + §SERVED-APPEND six-chip census), fires fairness (WF), the honest re-baseline
+    FAIL-as-measured + geometry GREEN (WR+WG), static_app + hygiene test hardening (WT1+WT2),
+    served harnesses committed. Known limits + carry-forward retirements. DEFER(6)/REJECT(1)/
+    OWNER-DECISION(1→DEFER) end-state rows per V15-PLAN-c2 §2/§6.
+D-2 README.md status AT v1.5 — the v1.4 row retired inline (replace-not-delete is release-notes
+    law; the README carries ONE current status row, the v1.4 wording moved to history by the
+    LEDGER + RN trail, the stale 324/319 counts retired inline -> 345/340).
+D-3 docs/ARCHITECTURE.md — SIX rows re-truthed, each ONLY where a grep measured the row stale at
+    this tree (row -> proof):
+      rarity.json schema row    -> file has the colors key (cat); row listed five keys, missed it
+      scripts/fx_director.gd row-> fx_director.gd ships _observe_kits (5 hits) + _fires_cur; the
+                                   module row enumerated FIRE/DAMAGE/DESPAWN only + predates WK2
+      scripts/hud.gd row        -> hud.gd:198/:266 toast_modulate ships; row said bars+toast plain
+      tests-list row            -> claimed "KF-FINDING kit_presentation=NONE zero" as CURRENT
+                                   (test_kit_fx.py:269 now emits kit_presentation=fx_spark_hit);
+                                   the three v1.5 test files were absent from the list entirely
+      §kits (two quote rows)    -> the retired literals (NONE-shape / starvation-direction) kept
+                                   only as de-quoted annotated descriptions, see grep rows below
+      Scenes doctrine block     -> narrative stopped at v1.4; v1.5 clause added (same shape as the
+                                   v1.4 clause that replaced it there)
+    NOT touched (measured TRUE at this tree): §Verification-kits v5_fx baseline rows (W-R/W-G
+    re-truthed them), camera_zoom row (zero v1.5 camera diff), item_row row (never claimed gray),
+    C-contracts/invariants (v1.5 moved no contract), hygiene/governed rows (17 unchanged).
+D-4 LEDGER.md sweep-true: nine v1.5 card rows VERIFIED present (lines 173-181) + row-vs-log
+    spot-checks (all suite numbers match their logs; tip 345 re-measured here). TWO replace-not-
+    delete annotations: W-K row (the "runtime-texture hardening" + "empty web renderer textures"
+    reading carries a SUPERSEDED-IN-PART clause pointing at WK2 — the row's own words were later
+    inverted at root-cause) and W-Q row (the "bank-rows census BLOCKED" claim gets the served-
+    append CLOSED clause, commit 8d30532). TWO new rows: this docs-tail row + the RELEASE
+    PAPERWORK PLACEHOLDER (explicitly marked to be REPLACED by the orchestrator's release row).
+D-5 this log.
+
+== GREP-TO-ZERO INSTRUMENT (retired/stale claims) ==
+SCOPE READING (declared, not silent): "grep-to-zero" runs over the LIVE docs — README.md,
+docs/ARCHITECTURE.md, RELEASE-NOTES-v1.5.md. LEDGER rows are dated HISTORY (a row is a dated
+claim; the correction is a LATER dated row or an inline annotation — v1.4 P7-vs-W-K precedent);
+RELEASE_NOTES.md sections below v1.5 are FROZEN RELEASE HISTORY (W2 clean-code law: "RELEASE_NOTES
+v1/v1.1 history untouched per law"); both are covered by supersede/carry-forward annotations, the
+same shape as the v1.4 crest-row retirement. Instrument + results (grep -rn, this session):
+  kit_presentation=NONE | presentation is NOT implemented | Kits have no presentation |
+  NOT implemented in shipped code         -> 0 live hits (each)
+  starved by tracers | starved as tracers | can be starved     -> 0 live hits (each)
+  NO colors key                                                  -> 0 live hits
+  324 pytest | 319 clean | 319 from a clean | v1.4 (read-the-state) -> 0 live hits
+  EMPTY web renderer | empty renderer texture                    -> 0 live hits
+RESIDUALS (named, NOT papered over):
+  R-1 godot/scripts/fx_director.gd:41 — the shipped header comment STILL states the retired
+      starvation direction ("on busy waves numbers can be starved by tracers/sparks — declared").
+      godot/ is OUTSIDE this card's writable set (brief NEVER-touch list; WK2/W-F both pinned the
+      region zero-diff). FINDING routed: a P3 comment-only de-stale belongs to a code card —
+      flagged to the orchestrator for follow-up filing. UNVERIFIED-to-fix, VERIFIED-to-exist.
+  R-2 RELEASE_NOTES.md :86/:104/:129 (v1.4 kit-presentation rows) + :281 (v1.2.1 starvation
+      direction) — frozen release history; supersession stands in RELEASE-NOTES-v1.5.md (retire
+      rows above). If the orchestrator wants an in-place pointer annotation, that is a one-line
+      call outside this card's writable set — say so, do not silently edit here.
+  R-3 LEDGER history rows (169, 179) quote the retired shapes INSIDE dated, self-correcting rows —
+      per the scope reading above, kept byte-as-written.
+
+== HONEST READINGS + CORRECTIONS (report-vs-artifact, per the deliverable contract) ==
+X-1 ZOOM: the brief listed "zoom control (D_MIN 56/D_MAX 128/STEP 8)" under v1.5 shipped. The
+    ARTIFACTS disagree: zoom shipped at v1.3 (LEDGER:158-160, RELEASE_NOTES v1.3 section, tag
+    chain), and V15-PLAN §2 names camera_zoom.gd:45-47 as a FROZEN constraint ("untouched"); every
+    v1.5 card's camera diff is EMPTY. The RN says the truth (row stands unchanged; shipped AT v1.3)
+    instead of inheriting the brief's drift. Correcting the report to the artifact, per contract.
+X-2 OD1 ready-up end-state = DEFER via the plan's own default-if-silent (no owner answer exists in
+    any artifact); the RN row says so and quotes the minimal-ruling shape for the record.
+X-3 The brief's "kit ART row greens only with kill-zone geometry" is carried as a KNOWN LIMIT in
+    plain user words (scenario-conditional GREEN), and the starvation-direction correction is its
+    own known-limit row. The headless-7fps pacing facts stay OUT of the RN/README entirely — fleet
+    facts, they live in the wave logs (per brief; say so if asked why).
+X-4 v1.4 RN known-limits that v1.5 RETIRES (kit presentation / starvation direction) are retired
+    via carry-forward rows in the NEW file, because RELEASE_NOTES.md is outside this card's
+    writable set — see R-2. Nothing was left silently contradicted in a LIVE doc.
+
+== GATES AT THE FINAL TREE (all run THIS session, serially; suite on the committed docs tree) ==
+SUITE:  python3 -m pytest tests -q  -> 345 passed in 193.81s rc=0   (>=345 DoD floor MET;
+        with static/ export present; clean-checkout = 340 — tests/test_served.py holds exactly the
+        5 module-skip legs, grep-counted 5, same +5 reconciliation idiom as v1.3/v1.4)
+HYGIENE: python3 tools/check_hygiene.py -> 0 hit(s) rc=0 (24 notes = base set, none new)
+FIXTURES: git diff --stat -- tests/fixtures/ -> EMPTY
+PORCELAIN (pre-commit): M LEDGER.md, M README.md, M docs/ARCHITECTURE.md, ?? RELEASE-NOTES-v1.5.md
+        (+ this log at commit time) — the card's own pathspec ONLY; godot/ sim/ tests/ static/ diff
+        EMPTY (never opened for write).
+FILE HYGIENE: RELEASE-NOTES-v1.5.md 166 ln (<300, one subject, reason line at top); README 11 ln;
+        ARCHITECTURE 406 ln (was 397 — +9 across six in-place rows; length reason already at its
+        top, PINNED-doc keep-true law); LEDGER 183 ln (history file, grows by design).
+DIFF SANITY: git diff --stat (pre-commit) = README.md | LEDGER.md | docs/ARCHITECTURE.md three
+        modified files + the one new RN file; every hunk a docs line.
+
+TEARDOWN: nothing started that outlives this card (no servers, no scratch trees; the suite run
+left only its standard __pycache__, untracked). No push; no git config; no spawn.
+
+VERIFY_EXIT=0
