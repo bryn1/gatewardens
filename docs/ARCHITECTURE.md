@@ -175,6 +175,21 @@ are verified per card + by describe-image reads, not by the number tier.
   WR-wave.log; re-ordering drop priority is a PINNED cost rule (V15-PLAN §2 row 8d — owner/fix
   card, not a test card's call). The zoom wave and every v1.5 W1 card are innocent: the machine
   rows are byte-identical G6-tip vs 0d3c506.
+  W-G RE-TRUTH (MC 11906, 2026-11-01 — the 11897-F1 fix, shipped in its two routed halves, NEITHER
+  touching the pinned cap value or drop-priority): (a) W-F (MC 11901) made the fires leftover
+  allocation FAIR — `_observe_fires` walks `defense_list` from a per-frame rotating cursor, so the
+  last-placed towers lead within n frames (fairness leg in `tests/test_v5_fx_baseline.py`); (b) this
+  card fixed the kit's SCENARIO GEOMETRY — the measured census (WF-wave.log: `h4_tgt=false` at every
+  event frame) showed a hailspire parked BEHIND the run-in kill zone (range 13 vs the entry kills)
+  can never hold a target at a leftover-slot frame, so NO allocation policy could green ART; the
+  first hailspire now stands AT the kill zone (probe setup offs, intent comment updated in place).
+  At the 6012509 tree the kit runs GREEN deterministically (walk breaks at first full ART ≈ frame
+  38; CAP live_max=61 ≤ cap 64; SETTLE/TEARDOWN/OK print; rc=0, stderr EMPTY): the re-pin PROOF
+  (the old RED rows REDDENED on the new green transcript first; row-by-row shift table) stands in
+  WG-wave.log. The NEW green baseline
+  `.audits/20261101-0843-v15-plan/gen/probe-v5-fx-v15-green-wg.log` joins the two older baseline
+  files — ALL THREE stand byte-untouched beside each other (versioned-truth law), and the wrapper's
+  sha256 pin on the 2026-10-27 file keeps that honesty mechanical.
 - Kit PRESENTATION lives at the PYTEST tier, not a manual kit (v1.4 P7, MC 11857):
   `tests/test_kit_fx.py` drives the C11 kit assign/unassign crossing over the real mission
   (shipped mutators + the public `fx_step` pump). Its FINDING row is the documented truth —

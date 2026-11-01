@@ -1,0 +1,12 @@
+        that starts reaching them has changed shape -> RE-PIN, do not
+>       assert rows == V15_ROWS, \
+            "re-declared v15 baseline rows drifted (re-run the kit, archive " \
+E       AssertionError: re-declared v15 baseline rows drifted (re-run the kit, archive the transcript, re-pin together): ['V5FX-MOUNT child=1 after_runner=1', 'V5FX-TRACER n=67 frames=38', 'V5FX-SPARK n=37', 'V5FX-POOF n=1', 'V5FX-ART n=4 paths=pinned', 'V5FX-CAP live_max=61 cap=64', 'V5FX-SETTLE live_max=61 baseline=0 settle_frames=30', 'V5FX-TEARDOWN freed=1 kids_at_free=0', 'V5FX-OK']
+E       assert ['V5FX-MOUNT ... cap=64', ...] == ['V5FX-MOUNT ...roj_ice.png)']
+tests/test_v5_fx_baseline.py:112: AssertionError
+>       assert _num(rows, "V5FX-TRACER", "n") == 362, rows
+E       AssertionError: ['V5FX-MOUNT child=1 after_runner=1', 'V5FX-TRACER n=67 frames=38', 'V5FX-SPARK n=37', 'V5FX-POOF n=1', 'V5FX-ART n=4 paths=pinned', 'V5FX-CAP live_max=61 cap=64', ...]
+E       assert 67 == 362
+tests/test_v5_fx_baseline.py:128: AssertionError
+2 failed, 3 passed in 1.17s
+5 passed in 1.21s

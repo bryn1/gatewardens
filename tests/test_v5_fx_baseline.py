@@ -45,14 +45,34 @@ this wrapper pins their re-declared transcript. Doctored-COPY
 planted-reds run the legs against tmp copies (GW_V5FX_BASELINE, the
 GW_GODOT env-override precedent): transcripts in WR-wave.log.
 
-Legs: 1 machine-row pins vs the re-declared file (markers, FAIL row,
-NO V5FX-OK, row order, the CAP/SETTLE/TEARDOWN rows absent-at-RED);
+Legs: 1 machine-row pins vs the re-pinned (GREEN) file (markers, ART
+row, V5FX-OK last, the CAP/SETTLE/TEARDOWN rows pinned PRESENT);
 2 counter pins (the DoD's "counters" clause — shifts need a re-run +
 re-pin, never a silent edit); 3 old-baseline integrity (sha256 + its
 green rows intact — the never-quietly-overwrite rule made mechanical);
 4 written-cause source truth (fx_step order, numbers-count-to-cap,
 PROJ_FOR ice pin, ART sheet files exist, kit probe zero-at-rest,
 MAX_FX probe==director 64).
+
+W-G RE-PIN (MC 11906, 2026-11-01 at 6012509) — the P7 clause's moment,
+exercised with the red-first proof fleet law demands: the 11897-F1 FIX
+landed as (a) W-F's fires fairness cursor (card/11901) and (b) this
+card's kit SCENARIO-GEOMETRY half — the first hailspire moved to the
+kill zone (sim/v5_fx_probe.gd offs, comment updated in place). RED-FIRST
+BEFORE re-pin: the OLD RED rows + counters above were run against the
+NEW green transcript (GW_V5FX_BASELINE override) and REDDENED leg-for-
+leg exactly as the leg-1 clause predicted (rows drifted; 67 != 362) —
+transcript .tmp capture archived in WG-wave.log; legs 3/4/fairness
+stayed GREEN throughout (old 2026-10-27 baseline sha untouched: all WR
+gen files byte-untouched, new green gen files added beside them).
+Shift table (RED-era -> GREEN-era, with cause): TRACER 362 -> 67 and
+frames 40000 -> 38 (the walk BREAKS at first full ART instead of
+grinding the budget unfed-of-ice); SPARK 79725 -> 37, POOF 7 -> 1 (same
+cause — counters are read at break); FAIL fx_proj_ice -> ART n=4
+paths=pinned (ice live: kill-zone hail + fairness cursor gets a
+leftover slot); CAP live_max=61 cap=64, SETTLE baseline=0, TEARDOWN
+freed=1, V5FX-OK now REACHED and pinned present. The 2026-11-01 RED
+transcript stays archived untouched (gen/probe-v5-fx-v15-red.log).
 """
 
 import hashlib
@@ -68,7 +88,7 @@ import check_hygiene as hyg  # noqa: E402  (reuse: blank_code for greps)
 
 GEN = Path(conftest.repo_path(".audits", "20261101-0843-v15-plan", "gen"))
 BASELINE = Path(os.environ.get("GW_V5FX_BASELINE",
-                               GEN / "probe-v5-fx-v15-red.log"))
+                               GEN / "probe-v5-fx-v15-green-wg.log"))
 OLD_BASELINE = Path(conftest.repo_path(
     ".audits", "20261027-1500-visual-target", "gen",
     "probe-v5-fx-green.log"))
@@ -78,15 +98,24 @@ OLD_SHA256 = "d65d6b598a3424a83abb48576e1a1378b3f6a4be24ff6672bf7215cd9cf135fa"
 
 GODOT = Path(conftest.repo_path("godot"))
 
-# The re-declared machine rows (2026-11-01 at 0d3c506, deterministic:
-# three independent byte-identical processes — see WR-wave.log §2).
+# The RE-PINNED machine rows — W-G (MC 11906) green baseline, 2026-11-01
+# at 6012509: kit scenario-geometry fix (kill-zone hailspire, WF-wave.log
+# escalation half) + W-F fairness cursor make ART complete at frame ~38
+# (walk BREAKS on first full ART), so CAP/SETTLE/TEARDOWN/OK now print.
+# Deterministic: two byte-identical kit processes + the split-stream run
+# archived here (raw.out; raw.err 0 bytes) — RED-FIRST proof: these OLD
+# RED rows were re-run against the new green transcript and REDDENED
+# (rows drifted / 67 != 362) BEFORE this re-pin (WG-wave.log).
 V15_ROWS = [
     "V5FX-MOUNT child=1 after_runner=1",
-    "V5FX-TRACER n=362 frames=40000",
-    "V5FX-SPARK n=79725",
-    "V5FX-POOF n=7",
-    "V5FX-FAIL fx sheet never seen on a live node (id=fx_proj_ice "
-    "path=res://assets/v11/fx_proj_ice.png)",
+    "V5FX-TRACER n=67 frames=38",
+    "V5FX-SPARK n=37",
+    "V5FX-POOF n=1",
+    "V5FX-ART n=4 paths=pinned",
+    "V5FX-CAP live_max=61 cap=64",
+    "V5FX-SETTLE live_max=61 baseline=0 settle_frames=30",
+    "V5FX-TEARDOWN freed=1 kids_at_free=0",
+    "V5FX-OK",
 ]
 
 
@@ -103,34 +132,40 @@ def _num(rows, prefix, key):
 
 
 def test_v5fx_v15_machine_rows_pinned():
-    """Leg 1: the re-declared baseline is the measured RED shape,
-    row-for-row, in kit print order (V5FX-FAIL LAST, V5FX-OK absent —
-    the CAP/SETTLE/TEARDOWN rows are UNREACHED, pinned absent: a kit
-    that starts reaching them has changed shape -> RE-PIN, do not
-    let it false-green beside these rows)."""
+    """Leg 1: the re-pinned baseline is the measured GREEN shape,
+    row-for-row, in kit print order (V5FX-OK LAST — the CAP/SETTLE/
+    TEARDOWN rows are REACHED at the green shape, pinned PRESENT since
+    the W-G re-pin: a kit that stops reaching them has regressed ->
+    RE-PIN only with the red-first proof, never silently)."""
     rows = _machine_rows(BASELINE.read_text(encoding="utf-8"))
     assert rows == V15_ROWS, \
-        "re-declared v15 baseline rows drifted (re-run the kit, archive " \
+        "re-pinned v15 baseline rows drifted (re-run the kit, archive " \
         "the transcript, re-pin together): %r" % rows
     ok = [ln for ln in rows if ln.startswith("V5FX-OK")]
-    assert ok == [], "V5FX-OK in a RED baseline? rows=%r" % rows
-    for tag in ("V5FX-CAP", "V5FX-SETTLE", "V5FX-TEARDOWN"):
-        assert not any(ln.startswith(tag) for ln in rows), \
-            "%s row present at the RED shape — leg order changed, " \
-            "RE-PIN this file" % tag
+    assert ok == ["V5FX-OK"] and rows[-1] == "V5FX-OK", \
+        "V5FX-OK must be the one and only final row: rows=%r" % rows
+    for tag in ("V5FX-ART", "V5FX-CAP", "V5FX-SETTLE", "V5FX-TEARDOWN"):
+        assert any(ln.startswith(tag) for ln in rows), \
+            "%s row absent at the GREEN shape — ART/cap legs regressed, " \
+            "investigate before any re-pin" % tag
 
 
 def test_v5fx_v15_counters_pinned():
-    """Leg 2 (the DoD counters clause): the deterministic counters are
-    pinned; ANY shift needs a fresh kit run archived + a re-pin —
-    never a silent edit (shifts without a cause = FINDING rows)."""
+    """Leg 2 (the DoD counters clause): the deterministic counters of
+    the GREEN shape are pinned; ANY shift needs a fresh kit run archived
+    + a re-pin — never a silent edit (shifts without a cause = FINDING
+    rows). The RED-era counters (362/40000/79725/7 + FAIL) live in the
+    archived red transcript + WG-wave.log's shift table."""
     rows = _machine_rows(BASELINE.read_text(encoding="utf-8"))
-    assert _num(rows, "V5FX-TRACER", "n") == 362, rows
-    assert _num(rows, "V5FX-TRACER", "frames") == 40000, rows
-    assert _num(rows, "V5FX-SPARK", "n") == 79725, rows
-    assert _num(rows, "V5FX-POOF", "n") == 7, rows
-    assert "fx_proj_ice" in [ln for ln in rows
-                             if ln.startswith("V5FX-FAIL")][0], rows
+    assert _num(rows, "V5FX-TRACER", "n") == 67, rows
+    assert _num(rows, "V5FX-TRACER", "frames") == 38, rows
+    assert _num(rows, "V5FX-SPARK", "n") == 37, rows
+    assert _num(rows, "V5FX-POOF", "n") == 1, rows
+    assert _num(rows, "V5FX-CAP", "live_max") == 61, rows
+    assert _num(rows, "V5FX-CAP", "cap") == 64, rows      # PINNED value
+    assert not [ln for ln in rows if ln.startswith("V5FX-FAIL")], rows
+    assert [ln for ln in rows if ln.startswith("V5FX-ART")] == \
+        ["V5FX-ART n=4 paths=pinned"], rows
 
 
 def test_v5fx_old_baseline_untouched():

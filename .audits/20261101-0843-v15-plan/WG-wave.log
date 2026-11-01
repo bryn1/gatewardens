@@ -1,0 +1,94 @@
+WG-wave.log — [type:code] MC 11906 — v1.5 W-G: kit scenario-geometry fix — the ART leg goes GREEN
+DATE: 2026-11-01 (UTC)  BASE: 6012509 (W-F fairness merged; parent brief: board MC 11906)  BRANCH: card/11906
+AUTHOR: commit author "coder (11906)" coder@agent-town.local (-c flags only; git config NEVER touched). No push.
+INPUT: WF-wave.log (MC 11901) OWNER-QUESTION half — the census (evidence-11901/kit-census-f317.log)
+   proved the kit's last-placed hailspires NEVER FIRE in the kit scenario: entry-kill geometry vs
+   range 13 (h4_tgt=false at every event frame; kill cluster x ~ -38..-28; hailspire at (-14,0,3)
+   misses the cluster by ~1 m). Fairness (allocation) was already shipped; ART needs a hailspire
+   that CAN hold a target at a leftover-slot frame. This card = the scenario-shape half.
+
+== FIX (scenario setup lines ONLY, godot/sim/v5_fx_probe.gd) ==
+offs[4] (first hailspire): Vector3(-14,0,3) -> Vector3(-26,0,7) — stands AT the kill zone:
+8.5 m from the kill cluster, its pinned range 13 covers the whole run-in segment. The second
+hailspire keeps the rear spot. The setup intent comment rewritten honestly in place (it claimed
+"ranges 16/12/13 cover the walk through the cluster" — FALSE for the hailspire, the measured
+root of the ART leg's death; the new comment names the kill zone, the ~1 m miss and cites the
+census). place_defense has NO position legality (mission.gd: tier/cap/cost only) — verified.
+SEED LAW honored: the FEED timing (f%45 from f=0) — the battle's rng-stream seed — is UNTOUCHED;
+tower position is not an rng consumer, so the battle itself is the same stream, now with a hail
+that sees the kills. Kit walk + fairness cursor (W-F) + this geometry = ART completes ~frame 38.
+
+== ACCEPTANCE (1) PRE-FIX RED rows quoted (pre-fix bytes @ 6012509, documented flow:
+   `godot --headless --path godot --import` FIRST, then xvfb-run + opengl3 WITHOUT --headless) ==
+  evidence-11906/kit-red-prefix-wg.log:
+    V5FX-TRACER n=362 frames=40000 | V5FX-SPARK n=79725 | V5FX-POOF n=7
+    V5FX-FAIL fx sheet never seen on a live node (id=fx_proj_ice ...) | KIT_RC=1
+  (byte-identical to the WR re-declared red rows — W-F had moved nothing here, as WF-wave.log said.)
+
+== ACCEPTANCE (2) POST-FIX ART GREEN — full kit rc=0, stderr EMPTY ==
+  gen/probe-v5-fx-v15-green-wg.raw.out (stdout, split-stream run) + .raw.err (0 BYTES) +
+  the same machine rows as .log (wrapper BASELINE):
+    V5FX-MOUNT child=1 after_runner=1 | V5FX-TRACER n=67 frames=38 | V5FX-SPARK n=37
+    V5FX-POOF n=1 | V5FX-ART n=4 paths=pinned | V5FX-CAP live_max=61 cap=64
+    V5FX-SETTLE live_max=61 baseline=0 settle_frames=30 | V5FX-TEARDOWN freed=1 kids_at_free=0
+    V5FX-OK | RC=0, stderr 0 bytes
+  Determinism: two byte-identical combined runs (cmp) + the split-stream run byte-identical to
+  them (after revert, POST_REVERT_GREEN_BYTE_IDENTICAL row below).
+
+== ACCEPTANCE (3) WRAPPER RE-PIN — RED-FIRST, row-by-row shift table, zero silent ==
+  RED-FIRST PROOF (evidence-11906/wrapper-repin-redfirst-proof.txt): the OLD wrapper (RED rows +
+  counters + absent-pins) was run with GW_V5FX_BASELINE pointed at the NEW green transcript
+  BEFORE any re-pin: legs 1+2 REDDENED exactly as leg 1's own clause predicted (rows drifted;
+  67 != 362) while legs 3/4 + the fairness leg stayed GREEN — 2 failed, 3 passed.
+  Shift table (cause written per fleet law — the walk BREAKS at first full ART instead of
+  grinding 40,000 frames unfed-of-ice; counters are read at the break):
+    V5FX-TRACER n        362 -> 67    (fewer frames walked; events per frame unchanged early)
+    V5FX-TRACER frames   40000 -> 38  (ART break at first ice+poof+4 sheets)
+    V5FX-SPARK n         79725 -> 37  (same cause: read at frame 38, not 40000)
+    V5FX-POOF n          7 -> 1        (same cause)
+    V5FX-FAIL fx_proj_ice -> V5FX-ART n=4 paths=pinned  (ice IS live: kill-zone hail leads
+                                        1/3 of event frames via the W-F cursor and fires)
+    (absent) CAP/SETTLE/TEARDOWN -> live_max=61 cap=64 / baseline=0 settle=30 / freed=1
+                                        (legs REACHED, pinned PRESENT now; cap never passed)
+    (absent) V5FX-OK -> V5FX-OK as the one and only final row (pinned).
+  Post re-pin: wrapper 5 passed. OLD baselines byte-untouched: 2026-10-27 file sha d65d6b59...
+  (wrapper leg 3 GREEN = mechanical proof), WR gen/ files: git status shows ONLY the 4 new W-G
+  files (green-wg .log/.raw.out/.raw.err + planted .raw.out) — nothing else moved.
+
+== ACCEPTANCE (4) PINNED-VALUES ZERO-DIFF (final tree) ==
+  MAX_FX := 64            fx_director.gd:81 + probe:35 — present, untouched
+  drop-pass priority      fx_step order _observe_enemies(125) -> _observe_fires(126) untouched
+  kit license data        hp_max*=5.0 / m.green=100000 / core hold / FEED_IDS / TOWER_IDS / f%45
+                          — ZERO diff lines (git diff touched ONLY the comment block + the two
+                          Vector3 offs lines; the two token-hits in the diff are prose words in
+                          my own comment lines — shown by grep rows)
+  damage numbers          fx_director.gd: git diff HEAD = 0 lines (file untouched this card)
+  sim/ core               ONLY godot/sim/v5_fx_probe.gd setup section changed; probe 209 LOC
+  kit zero-at-rest        assign_relic count in probe: 0 (leg 4 pins it; green in the 345)
+
+== ACCEPTANCE (5) PLANTED-RED — SINGLE-LINE REVERT ==
+  offs[4] reverted (-26,0,7)->(-14,0,3) ONLY (sed single line) -> kit RED again:
+  gen/probe-v5-fx-v15-wg-planted-red.raw.out = V5FX-TRACER n=362 frames=40000 + V5FX-FAIL
+  fx_proj_ice + rc=1 — the EXACT WR red rows, from one line. (Causality proof: geometry alone
+  owns the ART leg; fairness alone can't green it — WF-wave.log owns the converse half.)
+  cp-revert BYTE-VERIFIED (sha256 -c OK) -> green re-run stdout+stderr BYTE-IDENTICAL to the
+  archived green raw.out/raw.err (POST_REVERT_GREEN_BYTE_IDENTICAL).
+
+== GATES (final tree, serial) ==
+  python3 -m pytest tests -q   -> 345 passed rc=0 (floor 345 met)
+  check_hygiene                -> 0 hit(s)
+  fixtures diff                -> 0 rows
+  GOVERNED_LITERALS            -> 17
+  LOC: probe 209 (cap 400) | wrapper 382 (cap 600) | ARCHITECTURE.md 398
+
+== DISCLOSURES ==
+D-1 XDG_DATA_HOME redirect reused from W-F's scratch home for all kit runs here (dev user-data
+    dir was already probe scratch; nothing of the owner's lives there — see WF-wave.log L-2).
+D-2 ARCHITECTURE §kits row updated (W-G RE-TRUTH paragraph); LEDGER row in the same commit; the
+    three baseline transcripts (2026-10-27 green, 2026-11-01 v15 red, W-G green) all stand
+    byte-untouched beside each other — versioned truth, never overwritten.
+D-3 The kit's ART now completes EARLY (break at first full ART) — the CAP/SETTLE/TEARDOWN legs
+    run on the 38-frame fight + frozen-sim settle; live_max=61 < cap 64 pins the cap door from
+    BELOW the pinned value (the WR-era walk saturated at 63; both shapes are honest — the shift
+    table above owns the difference).
+VERIFY_EXIT=0

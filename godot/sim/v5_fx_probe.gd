@@ -90,12 +90,21 @@ func _init() -> void:
 	for row: Dictionary in m.tables.rows("towers"):
 		trows[String(row["id"])] = row
 	# TWO of each shooter at the lane_g1 run-in (waypoints (-40,0,0)->
-	# (-28,0,4)): T1 ranges 16/12/13 cover the walk through the cluster;
-	# 6 guns keep deaths coming despite the feed (each type fires, so
-	# BOTH projectile sheets are exercised every run).
+	# (-28,0,4)); the KILL ZONE is the run-in segment where the ballista
+	# (range 16 from -20) and bombard (range 12) overlap their fires:
+	# x about -38..-28. W-G (MC 11906) scenario fix for 11897-F1's ART
+	# leg: a hailspire parked BEHIND that zone (-14/-17, range 13) can
+	# never hold a target while enemies die at the entry — its range
+	# misses the kill cluster by ~1 m, so its ice sheet was un-reachable
+	# in ANY leftover-allocation (measured: f=317 census h4_tgt=false,
+	# WF-wave.log). The first hailspire therefore stands at the kill
+	# zone (-26,0,7): 8.5 m from the kill cluster, inside range 13 over
+	# the whole segment; the second keeps the old rear spot. 6 guns keep
+	# deaths coming despite the feed (each type fires, so BOTH projectile
+	# sheets are exercised every run).
 	var offs := [Vector3(-20, 0.0, 2.0), Vector3(-24, 0.0, 3.0),
 			Vector3(-28, 0.0, 5.0), Vector3(-32, 0.0, 1.0),
-			Vector3(-14, 0.0, 3.0), Vector3(-17, 0.0, 7.0)]
+			Vector3(-26, 0.0, 7.0), Vector3(-17, 0.0, 7.0)]
 	var ti := 0
 	for tid: String in TOWER_IDS:
 		for k: int in 2:
