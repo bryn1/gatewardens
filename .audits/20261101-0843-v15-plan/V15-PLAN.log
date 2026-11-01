@@ -1,0 +1,195 @@
+# V15-PLAN.log — verification rows (MC 11871 plan seat, 2026-11-01, UTC). Every claim in
+# V15-PLAN.md, with the instrument that checked it at tip 65da857. READ-ONLY repo run: the only
+# writes are this dir's two files.
+
+repo=/home/claudecode/Games/gatewardens
+tip=65da857 git log -1 --oneline -> "65da857 v1.4 RELEASE (MC 11826)..." (VERIFIED)
+tags: git tag -l -> v1 v1.1 v1.2 v1.2.1 v1.3 v1.4 (VERIFIED — all frozen)
+
+## Row 1 — KIT PRESENTATION (SHIP W-K)
+- tests/test_kit_fx.py header :25-37 read: "kit presentation NOT implemented... writers PURE
+  STATE crossings... fx_director spawns ONLY from _observe_enemies/_observe_fires... Any future
+  kit presentation implementation MUST re-pin these rows — it cannot false-green." (VERIFIED, brief row 1 stands)
+- tests/test_kit_fx.py :433-470 read: _PRESENT_BAN tokens over writer bodies (mission_relics
+  assign/unassign, defense_obj assign_relic/clear_relic, mission.gd wrappers) +
+  test_kit_presentation_source_truth asserts mission.gd delegates via MISSION_RELICS. (VERIFIED —
+  re-pin clause + the ban FORCES the observer-side design; card cannot put fx in writers)
+- godot/scripts/fx_director.gd :1-60 read (observer contract: reads-only, mission.tscn LAST
+  child, MAX_FX=64 drop-past-cap) + _observe_fires guard `if drops.is_empty(): return` at :169
+  (VERIFIED — DA P1-B lesson rides: kit pass must be UNCONDITIONAL in fx_step)
+- mission.tscn:46 [node name="FxDirector"] (VERIFIED — mount exists, zero scene change needed)
+- sprite_bank.gd:57 fx_spark_hit committed (VERIFIED — fx id exists, no new art)
+- LOC: fx_director.gd 261 ln (python split metric), NOT in GOVERNED_LITERALS list (printed, 17
+  entries, VERIFIED) — file can carry the pass.
+
+## Row 2 — P3 CODE DEFERs F-2/F-3/F-3a/F-4 (SHIP W-T1/W-T2; F-5 out of repo scope)
+- .audits/20261031-1830-v14-plan/P3-wave.log grep: F-2 :321 (js/html/css/cfg/py families never
+  exercised in-process); F-3 :323 (server/static_app.py no in-process test, subprocess-only,
+  mutmut association); F-3a :325-327 (serve() OSError branch untested at EVERY tier, 11
+  survivors); F-4 :327 (_resolve lstrip("/") boundary, suggests /xhr.js rows); F-5 :328 (VM350
+  venv host fact — routed out of repo scope, recorded not dropped). (VERIFIED)
+- blank_code = tools/check_hygiene.py:96 (grep); in-suite only family "gd" is called (test files
+  import and use "gd") — family gap real. (VERIFIED)
+- server/ holds static_app.py; tests/ has NO test_static_app.py (ls, VERIFIED).
+- tests/test_served.py 160 ln, test_purity.py 107 ln (split metric) — W-T1 route deviation
+  (new file instead of growing served/purity) keeps both untouched; DECLARED in plan §2. (VERIFIED)
+
+## Row 3 — v5_fx_probe re-baseline (SHIP W-R)
+- docs/ARCHITECTURE.md :154-156: kit home row + declared run command present (VERIFIED —
+  DOC-TAIL closed the doc-half at v1.4); baseline file exists ONLY at
+  .audits/20261027-1500-visual-target/gen/probe-v5-fx-green.log (find, VERIFIED — predates G6,
+  zoom and any v1.5 fx change; "never quietly overwrite" rule cited from the v1.4 DOC-TAIL
+  LEDGER:170 row). Kit file godot/sim/v5_fx_probe.gd exists (find).
+
+## Row 4 — hp-tint (DEFER — grounds re-checked against CURRENT assault code as the brief demanded)
+- grep -rn take_damage godot/scripts/*.gd godot/sim/*.gd: production hit is mission.gd:374 ONLY;
+  :369-374 read IN FULL this session: `rec = core_main if ... else core_subs...; rec.take_damage(
+  SIM_COMBAT.dmg_to_core(...))` — rec is a CORE record, not a defense (Cores are mission-side
+  records; defense_list entries are defense_obj dicts written nowhere near _on_reach).
+- defense_obj.gd:156 take_damage: callers = sim/mission_smoke_w8.gd harness legs only.
+- sim_combat.gd: only dmg_to_core exists (grep "attack|dmg_to") — no tower-targeting path.
+  CONCLUSION: no live defense-damage source exists NOW (VERIFIED) — DEFER stands, re-open
+  trigger unchanged (V14-PLAN §2 quote reused verbatim in plan §2).
+
+## Row 5 — ready-up (OWNER-DECISION OD1)
+- V14-PLAN §2:123 DEFER row + LEDGER:170 "ready-up DEFER (new SIM mechanic, balance number
+  never ruled)" (read); LEDGER grep ready-up: no owner artifact exists. phase_controller.gd IS
+  in the GOVERNED_LITERALS list (printed) — a bonus literal in it is gate-illegal; plan routes
+  any ruling through economy.json data. Question + recommendation + default-if-silent written in
+  plan §6 OD1. (VERIFIED as planable; the RULING itself is the owner's — no artifact manufactured)
+
+## Row 6 — minimap (DEFER)
+- ls godot/data/maps/ -> gatefall.json ONLY (VERIFIED — one map; DD-REFERENCE §5 row 13's own
+  condition "map 2+ or bigger arenas" unmet; the DD text was quoted from V14-PLAN §2:124 which
+  quotes the file — file itself read at Games/.audits/202610281826-9924ad48/out/DD-REFERENCE.md
+  :196 table row 13 "Defer — value arrives when map 2+ or bigger arenas ship" (read directly,
+  VERIFIED at source, not via the v1.4 chain)).
+
+## Row 7 — D2 shimmer (DEFER, stays parked per instruction)
+- RELEASE_NOTES.md:193 + :300 "the spawn-mouth shimmer / painted-lane treatments stay deferred"
+  (grep, VERIFIED); V121-PLAN:172 owner-defer row. No new owner artifact found (LEDGER grep).
+  (DEFER restated, no re-disposal.)
+
+## Row 8 — readability heart / kb f821c305
+- kb_recall returned f821c3058... verbatim: "five of the six P1 gap rows fit the shipped v1.2
+  rig... Gatewardens ships zero of these" — a 2026-10-28 fact row (metadata ts). RE-VERIFIED
+  against the CURRENT tree: LEDGER rows G1 :147 (spawn-eye SHIPPED), G6 :148 (damage numbers),
+  G8 :149 (coach banner), G2 :150 (lane bands — lane_bands.gd EXISTS, grepped + paint call at
+  mission_world.gd:97), G3 :151 (wave telegraphs), G5 :153 (build-confirm ghost), G4 :155 (range
+  ring), G7 :154 + v1.4 P8 :162 (crest + legibility fix), v1.4 P5 :166 (selection ring), P6
+  (icon grey/red). THE KB PREMISE IS STALE (it predates v1.2.1): the six rows are shipped;
+  plan §2 8a disposes that honestly. (VERIFIED)
+- Per-tower keys: no tower-mode mechanic exists to key into (towers.json tiers carry range/dps
+  only; no cd/mode field — the v1.4 cd-overlay REJECT precedent in V14-PLAN §2 cites the same
+  no-source test). REJECT grounds hold. (VERIFIED)
+- Loot quality read: godot/data/rarity.json keys printed = ladder/mod_slots/drop_weights/
+  chest_tiers/sell_value — NO colors key (python, VERIFIED); item_row.gd :42-70 ALREADY binds
+  $Tint.color from rarity["colors"] with "gray" fallback (read); hud.gd:254-263 toast_text
+  renders rarity as TEXT only (read). W-Q = ship the data key + toast tint. test_data_schemas
+  extra-key tolerance cited from the v1.2 F2 LEDGER row (rarity.json sell_value precedent, read).
+- Damage-number starvation: fx_director header :34 + :56-59 cap discipline (read) — DEFER with
+  grounds (changing a pinned cap rule isn't the smallest-highest-value row).
+- "first maps as tutorial": one map only (maps dir) — DEFER, content class.
+
+## Row 9 — hygiene watch (CONSTRAINT)
+- Gate metric = len(read().split("\n")) cited from check_hygiene.py:199-200 (V14-PLAN §0
+  precedent) and applied THIS session in python: mission.gd 400 (AT ceiling),
+  tests/test_mission_clicks.py 600 (AT ceiling), test_kit_fx.py 481, fx_director.gd 261,
+  hud.gd 385, test_served.py 160, test_purity.py 107. (VERIFIED)
+- tools/check_hygiene.py run at tip: "check_hygiene: 0 hit(s)", exit 0 (1 soft NOTE line printed
+  — check_hygiene.py itself 270>250, informational, baseline). (VERIFIED)
+- GOVERNED_LITERALS: len == 17 (python import, printed the list — includes hud.gd,
+  phase_controller.gd; excludes fx_director.gd, sprite_bank.gd, lane_bands.gd). (VERIFIED)
+- Suite: python3 -m pytest tests/ -q --collect-only -> "324 tests collected in 0.22s" WITH the
+  untracked static/ export present (ls static/ shows the web export); 319 clean-collect cited
+  from the v1.4 DOC-TAIL row (test_served 5-leg skip reconciliation). Plan §5 does its math from
+  these numbers: 324 -> 341-342 (with-export) / 319 -> 336-337 (clean). (VERIFIED / projection
+  is INFERRED per-card leg counts, stated as ranges in the plan)
+
+## Cross-cutting
+- camera_zoom.gd:45-47: D_MIN 56.0 / D_MAX 128.0 / ZOOM_STEP 8.0 (read — zoom-only constraint
+  honored; no plan card touches the file). (VERIFIED)
+- mission_relics.gd stacking rule cited from test_kit_fx KF-STACK header (mission_relics.gd:24
+  "taken") (read).
+- Served-route for the kit leg: defense_panel.gd:118-119 "Assign relic"/"Unassign relic" buttons
+  + :235-237 enabled-conditions (read — the shipped click route exists; W-K served leg uses it).
+- FxDirector is the mission root's LAST scene child (header) and mission.tscn:46 (VERIFIED).
+- DD-REFERENCE.md path in the BRIEF ("docs/DD-REFERENCE.md") does NOT exist in-repo (ls docs/ ->
+  ARCHITECTURE.md only); real location /home/claudecode/Games/.audits/202610281826-9924ad48/
+  out/DD-REFERENCE.md read directly. Brief path slip DECLARED in plan preamble. (VERIFIED)
+- Wave/overlap: every SHIP card's touched-file set listed in plan §4 matrix — zero shared cells
+  inside W1; W-R depends on the W1 final TREE (measures W-K behavior) -> sequential W2. LEDGER
+  single-writer per v1.4 precedent (F1/F2 LEDGER-race rows cited). (plan law applied)
+
+## Deviations / readings declared
+- Brief path docs/DD-REFERENCE.md read as the Games/.audits out/ file (above).
+- F-4 landed in the NEW in-process test file rather than growing test_served/test_purity — the
+  association that kills the mutant lives there; named in plan §2.
+- F-5 disposed out-of-repo-scope (host fact), recorded, not silently dropped.
+- Row 8 disposed as CLOSED-plus-remainder because the kb row is stale vs the shipped tree — the
+  plan's reading: "five of six fit" is history (they SHIPPED); the live remainder is the loot
+  quality read + the kit-crossing read (W-Q, W-K).
+- Suite-count bars are with-export numbers (the 324 the release ran); clean-collect deltas move
+  in lockstep (319), stated both ways.
+- This seat never spawned (no subagent/workflow call made; DA gate is the orchestrator's).
+- Writes: ONLY .audits/20261101-0843-v15-plan/{V15-PLAN.md,V15-PLAN.log} (repo read-only held;
+  no other file touched; git status of the repo tree shows only the untracked .audits dir added).
+
+VERIFY_EXIT=0
+
+# ================= REV-C2 APPEND (DA gate r1 = FIX; same seat, same session, 2026-11-01) =================
+# Versioned-truth: V15-PLAN.md RETIRED with first-line SUPERSEDED marker (call DECLARED in c2
+# header: one plan one reader); live version = V15-PLAN-c2.md. DA verdict read IN FULL at
+# /home/claudecode/.local/state/knut-dispatch/card-11871.out/DA-verdict.md.
+
+## F-A (P1) W-T2 re-scope — DA's claim RE-VERIFIED at tip before adopting (citation discipline)
+- tests/test_hygiene_positive_controls.py opened THIS session: 332 ln, 30 def-test_ legs (wc/grep);
+  header + legs call hyg.blank_code in-process with "gd" (8 legs incl. block-comment :91/:99),
+  "py" (:128/:136), "js" (:142 backtick leg ONLY), "cfg" (:156), "html" (:163/:166). c1's §2-2a
+  "only gd runs in-suite" line CONFIRMED FALSE at tip — c1 read the P3 finding, not the tree
+  (P9/MC 11838 landed after P3-wave.log, same day; LEDGER:165). (DA VERIFIED TRUE)
+- blank_code branches read at tools/check_hygiene.py:96-135 (this session): block-comment set is
+  `family in ("gd","js","css")` — "css" appears in NO test (grep of the P9 file); "js" enters only
+  the backtick + "//" branches, never the block branch. TRUE residual = css family + js
+  block-comment branch, EXACTLY as DA F-A states. (VERIFIED)
+- W-T2 RE-SCOPED: +2 legs appended AT THE P9 HOME (extend tests/test_hygiene_positive_controls.py;
+  named choice — a new file would be the second fixture mechanism beside a shipped one). Planted-
+  red rides the file's OWN GW_HYGIENE_MUTANT_DIR mechanism (drop "css" from the set on the mutant
+  copy -> css leg RED). §5 re-counted: W-T2 +5 -> +2; projection 341-342 -> 338-339 with-export
+  (clean 333-334). §2-2a rewritten to the tree-truth. (APPLIED in c2 §2/§3/§5)
+
+## F-B (P1) KF re-pin proof promoted — W-K §3 HARD acceptance leg 1 (transcript-first: OLD
+  KF-PRESENT/KF-FINDING asserts run against the post-W-K tree BEFORE any re-pin edit -> RED shown,
+  then re-pin -> green). §7 risk 3 now stands only as a pointer to the leg. DA's supporting facts
+  re-read at tip: _PRESENT_BAN :439-443 over _WRITER_BODIES :445-449 (fx_director.gd NOT in the
+  tuple — ban neither blocks nor touches the observer pass); KF-PRESENT asserts live 0->0 +
+  sparks_delta 0 (:383-385); KF-FINDING exact string (:391-392); mission_relics.gd:16 build-phase
+  guard (kit assigns never share frames with enemy drops -> unconditional-pass rule sound). (APPLIED)
+
+## F-C (P2) LEDGER law restated per the real F1 precedent (LEDGER:95 row re-read: F1 staged its
+  own row PARTIAL; the race was DECLARED, not prevented by a single writer): cards write their own
+  LEDGER row in their own pathspec commit; orchestrator lands W1 sequentially; EOF-append race
+  acknowledged in the §4 LEDGER.md cell; resolution = keep-both in cherry-pick order. c1's
+  "single-writer" phrasing DROPPED; matrix no longer excludes LEDGER.md. (APPLIED)
+
+## F-D (P3) W-R wrapper file NAMED: new tests/test_v5_fx_baseline.py (own file, not the W-K
+  test_kit_fx.py home); §4 matrix carries the cell. (APPLIED)
+## F-E (P3) W-T1 F-4 leg re-worded: UPPERCASE-X post-slash name (/XHR.js class) required —
+  mutant_21 strips the SET {X,/} so lowercase xhr.js is mutant-equivalent (P3-wave.log:102
+  mutant text re-read this session); lowercase companion row kept. (APPLIED)
+## F-F (P4) chmod-000 root-sensitivity declared in §2-2b + §3 W-T1 + §7: whoami=claudecode,
+  uid=1000 (measured this session) — leg true today, would flip RED-LOUD under root. (APPLIED)
+## F-G (P4 nit) citation drift fixed in c2 text: item_row header :17-24 (was :18-21); F-2 block
+  cited at P3-wave.log:320 (was :321); fx_director 261 stated AS the gate metric (wc 260). (APPLIED)
+## Heart untouched: W-K/W-Q designs byte-equivalent to c1 except the added W-K leg 1 — DA's
+  refutation round failed to move them ("ROWS I TRIED TO REFUTE AND FAILED"); honored verbatim
+  per the orchestrator's instruction.
+
+## c2 write audit
+- Writes this round: ONLY V15-PLAN-c2.md (new), V15-PLAN.md first-line SUPERSEDED marker, this
+  append (repo tree otherwise untouched; git status shows only the untracked .audits dir).
+- c2 line count checked; VERIFY_EXIT re-run basis: c2 §2 grounds each re-opened this session
+  (P9 file, blank_code, _PRESENT_BAN, F1 LEDGER row, mutant text, whoami) — no claim copied from
+  the verdict unverified.
+
+VERIFY_EXIT=0
