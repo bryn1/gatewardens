@@ -1,0 +1,22 @@
+# V15-RELEASE.log — v1.5 release chain (MC 11870 anchor, orchestrator) — "read-the-state colors + honest effects"
+TAG: v1.5 -> f95e481 (docs tail c2 merged; DA round-2 SHIP verdict sha fe6a9a51...; card 11909 reviewed). pushed origin/v1.5.
+EXE: tools/export_windows.sh ONCE at tag worktree /tmp/gw-v15-release (GW_GODOT pinned 4.7.2): PE32+ GUI x86-64,
+  sha256 64f337252c3b536af28c9eeb3ef6df5949ff2ad1ae6a1733de1d752dda4dc392, 114,329,376 B. ONE build only — kb-law
+  honored: never rebuild between verify and upload; THAT file transferred + verified + attached.
+VM120: served python3 -m http.server :8177 -b 192.168.5.231; downloaded C:\gw15\Gatewardens.exe — hash
+  64f33725... EQUALS shipped, Length 114329376 EQUALS; run: ALIVE=True RESP=True CPUdelta=3875ms (4s window, PID
+  12168); Stop-Process -> PROC_GONE=True; cleanup retry -> FOLDER_GONE=True (first pass hit a file lock — honest
+  retry row); transfer server killed (curl refused post-kill). qga sync-wait timeouts on the big download row: the
+  exec landed, re-checked by file state, not retried blindly.
+GH RELEASE: https://github.com/bryn1/gatewardens/releases/tag/v1.5 — title "v1.5 read-the-state colors + honest
+  effects"; body = RELEASE-NOTES-v1.5.md (169 ln post-c2) + sha/VM120/zero-monetization footer. POST-CREATE VERIFY
+  from GitHub: asset Gatewardens.exe size 114329376 == shipped bytes; body greps: "VM120 boot-verified" ^1,
+  shipped sha ^1, "DEFER" ^10 (end-state rows), vision-literal quote ^1, "Zero monetization forever" present.
+RELEASE SUITE: 345 passed rc=0 measured at the tagged tree THIS session (192.72s).
+DA GATE: docs tail round-1 FIX (3 named rows, all producer-fixed + README self-found 4th) -> round-2 SHIP —
+  verdict file /tmp/gw-da-11909/DA-verdict-c2.md recorded on card 11909 (status reviewed).
+MILESTONE BOARD: 11871 reviewed (plan, DA SHIP r2); verified: 11876 (W-K), 11877 (W-Q + bank served-append), 11878
+  (W-T1), 11879 (W-T2), 11894 (WK2 P1-inverted fix), 11897 (W-R guards + attribution), 11901 (W-F fairness),
+  11906 (W-G geometry), 11909 (docs tail, reviewed), 11911 (P3 comment de-stale). DEFER(6)/REJECT(1)/OD1-DEFER
+  end-states in RN v1.5. Anchor 11870 stays permanently open (anchor law).
+VERIFY_EXIT=0
