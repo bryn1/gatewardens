@@ -136,3 +136,16 @@ $ fuser -k -n tcp 8877   -> port closed (served legs complete)
 $ final gates            -> §4 rows (suite 328 rc=0, hygiene 0, fixtures
   empty) run at THE FINAL TREE, this commit.
 VERIFY_EXIT=0
+
+## §SERVED-APPEND (orchestrator, MC 11877 blocked bank leg UNBLOCKED — bank-rows census DONE)
+Route: seed-save injection (W-K IDBFS harness idiom, proven) — headless roll_item per ladder name (seed 424242,
+6 rows) -> cfg -> IndexedDB userfs BEFORE startGame (injection point law: AFTER const engine def, PLAIN JS — a
+nested <script> breaks the parser; TDZ law: before the def = silent ReferenceError). Export at 25422ad, loopback
+:8158, shipped clicks Blacksmith (174,68). bank 6 | deck 0 STATE MARKER first, then frame + CHIP PIXEL CENSUS:
+worn (138,138,138) neutral gray | sturdy (95,165,47) G-dominant | powerful (69,109,184) B-dominant | epic
+(140,73,180) R+B | mythical (200,128,44) R>G | legendary (185,64,74) R-dominant — distinct per-rarity chips match
+the ladder semantics in shipped order (row-mod darkening applies as the engine leg documents). Frames + seed gen
++ leg archived here (WQ-bank-seeded-proof.png, wq-bank-seed-gen.gd, wq-bank-leg-11877.cjs). Server killed.
+BLOCKED LEG CLOSED: rarity colors user-visible on web in BOTH surfaces (toast pixel-exact + bank rows census).
+SERVED-APPEND-DONE
+VERIFY_EXIT=0
