@@ -37,9 +37,17 @@
 #   between frames gets one spark AND one short-lived damage number
 #   (v1.2.1 G6, MC 11691) at the SAME point — one event, one position;
 #   hero hits qualify too — the row is damage-driven. Numbers ride the
-#   same MAX_FX cap as every other fx (drop past the cap, never queued;
-#   on busy waves numbers can be starved by tracers/sparks — declared,
-#   DA A5, rides the release known-limits line).
+#   same MAX_FX cap as every other fx (drop past the cap, never queued).
+#   Saturation direction CORRECTED v1.5 (WR-wave.log 11897-F1 — the old
+#   DA A5 wording below this line measured the direction BACKWARDS and
+#   is retired here): the drop-pass emits spark+number FIRST inside
+#   fx_step and spends the cap, so at saturation the TRACERS starve
+#   under the hp-drop pairs, not the other way around; and the leftover
+#   the fires pass ate was placement-greedy — the FIRST towers took it
+#   all and the last-placed spawned nothing — until the v1.5 W-F
+#   fairness cursor began rotating who leads (MC 11901, see the
+#   _observe_fires header). PINNED, unchanged: the cap value, the
+#   drop-past-cap rule, the drop-pass priority (V15-PLAN §2 row 8d).
 # - KILL BLOW (G6): mission.step applies ALL damage before the runner
 #   drains hp<=0 inside the SAME tick, so the killing amount is NEVER
 #   observable — on the DEATH-disappearance branch below the director

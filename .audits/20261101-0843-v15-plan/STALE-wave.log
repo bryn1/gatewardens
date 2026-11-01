@@ -1,0 +1,65 @@
+STALE-wave.log — [type:code] MC 11911 — v1.5 P3 micro: fx_director header comment de-stale (COMMENT-ONLY)
+Base 2634b31, branch card/11911. Writables: godot/scripts/fx_director.gd (comments ONLY) + this log + LEDGER.md row.
+
+== THE ONE DEFECT (per WR-wave.log FINDING 11897-F1 + WF-wave.log) ==
+Header :41 stated the retired starvation direction "on busy waves numbers can be starved by
+tracers/sparks". 11897-F1 MEASURED it BACKWARDS: fx_step emits the drop-pass (spark + damage number)
+FIRST and spends the MAX_FX=64 cap inside the same frame; the fires pass eats the leftover — the
+TRACERS starve under the hp-drop pairs (bolts ~0.9% cand frames, ice 0), and the leftover itself was
+placement-greedy (first towers took it all, last-placed hailspires spawned nothing) until the v1.5
+W-F fairness cursor (_fires_cur, MC 11901) began rotating who leads. Cap value, drop-past-cap rule
+and drop-pass priority stay PINNED (V15-PLAN §2 row 8d — re-ordering drop priority is owner-ruling
+territory). Release notes carry the corrected known-limits row (RELEASE-NOTES-v1.5.md); DOCS-wave.log
+routed THIS header line to this card. Brief-DoD parenthetical read per the logs it names (the
+measured direction is tracers starved BY the drop-pass, not numbers starved by tracers).
+
+== DIFF PROOF — comment lines only, zero code hunks ==
+$ git diff --stat
+ LEDGER.md                    |  1 +
+ godot/scripts/fx_director.gd | 14 +++++++++++---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+$ git diff -U0 --word-diff=plain -- godot/scripts/fx_director.gd
+diff --git a/godot/scripts/fx_director.gd b/godot/scripts/fx_director.gd
+index acf011c..bc2f23b 100644
+--- a/godot/scripts/fx_director.gd
++++ b/godot/scripts/fx_director.gd
+@@ -40,3 +40,11 @@
+#   same MAX_FX cap as every other fx (drop past the cap, never [-queued;-]
+[-#   on busy waves numbers can be starved by tracers/sparks-]{+queued).+}
+{+#   Saturation direction CORRECTED v1.5 (WR-wave.log 11897-F1+} — [-declared,-]{+the old+}
+#   DA [-A5, rides-]{+A5 wording below this line measured the direction BACKWARDS and+}
+{+#   is retired here): the drop-pass emits spark+number FIRST inside+}
+{+#   fx_step and spends the cap, so at saturation the TRACERS starve+}
+{+#   under the hp-drop pairs, not the other way around; and the leftover+}
+{+#   the fires pass ate was placement-greedy — the FIRST towers took it+}
+{+#   all and the last-placed spawned nothing — until the v1.5 W-F+}
+{+#   fairness cursor began rotating who leads (MC 11901, see the+}
+{+#   _observe_fires header). PINNED, unchanged: the cap value, the+}
+{+#   drop-past-cap rule,+} the [-release known-limits line).-]{+drop-pass priority (V15-PLAN §2 row 8d).+}
+
+$ git diff -U0 -- godot/scripts/fx_director.gd | grep -E "^[+-][^+-]" | grep -vE "^[+-][[:space:]]*#" | wc -l   # non-comment changed lines
+0
+
+== GREP-TO-ZERO ==
+$ grep -c "starved by tracers" godot/scripts/fx_director.gd
+0
+
+== SUITE (comments must not break it) ==
+$ python3 -m pytest tests -q
+345 passed in 198.40s (0:03:18)
+SUITE_RC=0
+
+== HYGIENE ==
+$ python3 tools/check_hygiene.py
+note: godot/scripts/fx_director.gd 337 lines > soft 250
+check_hygiene: 0 hit(s)
+
+== PORCELAIN — pathspec discipline ==
+$ git status --porcelain
+ M LEDGER.md
+ M godot/scripts/fx_director.gd
+?? .audits/20261101-0843-v15-plan/STALE-wave.log
+== VERIFY — all legs ==
+suite_rc=0 grep_starved_by_tracers=0 noncomment_changed_lines=0 hygiene_last_row='check_hygiene: 0 hit(s)'
+VERIFY_EXIT=0
