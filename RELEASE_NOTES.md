@@ -1,5 +1,147 @@
 # Gatewardens — Release Notes
 
+Length reason (file hygiene): one file, one subject — the release history. The sections are
+chronological and the GitHub-Release doctrine makes them additive (a retired claim is annotated
+where it stands, never deleted), so splitting would separate each release from its own corrections.
+
+## v1.4 (read-the-state) — 2026-10-31 (release tail: this section IS the committed release-notes
+body per the GitHub-Release doctrine; the tag `v1.4` is cut by the orchestrator's release card on
+this commit — no tag exists before it).
+
+The read-the-state wave: the battlefield now tells you WHICH tower is selected, WHICH rows you
+can afford and WHICH phase locks them, the hero's name finally SPELLS — and the verification
+layer got mutation-measured and positive-controlled so the green means what it says. No sim,
+economy or data moved (golden fixtures byte-pinned EMPTY in every card's diff), the camera did
+not move at all, and zero monetization ships here or ever: **No shop. No loot boxes. No timers.
+No monetization, ever — by owner ruling 2026-10-25** (MC 11274.1; the README row and the shipped
+structural guard + tripwire gate are unchanged, 0 hits at this tree).
+
+**What shipped** — every claim below is cited to the wave log it was measured in
+(`.audits/20261031-1830-v14-plan/`), not to a summary:
+
+- **The selected tower wears the ring** (MC 11837). The ONE ground ring the build ghost already
+  used now also rides your SELECTION: click a tower's panel row and the ring lies flat at that
+  tower at its own tier's range, read from the tower data — a new selection tone
+  (`SELECTED_COLOR`), the G4 yellow staying the ARMED tone. Priority is shipped and declared:
+  **armed ghost > selected > hidden** — an armed row with no placeable ring hides (the armed
+  state wins, never falls through), disarm falls back to the standing selection, and the shipped
+  deselect/sell reset hides it. One ring node, zero new node types, zero sim fields; the driver
+  is a scene mount, so `mission.gd` gained ZERO lines at its 400 ceiling. Planted-red: flipping
+  the priority went RED exactly on the priority row. — P5-wave.log
+- **…and its web render is pixel-proven** (MC 11852). The served browser paints the selected
+  ring: the tower-region census reads 19 px at baseline → **1555 px while selected (+1536 ring
+  px at the tower)**, ARMED-over-SELECTED priority and the Escape fallback both measure, and the
+  shipped sell-teardown returns the census to baseline. An earlier "ring missing on web" finding
+  was ROOT-CAUSED as a repro artifact (the old script's 4th click hit world ground — the shipped
+  select route is the panel row), never papered over: product files are byte-identical, the
+  fixed repro is committed. Planted-red ON WEB: hiding the selected branch drops the census to
+  19. — P5b-wave.log
+- **Tower rows read their state** (MC 11854). Unaffordable row → **RED** (`ff6666`); a phase
+  that is not build → **GREY** (`808080`); affordable + build phase → neutral. The cost signal
+  wins the overlap: an unaffordable row answers RED even mid-combat. This is presentation ONLY —
+  under every painted state the shipped refusals stay the only enforcement (the drilled-to-RED
+  rows still answer `why:"green"`, the grey-locked rows `why:"phase"`, zero writes, ack unmoved).
+  Honest history row, kept unedited: the FIRST build had the two halves worded swapped; the
+  orchestrator recut to the plan-row map ("the PLAN row governs (it is the DA-ratified artifact;
+  my card brief was the drifted side)") and both transcripts stand in the log. No cooldown
+  states shipped — that half was REJECTED because no build-cooldown state exists in the sim. —
+  P6-wave.log
+- **…served-HUD confirmed** — all three states paint through shipped-route clicks (row-bg pixel
+  census: RED-dominant shift on the unaffordable pair, grey-neutral on the combat-locked rows,
+  cost-first precedence held), with the honest tint note under Known limits. — P6-wave.log
+  §SERVED-HUD
+- **The hero crest SPELLS now** (measure first, MC orchestrator leg; fix MC 11835). v1.2.1's
+  crest claim was measured, not trusted: at the default view in a 1280-px window it is
+  **ILLEGIBLE** (name glyph blocks ~4–5 px; no magnification spelled a single hero name). The
+  fix rode the ONE crest mechanism — name height **0.55 → 1.1** (x2), a stronger **outline (10)**,
+  and the name band lifted above the pawn's shield crown (0.85 → 2.55, the re-shoot round's one
+  const nudge after the shield was found to occlude the middle of the name). The served
+  re-shoot: **"Bram Wardenfell" SPELLS in full above the pawn** — shield occlusion cleared,
+  outline contrast holds on the floor. Camera untouched (ZOOM-only grant honored — diff EMPTY). —
+  P4-wave.log + P8-wave.log
+- **The place-refusal matrix** (MC 11829, tests-only): every gate that refuses a placement —
+  combat phase (BOTH shipped routes), occupied/off-list slot, unknown id, insufficient green,
+  cap-full — now refuses under test, each row asserting green / defense list / save-write /
+  ghost UNCHANGED, and a passing BUILD-phase control row proves the matrix is not vacuous. The
+  cap guard had NO test caller anywhere before this. Planted-red: dropping the phase guard at
+  BOTH sites made the combat key-route really place for real (red transcript beside the green).
+  — P1-wave.log
+- **Hygiene got positive controls** (MC 11838, tests-only): 30 crafted MUST-FIRE controls for
+  every gate detector (per-family comment blanking, the tripwire in all three match modes, the
+  walk coverage-count, the planted-tree 5-error-class main() transcript) — because the mutation
+  pass below proved that absence-only tests let condition-inversions survive. Two demonstrated
+  survivors re-run LIVE now die RED; the shipped-tree absence legs are kept for the contract,
+  never credited as detectors. The gate file itself stayed byte-untouched. — P9-wave.log
+- **Mutation kill-rate MEASURED over the pure-Python tier** (MC 11831): mutmut 3.8.1 over
+  `tools/check_hygiene.py` (516 mutants → kill-rate **20.4% of generated / 37.8% scored**) and
+  `server/static_app.py` (**89.3%**), with every survivor named and triaged (harmless-equivalent
+  vs test-gap) and five findings routed as new work — the absence-only-claims finding became the
+  positive-controls card above, not a silent shrug. Zero repo change: the run mutates copies. —
+  P3-wave.log
+- **The kit probe landed a FINDING, not a shrug** (MC 11857, tests-only): the V12-PLAN:297 debt
+  (a kit-presentation leg promised and never executed) was paid as RUNNING behavior over the
+  real mission — and the honest result is **kit presentation is NOT implemented** (see Known
+  limits). The leg is pinned to ACTUAL shipped behavior (assign hp_max 400→403 EXACT from data,
+  hp clamped-not-healed, full revert on unassign, a second kit REFUSED "taken" — never
+  silently replaced), with a non-vacuity control proving the same instrument observes a real
+  shipped effect begin and end. — P7-wave.log
+- **The served-leg harnesses are committed** — the fixed web repro and its census
+  (`ring-leg-11852.cjs`, `ring-census-11852.py`) and the HUD row-leg script
+  (`icon-leg-11854.cjs`) live beside the logs, so the pixel legs re-run.
+
+**Promised vs shipped** — the honest rows per the GitHub-Release doctrine:
+
+- **Tower hp tint: the plan promised it, it did NOT ship — DEFERRED, with the reason.** The v1.4
+  plan disposed this row SHIP in round 1; the devils-advocate gate round 1 found the live damage
+  source does not exist (nothing in production gameplay damages a defense in v1 — the honest cut
+  was "a live hp tint can never paint in a real mission"), and the orchestrator call RE-DISPOSED
+  the row, verbatim: "RE-DISPOSE the hp-tint row — DEFER with reason 'no damage-source for
+  defenses in v1 (DA P1-A); ships only dead presentation; re-opens the moment any
+  tower-targeting mechanic lands'" (V14-PLAN §2/§7). No live hp tint shipped in v1.4.
+- **Kit presentation: not implemented** — a probe FINDING, not a promise kept; see Known limits.
+- **Ready-up / early wave start: DEFERRED** — it is a NEW sim mechanic whose early-call bonus is
+  a balance number the owner has never ruled (DD-reference row 12, priority P4); no owner
+  artifact opens it.
+- **Minimap: DEFERRED** — the reference's own condition stands: "Defer — value arrives when map
+  2+ or bigger arenas ship"; one map, one rig, the whole arena reads.
+- **Mid-mission abandon: REJECTED — the existing ruling holds.** Owner 2026-10-28, verbatim
+  **"rec on all 3"**, ratified END-ONLY — "NO mid-mission exit control ships" (LEDGER:93/95) —
+  and the refusal is TESTED (the negative mid-mission leg + a source-truth pin), so reopening
+  needs a NEW owner artifact; none exists. Reload already loses nothing.
+- **Camera: v1.3's zoom row stands unchanged.** ZOOM is still the ONLY rig move the owner
+  granted (MC 11719 verbatim "Go 1 and zoom control for 2"); v1.4 moved NOTHING camera-side —
+  every card's camera diff is EMPTY in its log.
+
+**Known limits, stated as they are**
+
+- **The GDScript sim is NOT mutation-covered.** mutmut mutates Python; the sim is GDScript, and
+  no GDScript mutation tool is in play. The DECLARED substitute ships: the planted-red rule
+  (every card above carries its red transcript) + the golden fixtures. A GDScript mutation
+  harness beside them is a new mechanism for an already-covered risk — its own design card only
+  if the owner asks. — P3-wave.log §8
+- **The row tints are subtle-but-measurable.** The vision read-back of the served HUD sees the
+  unaffordable/locked rows as DISTINCT in direction ("uniform dark charcoal" vs "lighter
+  brownish-tan") but names the hue softer than "red" at this tint — honest row, kept: the states
+  are measurable and user-visible, not loud. — P6-wave.log §SERVED-HUD
+- **Kits have no presentation effect (FINDING, pinned).** Assigning a kit to a tower changes its
+  stats but paints nothing: the shipped assign/unassign writers are pure state crossings and the
+  fx director spawns only from enemy/fire observation. The probe rows pin the MEASURED ZERO, and
+  a source-truth leg bans presentation calls in the writer bodies — a future implementation must
+  RE-PIN those rows, it cannot ride the old green. (This is the same shape as the deferred hp
+  tint: presentation without a mechanism is exactly what the pins refuse to fake.) —
+  P7-wave.log
+- **Suite count depends on the web export, by design**: **324 pytest green** with `static/`
+  present, **319 from a clean checkout** — `test_served`'s 5 web legs module-skip without the
+  export (the v1.3-era 287-with-export / 282-clean reconciliation, +5, re-quotes at this tag).
+  `check_hygiene: 0 hit(s)`, golden fixtures byte-pinned. — this card's single suite run at the
+  tip, quoted in DOC-TAIL.log
+- Carried forward from v1.2.1 (still true at v1.4 EXCEPT the hero-crest half, retired above by
+  MC 11835): the kill-blow number "is a lower bound"; "Damage numbers share one effects pool"
+  (the 64-slot cap); "A kill right at the core's door shows no final number"; "…telegraph numbers
+  are small at a 1280-px window" (the telegraph half — unchanged, P8 moved only crest consts);
+  "The build ghost is a slot marker, not a translucent tower silhouette"; and "`static/` (the
+  browser build) is gitignored by design" — regenerate with `bash tools/export_web.sh`.
+
 ## v1.3 (zoom) — 2026-10-31 (RELEASED: tag + GitHub Release)
 
 The zoom wave: the mouse wheel moves the camera between a 2× overview and a
@@ -58,11 +200,14 @@ now shipped; the spawn-mouth shimmer / painted-lane treatments stay deferred.
   kit. Wheel-over-GUI: over a Control that consumes the wheel (the hub list,
   the build panel's rows) it scrolls or acts there instead of zooming —
   consistent with the shipped hub scroll, not a bug.
-- Carried forward from v1.2.1 (all still true, quoted from that section):
+- Carried forward from v1.2.1 (still true, quoted from that section — except the hero-crest
+  half, RETIRED at v1.4 MC 11835: the crest was measured ILLEGIBLE (P4-wave.log) and fixed
+  x2+outline (P8-wave.log), served re-shoot spells the hero name in full):
   the kill-blow number "is a lower bound"; "Damage numbers share one effects
   pool" (the 64-slot cap); "A kill right at the core's door shows no final
   number"; "The hero crest and telegraph numbers are small at a 1280-px
-  window"; "The build ghost is a slot marker, not a translucent tower
+  window" (crest half retired v1.4; the telegraph half stands); "The build ghost is a slot
+  marker, not a translucent tower
   silhouette"; and "`static/` (the browser build) is gitignored by design" —
   regenerate with `bash tools/export_web.sh`.
 
@@ -136,7 +281,12 @@ ruling 2026-10-25.**
   down within half a step of its lane's end reads to the eye as a breacher,
   not a death, and breachers render no kill number by design.
 - **The hero crest and telegraph numbers are small at a 1280-px window** —
-  readable, not big. Scaling them is a later knob, not this round.
+  small they were; the ship-time comfort that they were nonetheless READABLE was MEASURED at
+  v1.4 and found FALSE for the crest half *(SUPERSEDED: P4-wave.log read the crest ILLEGIBLE —
+  glyph blocks ~4–5 px, no magnification spelled a single hero name — and MC 11835 fixed it on
+  the same mechanism: height x2 + outline + band lifted above the shield crown; the served
+  re-shoot spells "Bram Wardenfell" in full, P8-wave.log §RESHOOT-VERDICT. The
+  telegraph-numbers half remains true — P8 left TEXT_PX/OUTLINE_PX untouched.)*
 - **The build ghost is a slot marker, not a translucent tower silhouette.**
   The yellow range ring plus the slot marker show where the tower will stand;
   a see-through tower figure is not shipped.
@@ -345,7 +495,9 @@ unsigned, no malware, click More info > Run anyway.
   artifacts are never committed; the script regenerates them).
 - Serve: `python3 server/server.py` (honors `GW_PORT`, default **8124**) →
   open `http://<host>:8124/` in a browser.
-- Dev checks at this release: `python3 -m pytest -q` (287 green on the v1.3 zoom wiring; 283 at v1.2.1;
+- Dev checks at this release: `python3 -m pytest -q` (324 green on the v1.4 read-state wave with
+  the web export present — 319 from a clean checkout, the test_served 5-leg module-skip
+  reconciling +5 as at every tag; 287 green on the v1.3 zoom wiring; 283 at v1.2.1;
   239 at v1.2; the v1 GA tag counted 222) and
   `python3 tools/check_hygiene.py` (`check_hygiene: 0 hit(s)`).
 - Served controls (current at v1.2.1, from the verified journey): mouse click

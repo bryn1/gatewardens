@@ -1,0 +1,179 @@
+# DOC-TAIL.log — v1.4 docs-tail: RELEASE_NOTES + README + ARCHITECTURE grep-to-zero
+# MC 11859 (display 11826.11) [type:tech-writer] | seat: tech-writer profile (child of
+# hermes-standby session-391bd348) | date 2026-11-01.
+# Tree: /tmp/gw-v14-doc @ 16b601b (detached -> branch card/11859), per V14-PLAN P2-C.
+# Scope: DOCS ONLY — RELEASE_NOTES.md, README.md, docs/ARCHITECTURE.md, LEDGER.md (own row),
+# this log. Zero code/test files touched (§4 proof). GitHub-Release doctrine rows: RN body
+# committed artifact + README AT tag + doc-sync grep-to-zero (replace-not-delete).
+# Doctrine note: the v1.4 tag does NOT exist at this writing (git tag -l ends at v1.3) — the
+# tag + GitHub Release are the orchestrator's release-card event ON this commit; the RN
+# heading says exactly that rather than claiming a tag that has not landed (UNVERIFIED-as-shipped
+# avoided by construction).
+
+== 1. CLAIM -> ARTIFACT CITATION ROWS =====================================
+(Every v1.4 claim in the RN/README is cited to its wave LOG in
+.audits/20261031-1830-v14-plan/ — per the card, the LOGS are the sources, not the LEDGER rows
+and not the orchestrator chat. All logs read this session; rows re-read from the logs, not memory.)
+- selection ring ARMED>SELECTED>HIDDEN, SELECTED_COLOR, scene-mount pump, mission.gd 0 lines
+    <- P5-wave.log (GREEN P5-* rows; planted-red priority; LOC rows mission.gd 400->400)
+- web render PROVEN: census 19 -> 1555 (+1536 px at the tower), Escape fallback, sell-teardown
+  to baseline, planted-red ON WEB; finding root-caused as repro artifact, product byte-clean
+    <- P5b-wave.log (census rows; SR11852 instrument rows; sha256 47aa2a02 byte-identity)
+- tower-row states: unaffordable -> RED ff6666, phase != build -> GREY 808080, cost-first
+  precedence; presentation-only (ENFG/ENFP refusals under paint); cd-half REJECTED; the
+  RECUT story kept honest — first build worded the halves swapped, orchestrator recut to the
+  plan-row map (quote in P6 log §RECUT + commit 4948eab; §1-3 stand as honest history)
+    <- P6-wave.log
+- served-HUD leg: neutral/RED/GREY all painted (row-bg pixel census; shipped-route clicks)
+    <- P6-wave.log §SERVED-HUD (SERVED-LEG-DONE)
+- crest MEASURED ILLEGIBLE first (6-8 px glyph smudges; no crop spelled a name), then fixed
+  x2 + outline 10 + DY 0.85->2.55 (re-shoot nudge: shield crown occluded the name's middle);
+  served re-shoot at 1280px D=64: "Bram Wardenfell" SPELLS in full
+    <- P4-wave.log (VISION READ-BACK: NOT LEGIBLE / VERDICT: ILLEGIBLE) + P8-wave.log
+       (§RESHOOT round + §RESHOOT-VERDICT: LEGIBLE)
+- place-refusal matrix: gap legs only (green/id already pinned FP-REFUSE/FP-ID), cap guard
+  first-ever test caller, every refusal row green/list/ack/ghost UNCHANGED, planted-red proves
+  non-vacuity (guard dropped -> key route really places uid=2 cost=100)
+    <- P1-wave.log (REFUSE-* machine rows)
+- hygiene positive controls: 30 MUST-FIRE legs; two P3 condition-inversion survivors re-run
+  LIVE die RED (walk__mutmut_12, blank_code__mutmut_41); gate file byte-untouched
+    <- P9-wave.log
+- mutation kill-rate MEASURED: hygiene 20.4% of generated / 37.8% scored (516 generated,
+  185 scored, 93 killed + 12 timeout, 173 survivors triaged 8 harmless/165 test-gap);
+  static_app 89.3% (121 mutants, 108 killed, 13 triaged); findings F-1..F-5 routed (F-1 ->
+  the P9 card). GDScript NOT mutation-covered: DECLARED substitute (planted-red + golds).
+    <- P3-wave.log (VERDICT-SCALES + TALLIES rows; §8 honest limits)
+- kit probe FINDING: KF-FINDING kit_presentation=NONE — kit presentation NOT implemented in
+  shipped code (writers pure state crossings; fx_director spawns only from enemy/fire obs);
+  KF-* rows pinned to ACTUAL shipped behavior (hp_max 400->403 EXACT data-derived,
+  clamped-not-healed, STACK refused "taken" NOT replaced, ack-delta 0); KF-CONTROL non-vacuity;
+  source-truth presentation ban forces future RE-PIN; the V12-PLAN:297 debt paid, the
+  doc-half routed here CLOSED (§3 below)
+    <- P7-wave.log (GREEN transcript + FINDING + DECLARED readings)
+- suite count at the tip: 324 (with export) / 319 (clean checkout, test_served 5-leg
+  module-skip) — reconciliation kept from the v1.3-era 287/282 PAPERWORK-row idiom
+    <- this card's §4 single suite run + LEDGER PAPERWORK row (+5 at every tag)
+- DEFER/REJECT grounds rows:
+    hp tint    <- V14-PLAN §2:121 orchestrator call verbatim: "RE-DISPOSE the hp-tint row —
+                  DEFER with reason 'no damage-source for defenses in v1 (DA P1-A); ships only
+                  dead presentation; re-opens the moment any tower-targeting mechanic lands'"
+                  (disposed SHIP at plan round 1, RE-DISPOSED at REV c2 per DA gate P1-A —
+                  §7 CHANGELOG-c2:280; RN tells the promise/did-not-ship truth per release doctrine)
+    ready-up   <- V14-PLAN §2:123 "A new SIM mechanic ... a balance number the owner has never
+                  ruled; P4 in DD-REFERENCE; no owner artifact."
+    minimap    <- V14-PLAN §2:124 (quoting DD-REFERENCE row 13): "Defer — value arrives when map
+                  2+ or bigger arenas ship" (DD-REFERENCE.md itself lives OUTSIDE the repo —
+                  .audits/202610281826-9924ad48/out/ — R2 public-material wall; the in-repo
+                  artifact carrying the quote is V14-PLAN §2, cited)
+    mid-mission abandon REJECT <- owner 2026-10-28 verbatim "rec on all 3" ratifies END-ONLY:
+                  "NO mid-mission exit control ships" (LEDGER:95; the same verbatim ruling at
+                  LEDGER:93); refusal TESTED (test_return_hub NEGATIVE-MID + source-truth pin);
+                  reopening needs a NEW owner artifact — none exists (V14-PLAN §2 REJECT row)
+    camera     <- ZOOM-ONLY grant (MC 11719) unchanged; v1.4 camera diffs EMPTY in every log
+    monetization <- MC 11274.1 / owner ruling 2026-10-25; README row + gate + tripwire unchanged
+
+== 2. GREP-TO-ZERO ROWS (post-edit; each command run at the FINAL tree; COUNT is `| wc -l`) ==
+RETIREMENT GREPS (every one ^0$):
+  grep -n "SELECTION is the declared finding" docs/ARCHITECTURE.md            | COUNT 0
+  grep -n "GHOST-FIRST" docs/ARCHITECTURE.md                                  | COUNT 0
+  grep -nE "beyond the card.?s DoD" docs/ARCHITECTURE.md                      | COUNT 0
+  grep -n "all still true" RELEASE_NOTES.md                                   | COUNT 0
+  grep -n "readable, not big" RELEASE_NOTES.md                                | COUNT 0
+  grep -n "later knob, not this round" RELEASE_NOTES.md                       | COUNT 0
+  grep -n "287" README.md                                                     | COUNT 0
+  grep -n "v1.3 (zoom)" README.md                                             | COUNT 0
+  grep -in "hp[ _-]?tint" README.md RELEASE_NOTES.md docs/ARCHITECTURE.md
+      | grep -ivE "defer|re-dispose|no live|did not ship|damage.source"       | COUNT 0
+      (hp-tint exists in docs ONLY inside DEFER-truth rows; plan-round-1 SHIP wording never
+       leaked to docs — README grep -in "tint" minus the DEFER row is likewise COUNT 0)
+ADD-GATES (retired-claim ABSENCES given documented homes; before-counts from V14-PLAN §0/§2):
+  grep -n "v5_fx_probe" docs/ARCHITECTURE.md   BEFORE 0 (V14-PLAN §0: "no kit home documented")
+                                             AFTER COUNT 2 (home + baseline-honesty row)
+  grep -n "selection_ring" docs/ARCHITECTURE.md                               | COUNT 3
+  grep -n "test_kit_fx" docs/ARCHITECTURE.md                                  | COUNT 2
+  grep -n "kit_presentation=NONE" docs/ARCHITECTURE.md                        | COUNT 2
+  grep -n "324 pytest" README.md RELEASE_NOTES.md                             | COUNT 2
+  grep -c "^## v" RELEASE_NOTES.md (six release sections, order intact)       | 6  (direct run)
+RN structure check: v1.4@7, v1.3@145, v1.2.1@217, v1.2@303, v1.1@336, v1@391 — history section
+headings intact after the RN edit (one earlier pass of my edit had SWALLOWED the "## v1.3"
+heading; caught by this structural grep BEFORE commit, heading restored verbatim, v1.3 body
+verified untouched — the removal-hunk diff below shows only the 4 annotated rows as deletions).
+REPLACE-NOT-DELETE RECORD (annotated in place, history additive; old wording lives in git):
+  RN v1.2.1 crest bullet   -> inline SUPERSEDED annotation (P4 ILLEGIBLE + P8 fix + telegraph
+                              half kept true)
+  RN v1.3 carry-forward    -> "all still true" -> "still true EXCEPT the hero-crest half"
+  RN dev-checks row        -> 287 row kept as history, v1.4 324/319 row prepended
+  ARCH range_ring row      -> ghost-first/selection-declared tail RETIRED in prose (not quoted
+                              verbatim — that would keep the retired tokens live; git history
+                              carries the original)
+  ARCH defense_rows_ui / hero_pawn / world_text / Scenes / tests/ list / I9 -> v1.4 clauses added
+  ARCH §Verification kits  -> v5_fx_probe home (baseline DECLARED NOT RE-BASELINED — honest
+                              not-run row, per P7-wave.log routing; a future run must explain +
+                              re-declare, never overwrite the 2026-10-28 baseline) + test_kit_fx
+                              FINDING/re-pin row. NOTE: this card does NOT claim the tracer
+                              re-baseline ran — no artifact says it did.
+
+== 3. RN v1.4 SECTION — HEAD/TAIL QUOTED ==================================
+HEAD (lines 7-9):
+  ## v1.4 (read-the-state) — 2026-10-31 (release tail: this section IS the committed release-notes
+  body per the GitHub-Release doctrine; the tag `v1.4` is cut by the orchestrator's release card on
+  this commit — no tag exists before it).
+TAIL (last rows of the section, before "## v1.3 (zoom)" at line 145):
+  - Carried forward from v1.2.1 (still true at v1.4 EXCEPT the hero-crest half, retired above by
+    MC 11835): the kill-blow number "is a lower bound"; "Damage numbers share one effects pool"
+    (the 64-slot cap); "A kill right at the core's door shows no final number"; "…telegraph numbers
+    are small at a 1280-px window" (the telegraph half — unchanged, P8 moved only crest consts);
+    "The build ghost is a slot marker, not a translucent tower silhouette"; and "`static/` (the
+    browser build) is gitignored by design" — regenerate with `bash tools/export_web.sh`.
+File: 517 lines total (length reason stated under the title, per file-hygiene law).
+
+== 4. SUITE: ONE RUN, TREE UNTOUCHED ======================================
+Run at the UNTOUCHED tip 16b601b (branch card/11859 created; NO file edited yet at run time;
+static/ web-export present = with-export collection; full wall, background job, one attempt):
+  $ python3 -m pytest -q
+  324 passed in 190.80s (0:03:10)
+  PYTEST_RC=0
+324 >= 324 required. No code/test file is in this card's diff (§5) — the suite at the committed
+tree is the suite this number was measured at (docs cannot change collection; the with-export /
+clean-checkout 324/319 reconciliation follows the PAPERWORK-row +5 idiom, quoted in the RN).
+
+== 5. DOCS-ONLY PROOF =====================================================
+$ git status --porcelain (after all edits, before staging the log)
+   M LEDGER.md
+   M README.md
+   M RELEASE_NOTES.md
+   M docs/ARCHITECTURE.md
+$ git diff --name-only 16b601b          (tracked diff vs base — NO code/test file)
+   LEDGER.md
+   README.md
+   RELEASE_NOTES.md
+   docs/ARCHITECTURE.md
+$ git diff --cached --stat (4 docs staged; DOC-TAIL.log is the 5th pathspec file, staged at
+  commit time — it cannot quote its own stat line):
+   LEDGER.md            |   1 +
+   README.md            |   2 +-
+   RELEASE_NOTES.md     | 162 ++++++++++++++++++++++++++++++++++++++++--  (heading-restore +
+                            4 annotated rows re-add counted; final number in the commit)
+   docs/ARCHITECTURE.md |  39 ++++++++++---
+   4 files changed, 191 insertions(+), 13 deletions(-)
+Commit: git -c user.name="tech-writer (11859)" -c user.email=tech-writer@agent-town.local,
+pathspec = the 3 docs + this log + LEDGER.md; no push; NEVER git config; no spawns (leaf).
+(The suite run left only gitignored caches behind — porcelain above proves the tracked tree
+carries nothing else.)
+
+== 6. DECLARED / UNVERIFIED rows ===========================================
+- tag v1.4 + GitHub Release: NOT yet existing at this log's writing — UNVERIFIED-as-shipped by
+  design; the release-card event lands on this commit (RN heading states the truth in place).
+- v5_fx_probe tracer re-baseline: DECLARED NOT RUN at v1.4 (no artifact shows a run) — the ARCH
+  row documents the 2026-10-28 baseline as predating G6 and mandates explain-then-re-declare on
+  the next run; nothing here claims it re-baselined.
+- Mutation-run artifacts (venv, scratch farms, mutants/) are host-side /tmp per P3 §9 — not repo
+  content; the RN quotes only the log's tallies.
+- P4 + P6 §SERVED-HUD + P8 §RESHOOT-VERDICT legs are orchestrator legs (MC 11509 D3 — game
+  visuals = browser + describe-image); their logs are committed in this run dir and are the
+  cited artifacts.
+- LEDGER row for 11859 lands atomically in THIS commit (full-file add — the file's working state
+  at base carried no sibling mid-edits; the F1 partial-stage precedent was not needed).
+# VERDICT: PASS — RN body + README AT tag + grep-to-zero all landed docs-only; suite 324 rc=0;
+# retired claims ^0$; promise/did-not-ship rows told honestly.
+VERIFY_EXIT=0
