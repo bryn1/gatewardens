@@ -14,14 +14,14 @@ extends Button
 # relic badge marks slot=="relic" tower gear (C11 — never hero-worn;
 # SimInventory.equip refuses it, the bank still shows it).
 #
-# Rarity tint (reading recorded on the card trail): the W9 brief reads
-# rarity.json as carrying a colors ladder, but the shipped rarity.json
-# (W2) has NO colors key and data files are outside this card's write
-# scope — the row therefore binds the data door
-# bind(tables) -> rarity["colors"]: a declared color string per rarity
-# paints the swatch the moment that data row lands (BN3 extensibility,
-# the same shape as chest_tiers), until then the swatch stays a NEUTRAL
-# named grey. No hex literals and no invented palette anywhere here (I2).
+# Rarity tint (v1.5 W-Q, MC 11877): rarity.json NOW CARRIES the colors
+# ladder — one Color string per ladder name, authored in ladder order
+# (presentation DATA, the F2 sell_value precedent) — and the data door
+# bind(tables) -> rarity["colors"] paints $Tint from it everywhere the
+# row renders. An unknown or missing name keeps the NEUTRAL named grey
+# the row shipped with pre-v1.5 (the door's own fallback). The palette
+# is DATA, this file is only its renderer: zero hex literals and no
+# invented color anywhere here (I2; the W9 no-colors reading is history).
 
 signal picked(uid: int)
 

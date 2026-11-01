@@ -195,6 +195,7 @@ func refresh() -> void:
 	banner.visible = m.outcome != null or _coach != ""   # G8: coach rides
 	banner.text = banner_text()                          # the SAME banner
 	toast_label.text = toast_text()
+	toast_label.modulate = toast_modulate()
 	_place_icon(icon_wave, wave_label)     # V4: ride beside the CURRENT
 	_place_icon(icon_green, green_label)   # text width as counts grow —
 	_place_icon(icon_core, core_label)     # the Label rect itself never moves
@@ -260,6 +261,14 @@ func toast_text() -> String:
 	var row: Dictionary = m.loot_events[m.loot_events.size() - 1]
 	return "Picked up %s (%s)" % [String(row["base_id"]),
 			String(row["rarity"])]
+
+
+func toast_modulate() -> Color:
+	# W-Q (MC 11877): the toast rides item_row's ONE rarity.json colors door.
+	if m == null or m.loot_events.is_empty():
+		return Color("gray")
+	return Color.from_string(String(m.tables.table("rarity").get("colors",
+			{}).get(String(m.loot_events[-1]["rarity"]), "gray")), Color("gray"))
 
 
 func boss_text() -> String:

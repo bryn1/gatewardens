@@ -1,0 +1,138 @@
+# WQ-wave.log — v1.5 W-Q rarity colors (MC 11877, coder seat, 2026-11-01)
+# Base 7847351 (v15 PLAN commit), branch card/11877. Plan row:
+# V15-PLAN-c2.md §3 "W-Q" (binding), §2 row 8c, §4 matrix (writable:
+# godot/data/rarity.json + scripts/item_row.gd + scripts/hud.gd +
+# tests/test_rarity_colors.py + this log + LEDGER.md row).
+# Brief: LADDER TRUTH (DA N3) — colors authored PER NAME in rarity.json's
+# own ladder array, order pinned, none invented. hud.gd stays <=400.
+
+== §0 PRE-FLIGHT (plan §3 W-Q named check) =============================
+Pre-flight: no pre-existing in-suite leg may assert a gray fallback /
+tint pixel — else lighting the key would silently move a pinned pixel.
+$ (base tree 7847351, changes stashed)
+$ grep -rn "\"colors\"\|Tint\|gray\b\|grey\b" tests/*.py  # BASE tree 7847351 (pre-change)
+tests/test_hub.py:17:- The brief paraphrases "rarity.json colors" and SimInventory
+tests/test_hub.py:19:  rarity.json carries NO colors key (item_row shows the rarity NAME
+tests/test_hub.py:20:  tinted via a data-side optional `colors` map when one ever lands) and
+tests/test_icon_states.py:19:Overlap reading (same precedence before and after the RECUT — colors
+hits above = only docstring prose (test_hub:17-20 W9 reading, already anticipated the key landing); ZERO asserted legs pinned a tint or the gray fallback — plan §3 W-Q pre-flight CLEAN
+
+== §1 CHANGE (the two halves, replace-not-delete) ======================
+godot/data/rarity.json — "colors" added DIRECTLY AFTER "ladder", one
+lowercase #rrggbb per ladder name in ladder order (worn #9d9d9d neutral
+floor -> legendary #d64550), authored DATA (F2 sell_value precedent).
+Schema gate TOP_SHAPE ("rarity.json") stays presence+kind — extra keys
+tolerated (the F2 precedent; re-run green at §4).
+godot/scripts/item_row.gd — header :17-24 de-staled ONLY (the W9
+"shipped rarity.json has NO colors key" reading replaced by the v1.5
+truth; the data door, the grey fallback and the I2 zero-literal claim
+all kept). Code diff: ZERO (the tint mechanism already shipped waiting).
+godot/scripts/hud.gd — toast rides the SAME door: ONE refresh() line
+(toast_label.modulate = toast_modulate()) + the pure-read accessor
+toast_modulate() (grey = no row; zero literals I2, zero writes I4 —
+test_hud.py's own gate families unaffected).
+GATE METRICS (check_hygiene ceiling walk, len(read().split("\n"))):
+  item_row.gd   82 (header swap is 8-for-8)   | ceiling 400 — ok
+  hud.gd        385 -> 394                     | ceiling 400 — ok
+  WATCH ROW DECLARED (plan risk 5): projection was "~390"; the honest
+  accessor idiom (one-line comment + guard + wrapped door read) lands
+  394. The extract-first rule's named extraction (banner/coach block)
+  is NOT a W-Q matrix file — no extraction this card; 394/400 stands,
+  and the NEXT hud.gd growth is where the plan's extraction belongs.
+  (Precedent: P5 "400==ceiling, +1 tips it — apply brief fallback,
+  declared".)
+
+== §2 PLANTED-REDS x2 (F4 staged-first; transcripts banked) ============
+Staged the final tree FIRST (git add the 4 pathspec files), then:
+PLANT 1 — swap worn<->legendary colors in rarity.json (valid JSON):
+  engine legs go RED (renderer + toast now PAINT off-contract):
+    FAILED tests/test_rarity_colors.py::test_item_row_tints_are_the_data
+    FAILED tests/test_rarity_colors.py::test_loot_toast_tints_are_the_data
+    item_row Tint for worn = (214,69,80) — not the contract (157,157,157)
+    PLANT1_ENGINE_RED_RC=1
+  git checkout -- godot/data/rarity.json -> diff-vs-index EMPTY,
+  "worn": "#9d9d9d" restored (REVERT_VERIFIED); re-run:
+    4 passed; REVERTED_GREEN_RC=0
+PLANT 2 — remove the colors key (valid JSON):
+    FAILED tests/test_rarity_colors.py::test_rarity_colors_data
+    KeyError: 'colors'
+    PLANT2_DATA_RED_RC=1
+  revert byte-verified (diff-vs-index EMPTY); re-run:
+    2 passed; REVERTED_GREEN_RC=0
+
+== §3 SERVED (browser loopback; v14 same stack) =========================
+$ bash tools/export_web.sh                 # clean tree at the final files
+$ python3 -m http.server 8877 --bind 127.0.0.1   (static/, loopback)
+$ PW_CHROME=chromium-1243 PW_SHOTS=... node wq-leg-mission*.cjs
+SERVED MEASUREMENTS (all browser-verified this session — each a finding):
+ (a) BOOT lands HUB; "Start gatefall — normal" is at (90,132); the
+     v14-era click (105,165) = "Start gatefall — HARD" (hard skitterling
+     hp 55 + core 1800 confirmed by instrumented export: DBG pre=55.0,
+     screenshots Core 0/1800 | sub 700/700). First served run to pin
+     NORMAL at (90,132). (v14 legs unaffected — icon states do not ride
+     difficulty; ROUTED NOTE for future served-combat legs.)
+ (b) GROUND CLICKS DO NOT ARM A SLOT IN WEB: shipped confirm prints
+     slot=-1 (first_free) for every KeyM/click confirm (desktop ghost
+     follows mouse; web relay never moves it) — the served placement
+     order is the SHIPPED first-free order, equal to the headless win
+     drive's order; no slot control exists through served clicks.
+ (c) KEYBOARD route works in web: row-click arms, KeyM places (rising
+     edge = ONE place, bridge.gd:55 guard measured live).
+ (d) The toast, served (shots3/s02, s03): state-marker-first —
+     describe-image (Lane E, qwen3.8-flash-next, 1055 ptok, 11.6s)
+     literal-read: "Picked up signet_of_fury (powerful)" (blue/purple
+     line under the Core row). THEN pixel census (wq-census.py strip,
+     box 24,122..320,144): dominant saturated glyph color
+     (75,123,212) x315 px == #4b7bd4 EXACT == rarity.json powerful.
+     Toast tint = the DATA color, on served pixels. TOAST LEG GREEN.
+ (e) Win-route evidence: headless drive (win_drive3.gd, scratch, NOT in
+     the repo) plays the SHIPPED doors only (place_id first-free + panel
+     upgrade), seeds 7 AND 11 outcome=win rc=0 — the served strategy is
+     winnable; blind-click timing compounding is the open served gap.
+BANK ROWS LEG: see §3b below (filled at run end).
+
+== §4 FINAL TREE (same commit as this log) ==============================
+$ python3 -m pytest tests/ -q          -> 328 passed in 203.16s rc=0
+  (+4 legs on the 324 base == plan §5 W-Q "+3..4" bar MET, declared)
+$ python3 tools/check_hygiene.py       -> rc=0, 0 hits (24 notes = base set)
+$ git diff tests/fixtures/             -> EMPTY (colors never sim input)
+$ GOVERNED_LITERALS                    -> 17 (item_row joins, W9 shipped;
+  zero numeric literals added: all colors are DATA in rarity.json)
+Console-clean served legs: console-mission.json 0 errors (runs 3 + 5).
+
+== §3b BANK-ROWS census leg: BLOCKED (honest) ===========================
+The hub-bank rows census could NOT be executed on served pixels this
+session. Evidence and cause, no fabrication:
+1. LAW (product, shipped): bank rows exist only after a WIN —
+   mission.gd banks the chest on victory; a DEFEAT banks nothing; boot
+   default var bank = []. Dummy-range has zero loot/bank paths; black-
+   smith/tinkerer only consume existing rows (grep: no bank_add caller
+   outside the win chest). Hub gear shots (shots5 h0..h5) show the
+   honest empty state: rows = zero, swatch column absent.
+2. ATTEMPTS (six blind strategies, same export + browser + NORMAL):
+   tower-first / faster beats / KeyE upgrade routes / probe-verified
+   600 ms pacing — every run DEFEAT by wave 4 (screenshots p10..p64).
+   Root signature: at 7 fps headless-chromium the first build window
+   lands 2 of the 3 first-free towers (uid3 never exists — p10 shows
+   defenses 2 from wave 1); dps starvation -> leak spiral -> core dead
+   by wave 4. Instrumented probe proved the INPUTS work (row-select +
+   KeyE => UPG res ok:true tier:2; KeyM => place ok uid:1) — this is
+   blind input-timing compounding at 7 fps, NOT a product defect.
+3. HEADLESS PROOF of the win route (served doors only): win_drive3
+   (scratch, not in repo) plays the shipped first-free order + panel
+   upgrades; SEED 7 and SEED 11 => outcome=win rc=0. The data door
+   itself is proven on served pixels by the TOAST leg (§3 d): the same
+   rarity.colors table paints "Picked up signet_of_fury (powerful)"
+   #4b7bd4 EXACT (315 px census).
+4. WHAT WOULD UNBLOCK: phase-aware play (vision-poll build/combat from
+   shots between beats) or a seeded-run affordance — the latter would
+   be a PRODUCT change (out of this card). Bank census is a candidate
+   row for a follow-up served leg; the engine-side per-rarity tint
+   census (all 6 colors + grey fallback, x169 row-mod) is TESTED in
+   tests/test_rarity_colors.py RC-TINT/RC-TOAST legs regardless.
+
+== §5 TEARDOWN + VERIFY ==================================================
+$ fuser -k -n tcp 8877   -> port closed (served legs complete)
+$ final gates            -> §4 rows (suite 328 rc=0, hygiene 0, fixtures
+  empty) run at THE FINAL TREE, this commit.
+VERIFY_EXIT=0

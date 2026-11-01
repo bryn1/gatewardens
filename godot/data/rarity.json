@@ -1,5 +1,13 @@
 {
   "ladder": ["worn", "sturdy", "powerful", "epic", "mythical", "legendary"],
+  "colors": {
+    "worn": "#9d9d9d",
+    "sturdy": "#6abe30",
+    "powerful": "#4b7bd4",
+    "epic": "#a04fd0",
+    "mythical": "#e8912d",
+    "legendary": "#d64550"
+  },
   "mod_slots": {
     "worn": 0,
     "sturdy": 0,
