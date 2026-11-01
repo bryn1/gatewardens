@@ -1,0 +1,187 @@
+# MC 11878 — v1.5 W-T1: static_app in-process tests (closes P3 F-3 / F-3a / F-4) — VERDICT LOG
+seat: test (11878) | worktree /tmp/gw-v15-wt1 @ 7847351, branch card/11878 | date 2026-11-01
+
+Binding read this session: .audits/20261101-0843-v15-plan/V15-PLAN-c2.md §3 W-T1
+(+ §2 rows 2b/2c) and .audits/20261031-1830-v14-plan/P3-wave.log §5a + §5c rows
+F-3/F-3a/F-4. Worktree-only writes: tests/test_static_app.py NEW, this log, one
+LEDGER.md row (own row, own pathspec commit — §3 LEDGER LAW, F1 precedent).
+server/ + tests/fixtures/ + every other file UNTOUCHED (GATE rows §7).
+JUDGED row: no dod_judged_hash.py command was carried in this card's prompt —
+per the MC 3720 conditional the line is not required; declared, not skipped
+silently.
+
+## 1. FINDING -> LEG MAP (no silent drop)
+
+| P3 finding | leg(s) that close it |
+|---|---|
+| F-3 (no in-process test; 0/121 association) | the whole file: tests/test_static_app.py imports the module IN-PROCESS via `from server import static_app` — the path-derived association key P3 §2 declared; every leg below is what the next mutation sweep associates |
+| F-3a (OSError branch untested at every tier; survivors serve_46..56) | test_oserror_branch_chmod000_gets_c10_404 — isfile-true + chmod-000 open-fails, pinned 404 + exact C10 body + JSON content-type (kills all 11 argument/status/body mutations; plants P1/P2 below show the leg goes RED on exactly that branch) |
+| F-4 (_resolve lstrip("/") boundary; survivor _resolve__mutmut_21, strip SET {X,/}) | test_f4_uppercase_x_name_served_byte_intact (/XHR.js, the UPPERCASE-X leg plan §2-2c/REV-c2 F-E requires — RED under mutant_21: "/XHR.js"->"HR.js"->404) + test_f4_lowercase_companion_served_byte_intact (GREEN under the mutant BY DESIGN per P3-wave.log:102, pins the ordinary case) |
+| F-5 (python3 -m venv broken, host fact) | NOT this card — plan §2 row 2d disposed it DEFER (fleet infra); named here so the map is complete, not dropped |
+
+## 2. DECLARED READINGS (DoD ambiguity, stated not chosen silently)
+
+1. "405 wrong method" (plan §3 W-T1 leg sketch) vs the SHIPPED contract: server.py
+   :6-7 "Methods other than GET get the same C10 NOT_FOUND JSON shape (a
+   static-only server has no verbs)" and :27-34 map POST/PUT/DELETE/PATCH to
+   send_error_json(404). server code is UNTOUCHED by this card, so the verbs leg
+   pins the shipped shape: `assert status == 404` asserts refusal AND never-405
+   at once. Following the sketch verbatim would pin a contract the product does
+   not serve.
+2. Verb WIRING: the in-suite handler mirrors server.py:27-34 calls on the
+   ASSOCIATED module object — server.py's own plain `import static_app` would
+   resolve a second module object that dodges the mutmut trampoline (P3 §2
+   association rule). GET legs run the real static_app.serve over real HTTP.
+3. Artifact path: WT1-wave.log lands in the v15 run dir .audits/
+   20261101-0843-v15-plan/ (house pattern: every v1.4 wave log lives in its plan
+   run dir).
+
+## 3. ENVIRONMENT (measured, quoted)
+
+```
+$ whoami                       claudecode
+$ id                           uid=1000(claudecode) gid=1000(claudecode)
+$ grep CapEff /proc/self/status  CapEff:     0000000000000000
+$ python3 --version            Python 3.10.12
+$ python3 -m pytest --version  pytest 9.0.3
+```
+ROOT-SENSITIVITY (plan §2-2b + risk 7): the chmod-000 leg is true only while no
+DAC_OVERRIDE/privileged uid is in play — CapEff=0 measured above. The leg carries
+an IN-PROBE GUARD that pytest.fail-s LOUD, naming "uid privileged (root?
+DAC_OVERRIDE?)", whenever open() succeeds on the 000 file (never silently green).
+Guard demonstrability = plant P5 below. Server binds 127.0.0.1 PORT 0
+(OS-assigned ephemeral; zero collision with the subprocess served tier — risk 6).
+
+## 4. SUITE COUNT ROWS (measured, not projected)
+
+```
+BASE  (before adding the file, at 7847351):
+$ python3 -m pytest -q -p no:cacheprovider tests/
+324 passed in 190.81s (0:03:10)                       SUITE_RC=0
+GREEN (with tests/test_static_app.py):
+$ python3 -m pytest -q -p no:cacheprovider tests/
+332 passed in 196.28s (0:03:16)                       SUITE_RC=0
+```
+COUNT LINE: W-T1 projected ~6 legs; this card delivers 8 (+8 on the suite:
+324 -> 332). Bar exceeded, named here; the bar itself is unchanged. (Plan §5
+335-336 assumed W-K/W-Q rows already landed — those cards ride their own trees;
+this card measures its own delta only.)
+
+## 5. GREEN RUN (the file alone)
+
+```
+$ python3 -m pytest -q -p no:cacheprovider tests/test_static_app.py
+8 passed in 0.56s
+```
+Legs: root->index 200 bytes-intact | hello.js 200 byte-intact (utf-8 byte kept,
+Content-Length pinned) | missing file exact 404 C10 body + length | verbs
+POST/PUT/DELETE/PATCH -> C10 404 (§2-1) | F-4 /XHR.js byte-intact (mutant_21
+killer) | /xhr.js companion | F-3a chmod-000 OSError branch (IN-PROBE guard +
+isfile precondition) | refusal matrix /../outside/secret.js, %2F-encoded twin,
+symlink escape.js, /%00nul.js, /no/such/dir/deep.js, /index.secret — with a
+NON-VACUITY control: the escape target is proven to exist and read outside the
+docroot (the 404 is the resolver refusing, not file absence).
+
+## 6. PLANTED-RED TRANSCRIPTS (side by side; scratch copies only, repo server byte-untouched)
+
+Every plant: applied to /tmp/gw-wt1-scratch/server/static_app.py (or the scratch
+TEST copy for P5) with a count-checked anchor, one leg or full file run, then
+cp-revert + cmp + sha256 + porcelain. `REVERT-BYTE-OK` below =
+cmp server/static_app.py == worktree source (sha256 7ff1370c7db7789f
+4c7514353a5af50a71f981ae7255c82f36b52e3208def548 unchanged all session).
+GREEN beside every red = the §5 8-passed run (re-run after every revert).
+
+P1 — TASK-MANDATED: short-circuit the OSError branch (drop the send_error_json;
+    branch returns without answering):
+```
+E   http.client.RemoteDisconnected: Remote end closed connection without response
+/usr/lib/python3.10/http/client.py:292: RemoteDisconnected
+FAILED tests/test_static_app.py::test_oserror_branch_chmod000_gets_c10_404
+1 failed in 0.53s        (then: REVERT-BYTE-OK, 8 passed)
+```
+P2 — exact mutmut_52 (OSError branch 404 -> 405):
+```
+E   AssertionError: OSError branch /locked.js -> 405, want 404 (C10 never 403/405)
+tests/test_static_app.py:95: AssertionError
+FAILED tests/test_static_app.py::test_oserror_branch_chmod000_gets_c10_404
+1 failed in 0.54s        (then: REVERT-BYTE-OK, 8 passed)
+```
+P3 — exact mutant_21 (lstrip("/") -> lstrip("XX/XX")), FULL FILE — exactly ONE
+red, the uppercase leg; the lowercase companion stays green EXACTLY as
+P3-wave.log:102 predicted (strip set {X,/} never touches lowercase x):
+```
+E   AssertionError: /XHR.js -> 404, want 200 (mutant_21 kills it)
+FAILED tests/test_static_app.py::test_f4_uppercase_x_name_served_byte_intact
+1 failed, 7 passed in 0.61s   (then: REVERT-BYTE-OK, 8 passed)
+```
+P4 — escape-guard flip commonpath != -> == (P3 pilot class), FULL FILE:
+```
+FAILED ...::test_root_maps_to_index_and_serves_bytes
+FAILED ...::test_js_serves_200_byte_intact
+FAILED ...::test_f4_uppercase_x_name_served_byte_intact
+FAILED ...::test_f4_lowercase_companion_served_byte_intact
+FAILED ...::test_escape_nul_and_unknown_dir_refused
+5 failed, 3 passed in 0.63s   (then: REVERT-BYTE-OK, 8 passed)
+```
+P5 — IN-PROBE GUARD demonstrability (scratch TEST copy, chmod 0o000 -> 0o644 =
+simulated privileged uid): the guard itself fires, naming the cause:
+```
+E   Failed: IN-PROBE GUARD: open() of mode-000 file SUCCEEDED — uid privileged
+    (root? DAC_OVERRIDE?) — the F-3a OSError branch cannot be exercised here
+tests/test_static_app.py:210: Failed
+FAILED tests/test_static_app.py::test_oserror_branch_chmod000_gets_c10_404
+1 failed in 0.53s
+```
+P4 NOTE (honest): the OSError leg passes under P4 — a flipped commonpath makes
+the 404 arrive from the resolve path instead of the OSError branch, byte-
+identical response. That is the assertion's bounded purpose (response contract
+of the branch); the branch-entry mutants themselves are covered by P1/P2, which
+both RED. Recorded, not hidden.
+
+## 7. INCIDENT — pytest rewrite-cache FALSE-RED (root-caused, not swept under)
+
+After P5's sed+revert, two full-file runs showed the OSError leg RED with the
+guard message — while standalone probes DENIED the 000-open 5/5 and P1..P3 had
+been truthful minutes earlier. Root cause (measured, not guessed): the P5 sed
+(0o000->0o644) preserves file SIZE and the mv-revert landed in the SAME WALL-
+CLOCK SECOND — pytest's rewritten-bytecode cache is keyed (mtime-seconds, size),
+so the stale sed'd bytecode ran while the traceback printed the REVERTED source.
+Fix: purge __pycache__, sleep 1.2 s, re-run 3x GREEN, then replay the WHOLE
+battery (all transcripts above are from the clean replay). Lesson recorded for
+the fleet: a byte-verified revert must also invalidate bytecode caches — a
+same-size same-second revert is the trap class (negative-testing: the
+byte-compare passed while the EXECUTED bytes differed).
+
+## 8. GATES (at the final tree)
+
+```
+$ python3 tools/check_hygiene.py | tail -1
+check_hygiene: 0 hit(s)                              HYGIENE_RC=0
+$ git diff --stat -- tests/fixtures                  (empty)   RC=0
+$ git status --porcelain                             (only the card's own paths)
+$ wc -l tests/test_static_app.py
+240        (one concern, far under the 600 tests ceiling)
+```
+Repo server code diff: EMPTY (scratch-only plants; sha §6). static/ untouched
+(never read — tmp docroot only). No push, no git config, no spawn (leaf).
+
+## 9. HONEST LIMITS (declared)
+
+- The kill itself is the NEXT mutmut sweep's job (that is the tooling's
+  mechanics, not this card's); what this card guarantees is (a) the branch and
+  boundary are exercised by real in-process HTTP assertions now and (b) the
+  import key is the P3 §2 associated one so the sweep sees them. P1/P2/P3
+  transcripts ARE the kill simulation of serve_46..56 / _resolve_21.
+- F-3a reality = chmod-000 under unprivileged uid (measured CapEff=0 §3); the
+  in-probe guard flips the leg RED-loud on any privileged future run (declared
+  root-sensitivity, plan §2-2b + risk 7).
+- Verb wiring mirrors server.py:27-34 (§2-2); the wiring file itself stays
+  subprocess-tier covered only — out of this card's pathspec by design.
+- test_served.py (160 ln) NOT grown — the plan §2-2c DECLARED route deviation
+  (new file carries the association the subprocess tier cannot).
+
+VERIFY command (final, on the committed tree): pytest tests/test_static_app.py
++ check_hygiene + fixtures diff + porcelain over the UNTOUCHED list
+(server/ static/ tests/fixtures/ tools/), conjoined rc.
+# VERDICT: PASS
+VERIFY_EXIT=0
