@@ -1,0 +1,9 @@
+        hailspire-LAST pinned as the walk's premise (WF2-ORDER), bolts keep
+        frame budget (WF2-ICE n>=1). Pre-fix this probe exhausts WALK and
+        prints WF2-FAIL: the drop-pass spends the cap and placement-greedy
+E         WF2-ORDER first=ballista last=hailspire_tower
+E         WF2-BOLT n=6132 frames=3000
+E         WF2-FAIL last-placed hailspires never got a leftover slot (f=3000 bolts=6132)
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...2-BOLT n=6132 frames=3000\nWF2-FAIL last-placed hailspires never got a leftover slot (f=3000 bolts=6132)\n', stderr='').returncode
+1 failed in 3.61s
+1 passed in 1.41s

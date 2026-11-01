@@ -1,0 +1,33 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________ test_v5fx_fires_fairness_last_placed _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-4976/test_v5fx_fires_fairness_last_0')
+
+    def test_v5fx_fires_fairness_last_placed(tmp_path):
+        """W-F fairness leg (11897-F1 fix): placement order ballista-first /
+        hailspire-LAST pinned as the walk's premise (WF2-ORDER), bolts keep
+        flowing (non-vacuity — fairness does not just mute everyone), and the
+        LAST-PLACED hailspires' ice is seen on a LIVE node >= once inside the
+        frame budget (WF2-ICE n>=1). Pre-fix this probe exhausts WALK and
+        prints WF2-FAIL: the drop-pass spends the cap and placement-greedy
+        fires hand every leftover to the first towers (WR §5)."""
+        proc = _run_fair_probe(tmp_path)
+        out = proc.stdout
+>       assert proc.returncode == 0, "fairness probe RED:\n%s\n%s" % (out, proc.stderr)
+E       AssertionError: fairness probe RED:
+E         Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         WF2-ORDER first=ballista last=hailspire_tower
+E         WF2-BOLT n=6132 frames=3000
+E         WF2-FAIL last-placed hailspires never got a leftover slot (f=3000 bolts=6132)
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...2-BOLT n=6132 frames=3000\nWF2-FAIL last-placed hailspires never got a leftover slot (f=3000 bolts=6132)\n', stderr='').returncode
+
+tests/test_v5_fx_baseline.py:333: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_v5_fx_baseline.py::test_v5fx_fires_fairness_last_placed - A...
+1 failed in 3.02s
+LEG_RC=1

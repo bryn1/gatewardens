@@ -104,6 +104,7 @@ var live_max := 0             # high-water mark of live fx nodes
 
 var _tracked := {}            # entity node instance-id -> snapshot dict
 var _kits := {}               # defense uid -> last-frame relic_uid (W-K)
+var _fires_cur := 0           # fires-pass fairness cursor (W-F, header)
 var _fx := []                 # live fx bookkeeping, parallel to children
 
 
@@ -173,10 +174,23 @@ func _observe_enemies(runner) -> Dictionary:
 # Fire detection: the defense's own nearest target lost the sim's exact
 # frame damage (public reads only: obj.pos/hp/dps()/bonus_row(), the
 # runner's nearest — the same selection the sim itself just made).
+# W-F (MC 11901, fairness for 11897-F1): the walk STARTS at a rotating
+# cursor instead of index 0. At MAX_FX saturation the drop-pass spends
+# the cap inside the same fx_step and only a few slots are left when the
+# fires pass runs — a placement-order-greedy walk handed every leftover
+# to the FIRST towers, and the last-placed hailspires spawned ice ZERO
+# since G6 (WR-wave.log §5). Rotating who leads the walk gives every
+# eligible tower a turn within n frames. PINNED and untouched: the cap
+# value, the drop-pass priority, the per-tower fire rule below.
 func _observe_fires(m, runner, drops: Dictionary, delta: float) -> void:
 	if drops.is_empty():
 		return
-	for rec: Dictionary in m.defense_list:
+	var n := int(m.defense_list.size())
+	if n == 0:
+		return
+	var start := _fires_cur % n
+	for k: int in range(n):
+		var rec: Dictionary = m.defense_list[(start + k) % n]
 		var obj = rec["obj"]
 		if float(obj.hp) <= 0.0:
 			continue
@@ -192,6 +206,7 @@ func _observe_fires(m, runner, drops: Dictionary, delta: float) -> void:
 			continue
 		_spawn_tracer(obj.pos, target["pos"], String(
 				PROJ_FOR.get(String(obj.trow["id"]), PROJ_DEFAULT)))
+	_fires_cur = start + 1
 
 
 # Kit-crossing detection (v1.5 W-K, MC 11876, V15-PLAN-c2 §3): the

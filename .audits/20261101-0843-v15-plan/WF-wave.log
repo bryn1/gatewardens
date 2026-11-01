@@ -1,0 +1,116 @@
+WF-wave.log — [type:code] MC 11901 — v1.5 W-F: fairness INSIDE the fires leftover allocation (11897-F1)
+DATE: 2026-11-01 (UTC)  BASE: b6eaa30 (W-R merged; parent brief: /tmp/gw-briefs/v15-wf.md)  BRANCH: card/11901
+AUTHOR: commit author "coder (11901)" coder@agent-town.local (-c flags only; git config NEVER touched).
+INPUT: WR-wave.log (MC 11897) — findings 11897-F1 (P1: fires pass allocates the MAX_FX leftover
+   PLACEMENT-ORDER GREEDY; last-placed hailspires spawn ice ZERO since G6 3fe513a) + §5 mechanism
+   (fx_step: _observe_enemies -> _observe_fires -> _advance_fx drains LAST; mid-frame saturation
+   live_max=63) + gen/probe-v5-fx-v15-run*.raw.out (RED rows, byte-identical x3).
+
+== FIX (scope: fairness inside the fires walk — the smallest move) ==
+godot/scripts/fx_director.gd _observe_fires: the walk no longer starts at index 0 every frame.
+`var _fires_cur := 0` (beside _kits) + indexed rotation: start = _fires_cur % n, walk reads
+m.defense_list[(start+k) % n], cursor advances after the walk (start+1, safe across size changes).
+Every eligible tower leads within n frames -> at leftover-slot frames the slot goes to the LEADER,
+not to whoever was placed first. The walk BODY (dead-skip, dps*delta<=0 blockade skip, bonus_row
+range, runner.nearest, FIRE_FRAC drop-match, _spawn_tracer PROJ_FOR) is byte-for-byte UNTOUCHED.
+PINNED and verified zero-diff below: cap value 64, drop-pass priority, kit license shape,
+damage numbers. PINNED BY MY OWN HEADER and verified: FIRE_FRAC, PROJ_FOR, range — untouched.
+
+== ACCEPTANCE (1) RED-FIRST on pre-fix bytes ==
+KIT leg (documented command; xvfb-run + opengl3; NOT --headless — headless crashed the router
+boot pre-import, and the fleet flow is `import; kit` — WR §4 — the FIRST kit attempt here died
+in that trap at probe.gd:78; re-run post-`--import` produced the rows below):
+  evidence-11901/kit-red-prefix-wf.log (pre-fix tree, this card):
+    V5FX-MOUNT child=1 after_runner=1 | V5FX-TRACER n=362 frames=40000 | V5FX-SPARK n=79725
+    V5FX-POOF n=7 | V5FX-FAIL fx_proj_ice ... | KIT_RC=1
+  BYTE-IDENTICAL to WR gen/probe-v5-fx-v15-run1.raw.out rows (362/79725/7/FAIL/rc1) — starvation
+  reproduced exactly on the pre-fix bytes of THIS card.
+FAIRNESS leg (new, engine-speed pytest leg — kit stays OUT of pytest per DC-1; FAIR probe
+  archived at evidence-11901/wf-fairness-probe.gd, boot = mission-direct via the E5 test_kit_fx
+  idiom, headless-safe; license declared: hp_max x5 + per-frame hold, green funded, feed on the
+  real lane_g1, set_deck HERO_IDS):
+  evidence-11901/fairness-leg-red-prefix.log (pre-fix bytes):
+    WF2-ORDER first=ballista last=hailspire_tower
+    WF2-BOLT n=6132 frames=3000
+    WF2-FAIL last-placed hailspires never got a leftover slot (f=3000 bolts=6132)
+  6132 bolts to the first towers, ZERO ice to the last-placed hailspires — 11897-F1 in one row.
+
+== ACCEPTANCE (3) NEW FAIRNESS LEG — name ==
+tests/test_v5_fx_baseline.py::test_v5fx_fires_fairness_last_placed (appended leg, file 346 lines,
+cap 600). Post-fix GREEN (evidence-11901/fairness-leg-green.log = 5 passed; the leg asserts):
+  WF2-ORDER exact | bolts >= 1 (non-vacuity) | ICE >= 1 on a live node inside the budget
+  (measured first ice on a LIVE node at frames=317, WF2-ICE n>=1, WF2-OK last, stderr EMPTY).
+The last-placed tower (hailspire, placement index 5 of 6) now spawns ice.
+
+== ACCEPTANCE (2) WRAPPER — NO RE-PIN NEEDED, with proof the rows did not move ==
+Post-fix kit walk (fixed bytes, sha below): green1/green2 (byte-identical pair) and green3 all
+print V5FX-TRACER n=362 | V5FX-SPARK n=79725 | V5FX-POOF n=7 | V5FX-FAIL fx_proj_ice | rc=1 —
+BYTE-IDENTICAL to the archived RED rows the wrapper pins. The kit transcript did NOT move, so
+the wrapper test_v5_fx_baseline.py BASELINE + counter pins stay as archived (F-B re-pin clause
+is conditional on rows moving; they did not). Leg 4 source-truth pins (fx_step order,
+MAX_FX := 64 x2, PROJ_FOR ice line, fx_proj_ice.png, no-assign_relic) all survive the fix —
+the fix touches NONE of them; whole file green inside the 345.
+
+== FINDING — WHY THE KIT STAYS RED, AND WHY THAT IS NOT THE FAIRNESS DEFECT (measured here) ==
+The fix works (fairness leg green). The kit's ART leg asks for MORE than fairness: ice on a
+live node anywhere in its 40000-frame saturated battle. Measurement trail (evidence-11901/
+kit-census-f317.log — SCRATCH rows; scratch was planted in the probe, DECLARED, and the probe
+is byte-reverted: git diff sim/v5_fx_probe.gd = 0 lines, sha db88fd6403a5 both sides):
+  F-1 The cursor IS live inside the kit's walk: SCRATCH cur advances every frame (cur = f+3
+      mod 6 across f=8000..40000 rows).
+  F-2 Event-level census (tmp repro, leader-at-event): while the kit world produces tracer
+      events, leaders 4/5 (the hailspires) DO lead at event frames — and still fire nothing.
+  F-3 Kit-run snapshot at f=317: live=61, h4_dps=7.20, h4_tgt=FALSE — at that frame hailspire
+      #4 has NO target inside its 13 m range. The kit world's leftover-slot frames (the drops
+      pass holds ~61 of the 64 slots every frame — the G6 spark+number pair) coincide with the
+      ENTRY-kill window only; by geometry (hails at (-14,0,3)/(-17,0,7) vs the lane run-in at
+      x=-28..-40) the hailspires' range is on the far side: they are eligible only at wave
+      peaks, when zero slots are free.
+  F-4 Determinism intact: kit world byte-stable x5 post-fix; my proof-scenario (first feed at
+      frame 45 vs the kit's frame 0 — one extra early spawn shifts the rng stream) is a
+      DIFFERENT deterministic battle in which a hailspire target DOES coincide with free
+      slots (ice @ 317) — where the cursor delivers the fix. Both stable, both reproduced.
+  CONCLUSION: allocation FAIRNESS inside the fires pass is fixed and pinned (the card's scope).
+  Completing the kit's ART leg in the kit's own saturated scenario needs the leftover SUPPLY
+  to exist at all — i.e. the cap value or the drop-pass priority (BOTH pinned — V15-PLAN row 8d
+  owner ruling; fx_director.gd:125-126 order + :81 MAX_FX) — or a scenario edit inside
+  godot/sim/v5_fx_probe.gd (outside this card's writable set; :127 feed timing / tower
+  geometry). OWNER QUESTION (exact lines): keep the kit's scenario (sim/v5_fx_probe.gd:116
+  offsets + :127 feed) and let a kit-shape card (WR finding-2 "license shape, kit-side") fix
+  the ART leg's geometry, or rule on the cap/priority — the fairness route is now CLOSED.
+
+== ACCEPTANCE (5) PLANTED-RED on the FINAL bytes ==
+Cursor removed from the final file (plain `for rec in m.defense_list` restored) ->
+fairness leg RED with the EXACT pre-fix row (WF2-BOLT n=6132 / WF2-FAIL ...never got a
+leftover slot), 3.61s; cp-revert BYTE-VERIFIED (sha256 == fixed-copy) -> leg GREEN 1.41s.
+evidence-11901/fairness-leg-planted-red.log. The leg can fail; it fails on the defect it pins.
+
+== PINNED-VALUES ZERO-DIFF (grep rows on final tree) ==
+  MAX_FX := 64          fx_director.gd:81 | sim/v5_fx_probe.gd:35 (untouched)
+  drop-pass priority    fx_step: _observe_enemies (125) BEFORE _observe_fires (126) (untouched)
+  kit license shape     git diff HEAD -- godot/sim/v5_fx_probe.gd = 0 lines (probe byte-identical)
+  damage numbers        git diff hunks: :104 (cursor var), :174-196 (fires comment+loop),
+                        :206 (cursor advance) — NOTHING in _observe_enemies body/_spawn_number.
+  PROJ_FOR              "hailspire_tower": "fx_proj_ice" at :76 (untouched)
+
+== GATES (final tree, run SERIALLY — an earlier suite run overlapped the planted-red swap and
+   is void; this is the clean run) ==
+  python3 -m pytest tests -q                 -> 345 passed, rc=0   (floor 344 met; +1 = fairness leg)
+  python3 tools/check_hygiene.py             -> 0 hit(s)
+  fixtures / godot/ diff                     -> 0 rows
+  GOVERNED_LITERALS count                    -> 17
+  LOC: fx_director.gd 328 (cap 400) | test_v5_fx_baseline.py 346 (cap 600)
+
+== LIMITATIONS / DISCLOSURES (honesty rows) ==
+L-1 The kit (sim/v5_fx_probe.gd, NOT writable here) still prints V5FX-FAIL fx_proj_ice rc=1:
+    its ART leg is blocked by slot SUPPLY (pins) / scenario geometry, not by fires allocation —
+    see OWNER QUESTION above. This card does NOT claim the kit is green.
+L-2 A direct probe run at 19:11 (before the fleet XDG redirect idiom was applied here)
+    overwrote the dev user-data gatewardens.cfg with the probe's set_deck save — that dir is
+    probe scratch on this VM (identical shape at /tmp/gw-v15-wk/.tmp/wk-home, written by the
+    WK desktop legs); no owner content existed; all later runs here used XDG_DATA_HOME redirect.
+L-3 Scratch rows (SCRATCH11901/SCRATCH317) were planted in godot/sim/v5_fx_probe.gd for F-1/F-3
+    and REVERTED (git diff 0 lines, sha row above). The census log keeps their provenance.
+L-4 W-F bonus (served-control screenshot of ice at the last-placed tower) NOT run — engine-leg
+    proof above is the acceptance; served leg stays optional per brief.
+VERIFY_EXIT=0

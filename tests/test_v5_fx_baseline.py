@@ -183,3 +183,164 @@ def test_v5fx_starvation_written_cause_source_truth():
     assert "assign_relic" not in probe, \
         "kit probe now crosses a kit-assign — the zero-at-rest clause " \
         "is dead, re-derive the counter causes"
+
+
+# ---------------------------------------------------------------------------
+# W-F (MC 11901) FAIRNESS LEG — the 11897-F1 fix, pinned HERE (name where,
+# per brief): test_v5_fx_baseline.py::test_v5fx_fires_fairness_last_placed.
+# The kit (sim/v5_fx_probe.gd) stays OUT of pytest (DC-1) and stays the
+# full-shape manual leg; this leg pins ONLY the fairness claim at engine
+# speed: the fires pass rotates a START cursor over defense_list, so the
+# LAST-PLACED towers (hailspires, which spawn ice) get leftover cap slots
+# too. RED-FIRST on pre-fix bytes: the probe exhausts its frame budget and
+# prints WF2-FAIL (transcript in WF-wave.log); planting the cursor away
+# re-REDs it (planted-red row there). License declared (kit idiom, probe-
+# side writes only): core held topped-up (hp_max x5 then topped each
+# frame), green funded to place, extra rows fed onto the real lane_g1.
+# ---------------------------------------------------------------------------
+
+FAIR_SRC = '''extends SceneTree
+
+const GW_TABLES := preload("res://sim/sim_tables.gd")
+const GW_COMPOSE := preload("res://sim/gw_compose.gd")
+
+const HERO_IDS := ["warden", "deadeye", "embercaller"]
+const TOWER_IDS := ["ballista", "bombard", "hailspire_tower"]
+const FEED_IDS := ["skitterling", "husk_brute", "ash_bandit"]
+const ICE_PATH := "res://assets/v11/fx_proj_ice.png"
+const BOLT_PATH := "res://assets/v11/fx_proj_bolt.png"
+const WALK := 3000     # sim+fx run ~7 fps headless here: 3000 frames
+                       # ~ 7 min worst case (pre-fix runs the FULL budget)
+
+
+func _init() -> void:
+	# Boot: mission.tscn instantiated directly (the E5 test_kit_fx idiom
+	# — headless-safe; the kit's Main-router boot is xvfb-only, declared).
+	var tables = GW_TABLES.new("res://data")
+	var graph: Dictionary = GW_COMPOSE.build_graph(tables)
+	var state = graph["state"]
+	state.set_deck(HERO_IDS.duplicate())
+	var packed = ResourceLoader.load("res://scenes/mission.tscn")
+	if packed == null:
+		_fail("mission.tscn not loadable")
+		return
+	var m = packed.instantiate()
+	root.add_child(m)
+	m._ready()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11901
+	m.setup(tables, graph["state"], graph["save"], graph["bridge"],
+			"gatefall", "normal", rng)
+	if m.core_main == null:
+		_fail("mission setup produced no core")
+		return
+	var fx = m.get_node_or_null("FxDirector")
+	if fx == null:
+		_fail("mission.tscn does not ship FxDirector")
+		return
+	m.core_main.hp_max *= 5.0
+	m.core_main.hp = m.core_main.hp_max
+	var guard := 0
+	while guard < 4000 and String(m.phase_kind) == "build":
+		m.step(1.0 / 60.0)
+		fx.fx_step(1.0 / 60.0)
+		guard += 1
+	if String(m.phase_kind) != "combat":
+		_fail("combat never started")
+		return
+	m.green = 100000
+	var trows := {}
+	for row: Dictionary in m.tables.rows("towers"):
+		trows[String(row["id"])] = row
+	var offs := [Vector3(-20, 0.0, 2.0), Vector3(-24, 0.0, 3.0),
+			Vector3(-28, 0.0, 5.0), Vector3(-32, 0.0, 1.0),
+			Vector3(-14, 0.0, 3.0), Vector3(-17, 0.0, 7.0)]
+	var ti := 0
+	for tid: String in TOWER_IDS:
+		for k: int in 2:
+			var pl: Dictionary = m.place_defense(trows[tid], 1, offs[ti])
+			if not bool(pl["ok"]):
+				_fail("place_defense refused %s: %s" % [tid, str(pl)])
+				return
+			ti += 1
+	if int(m.defense_list.size()) != 6:
+		_fail("defense_list not 6 rows")
+		return
+	print("WF2-ORDER first=%s last=%s" % [
+		String(m.defense_list[0]["obj"].trow["id"]),
+		String(m.defense_list[5]["obj"].trow["id"])])
+	var runner = m.get_node("EnemyRunner")
+	var lane: Dictionary = m.lanes["lane_g1"]
+	var ice_n := 0
+	var bolt_n := 0
+	var f := 0
+	var feed_k := 0
+	while f < WALK:
+		f += 1
+		if f % 45 == 0:
+			runner.spawn({"enemy_id": FEED_IDS[feed_k % FEED_IDS.size()],
+					"count": 1}, lane, m.enemy_defs, m.rng)
+			feed_k += 1
+		m.step(1.0 / 60.0)
+		m.core_main.hp = m.core_main.hp_max
+		fx.fx_step(1.0 / 60.0)
+		for c: Node in fx.get_children():
+			var spr := c as Sprite3D
+			if spr != null and spr.texture != null:
+				var p := String(spr.texture.resource_path)
+				if p == ICE_PATH:
+					ice_n += 1
+				elif p == BOLT_PATH:
+					bolt_n += 1
+		if ice_n >= 1 and bolt_n >= 1:
+			break
+		if m.outcome != null:
+			_fail("mission ended before the fairness legs were met (f=%d)" % f)
+			return
+	print("WF2-BOLT n=%d frames=%d" % [bolt_n, f])
+	if ice_n < 1:
+		_fail("last-placed hailspires never got a leftover slot (f=%d bolts=%d)" \
+				% [f, bolt_n])
+		return
+	print("WF2-ICE n=%d frames=%d" % [ice_n, f])
+	print("WF2-OK")
+	quit(0)
+
+
+func _fail(why: String) -> void:
+	print("WF2-FAIL " + why)
+	quit(1)
+'''
+
+
+def _run_fair_probe(tmp_path):
+    probe = Path(tmp_path) / "gw_wf_fairness_probe.gd"
+    probe.write_text(FAIR_SRC, encoding="utf-8")
+    return conftest.run_probe_script(str(probe), (),
+                                     tmp_path / "user_home", 1500)
+
+
+def test_v5fx_fires_fairness_last_placed(tmp_path):
+    """W-F fairness leg (11897-F1 fix): placement order ballista-first /
+    hailspire-LAST pinned as the walk's premise (WF2-ORDER), bolts keep
+    flowing (non-vacuity — fairness does not just mute everyone), and the
+    LAST-PLACED hailspires' ice is seen on a LIVE node >= once inside the
+    frame budget (WF2-ICE n>=1). Pre-fix this probe exhausts WALK and
+    prints WF2-FAIL: the drop-pass spends the cap and placement-greedy
+    fires hand every leftover to the first towers (WR §5)."""
+    proc = _run_fair_probe(tmp_path)
+    out = proc.stdout
+    assert proc.returncode == 0, "fairness probe RED:\n%s\n%s" % (out, proc.stderr)
+    assert proc.stderr == "", "stderr not empty:\n%s" % proc.stderr
+    rows = [ln for ln in out.splitlines() if ln.startswith("WF2")]
+    order = [ln for ln in rows if ln.startswith("WF2-ORDER")]
+    assert order == ["WF2-ORDER first=ballista last=hailspire_tower"], rows
+    bolts = [int(x.split("=")[1]) for x in
+             next(ln for ln in rows if ln.startswith("WF2-BOLT")).split(" ")[1:]
+             if x.startswith("n=")]
+    assert bolts[0] >= 1, rows
+    ice = [int(x.split("=")[1]) for x in
+           next(ln for ln in rows if ln.startswith("WF2-ICE")).split(" ")[1:]
+           if x.startswith("n=")]
+    assert ice[0] >= 1, rows
+    assert rows[-1] == "WF2-OK", rows
