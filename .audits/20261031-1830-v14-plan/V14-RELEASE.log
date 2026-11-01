@@ -1,0 +1,15 @@
+# V14-RELEASE.log — v1.4 release chain (MC 11826, orchestrator) — "read-the-state"
+TAG: v1.4 -> 59c0948 (paperwork commit: RN scope-truth + LEDGER sweep row); pushed origin/v1.4.
+EXE: tools/export_windows.sh ONCE at tag worktree /tmp/gw-v14-tag (GW_GODOT pinned 4.7.2): PE32+ GUI x86-64,
+  sha256 6caff51c1b58d64ce688ae4b8ef8ed09ca84df05fd1eb26580015f77f742c11d, 114,327,920 B. ONE build only — the
+  kb-law (b88582d3…) honored: never rebuild between verify and upload; THAT file was transferred + verified + attached.
+VM120: seat checked live (165 procs, guest agent ok); served via python3 -m http.server -b 192.168.5.231 :8155;
+  downloaded to C:\Users\Public\gwv14.exe — hash 6CAFF51C… EQUALS shipped, Length 114327920 EQUALS;
+  run: ALIVE RESP=True PID=6260 CPUdelta=6515.625 (4s window, TotalProcessorTime); Stop-Process -> PROC_GONE;
+  cleanup: FOLDER_FILE_GONE; transfer server killed (curl refused post-kill).
+GH RELEASE: https://github.com/bryn1/gatewardens/releases/tag/v1.4 — title "v1.4 read-the-state"; body = RN v1.4
+  section (141 ln) + sha/VM120/zero-monetization footer; POST-CREATE VERIFY from GitHub: asset size 114327920 ==
+  shipped bytes, asset name Gatewardens.exe, body greps: "VM120 boot-verified" ^1, "Zero monetization forever" ^1,
+  "rec on all 3" (END-ONLY ruling row) ^1.
+RELEASE SUITE: 324 passed rc=0 measured at the tagged tree (this session, 187.98s); clean-collect reconciliation
+  319 +5 export legs (idiom row carried).
