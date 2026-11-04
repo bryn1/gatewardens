@@ -1,0 +1,60 @@
+FF...                                                                    [100%]
+=================================== FAILURES ===================================
+___________________________ test_decor_engine_probe ____________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-5269/test_decor_engine_probe0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_decor_engine_probe(tmp_path, class_cache):
+        proc = _run_probe(tmp_path)
+>       assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+E       AssertionError: probe rc=1
+E         OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         DC-CONTAINER n=1 inst_nodes=3
+E         DC-COUNT props=24 parts=38 max=40
+E         DC-CLASS trunks=cyl canopies=cyl rocks=box prim=1
+E         DC-LIT cast_off=1 emission=3
+E         DC-RIM outside=38 floored=38
+E         DC-FAIL DET: re-fill dumps differ from the live build (layout must be pure const data)
+E         
+E         ERR:
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...de=38 floored=38\nDC-FAIL DET: re-fill dumps differ from the live build (layout must be pure const data)\n', stderr='').returncode
+
+tests/test_decor.py:361: AssertionError
+_____________________ test_decor_two_builds_byte_identical _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-5269/test_decor_two_builds_byte_ide0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_decor_two_builds_byte_identical(tmp_path, class_cache):
+        """Determinism ACROSS PROCESSES (the plan leg "two builds
+        identical"): two independent boots of the same probe print
+        byte-identical transcripts — no RNG, no time, no order-dependence
+        survived the const-table law."""
+        a = _run_probe(tmp_path / "a")
+        b = _run_probe(tmp_path / "b")
+        for p in (a, b):
+>           assert p.returncode == 0 and "DC-FAIL" not in p.stdout, \
+                "OUT:%s\nERR:%s" % (p.stdout, p.stderr)
+E           AssertionError: OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E             
+E             DC-CONTAINER n=1 inst_nodes=3
+E             DC-COUNT props=24 parts=38 max=40
+E             DC-CLASS trunks=cyl canopies=cyl rocks=box prim=1
+E             DC-LIT cast_off=1 emission=3
+E             DC-RIM outside=38 floored=38
+E             DC-FAIL DET: re-fill dumps differ from the live build (layout must be pure const data)
+E             
+E             ERR:
+E           assert (1 == 0)
+E            +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...de=38 floored=38\nDC-FAIL DET: re-fill dumps differ from the live build (layout must be pure const data)\n', stderr='').returncode
+
+tests/test_decor.py:400: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_decor.py::test_decor_engine_probe - AssertionError: probe rc=1
+FAILED tests/test_decor.py::test_decor_two_builds_byte_identical - AssertionE...
+2 failed, 3 passed in 7.42s

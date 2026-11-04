@@ -1,0 +1,73 @@
+FF..F                                                                    [100%]
+=================================== FAILURES ===================================
+___________________________ test_decor_engine_probe ____________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-5268/test_decor_engine_probe0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_decor_engine_probe(tmp_path, class_cache):
+        proc = _run_probe(tmp_path)
+>       assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+E       AssertionError: probe rc=1
+E         OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         DC-CONTAINER n=1 inst_nodes=3
+E         DC-FAIL COUNT props=41 parts=72 (want 24/38, budget 40)
+E         
+E         ERR:
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...odotengine.org\n\nDC-CONTAINER n=1 inst_nodes=3\nDC-FAIL COUNT props=41 parts=72 (want 24/38, budget 40)\n', stderr='').returncode
+
+tests/test_decor.py:361: AssertionError
+_____________________ test_decor_two_builds_byte_identical _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-5268/test_decor_two_builds_byte_ide0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_decor_two_builds_byte_identical(tmp_path, class_cache):
+        """Determinism ACROSS PROCESSES (the plan leg "two builds
+        identical"): two independent boots of the same probe print
+        byte-identical transcripts — no RNG, no time, no order-dependence
+        survived the const-table law."""
+        a = _run_probe(tmp_path / "a")
+        b = _run_probe(tmp_path / "b")
+        for p in (a, b):
+>           assert p.returncode == 0 and "DC-FAIL" not in p.stdout, \
+                "OUT:%s\nERR:%s" % (p.stdout, p.stderr)
+E           AssertionError: OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E             
+E             DC-CONTAINER n=1 inst_nodes=3
+E             DC-FAIL COUNT props=41 parts=72 (want 24/38, budget 40)
+E             
+E             ERR:
+E           assert (1 == 0)
+E            +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...odotengine.org\n\nDC-CONTAINER n=1 inst_nodes=3\nDC-FAIL COUNT props=41 parts=72 (want 24/38, budget 40)\n', stderr='').returncode
+
+tests/test_decor.py:400: AssertionError
+_______________ test_layout_tables_are_pinned_census_on_the_rim ________________
+
+    def test_layout_tables_are_pinned_census_on_the_rim():
+        """Data leg (no engine): the const tables parse to EXACTLY the
+        pinned prop/part census under the budget, and EVERY row stands on
+        a rim-wall centerline (max(|x|,|z|) >= the board edge + the wall
+        inset) — adding a row silently reddens this leg even in a checkout
+        that never ran Godot."""
+        src = DEC_GD.read_text(encoding="utf-8")
+        trees = _table_rows(src, "TREES")
+        rocks = _table_rows(src, "ROCKS")
+>       assert (len(trees), len(rocks)) == (N_TREES, N_ROCKS), \
+            "layout tables drifted from the pinned census"
+E       AssertionError: layout tables drifted from the pinned census
+E       assert (31, 10) == (14, 10)
+E         
+E         At index 0 diff: 31 != 14
+E         Use -v to get more diff
+
+tests/test_decor.py:462: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_decor.py::test_decor_engine_probe - AssertionError: probe rc=1
+FAILED tests/test_decor.py::test_decor_two_builds_byte_identical - AssertionE...
+FAILED tests/test_decor.py::test_layout_tables_are_pinned_census_on_the_rim
+3 failed, 2 passed in 7.61s

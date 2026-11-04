@@ -1,0 +1,140 @@
+VF-wave.log — MC 12111 · v1.6 V-F WORLD DECOR (W2, pillar P6) — 2026-11-04
+worktree /tmp/gw-v16-vf · branch card/12111 · base 6b4427c770d50dc090f7a9a79e1f86c990bde0b0 (fortress + warm env merged)
+plan .audits/20261104-1330-v16-plan/V16-PLAN-c2.md §W2 V-F + laws L1–L8 (all honored; declared readings §7)
+
+== 1. ART (zero new assets — declared) ==
+No sheets, no icons, no texture ids: every prop is a flat-tinted engine-managed
+PrimitiveMesh (bark / deep-pine / warm-grey Rock tints; the decor read is silhouette +
+colour, the sheets stay with the fortress). sprite_bank.gd is therefore UNTOUCHED — the
+plan's "decor ids ONLY if the fallback fires" never fired (see §5), and no decor id was
+needed in EITHER node class. Zero GPU window opened this card (image_window status
+CLOSED verified at end; knut-loop untouched).
+
+== 2. WIRING (writable set ONLY) ==
+mission_world.gd: + preload DECOR const; ONE call DECOR.build_decor(m) inside
+build_cores (the paint_arena/G1/G2/V-A visual-hook precedent; header sentence added).
+ZERO lines in mission.gd / mission.tscn / camera_zoom.gd / fx_director.gd — gate:
+git diff --stat 1271a6c..HEAD AND vs worktree EMPTY for mission.gd + test_mission_clicks.py.
+New: godot/scripts/decor.gd (192 lines, ungoverned presentation file) + its .uid sidecar
+(committed in the same commit — the sidecar-uid gate family); new tests/test_decor.py.
+
+== 3. BUILD (decor.gd — the instanced static law) ==
+24 PROPS (14 trees + 10 rocks), 38 PARTS (trees stack trunk+canopy), 4 SCENE NODES
+(1 container "Decor" + 3 MultiMeshInstance3D) — every reading of the budget ≤ MAX_PROPS 40
+(declared reading §7a). Layout is a 100% const table (TREES/ROCKS rows
+[x,z,scale,yaw]); rim shape READ from diorama.gd consts (the plan's own V-A coupling);
+zero RNG (bare-rand ban), zero per-frame surface (no _process/Timer/tween/await — the
+perf budget IS "no frame code"), zero writes on m, ONE add_child mount, ONE MultiMesh +
+ONE node construction site, every part origin max(|x|,|z|) >= 80 (OUTSIDE the play plane,
+on the rim-wall centerline ±82, at/above the wall top — the grid cannot move; the fortress
+DG-GROUND byte-pin keeps proving the ground node each suite run). V-A shadow ruling
+reused verbatim: cast OFF + emission floor 0.3 (ambient is DISABLED at the scene row).
+Geometry law (L5, kb 2d5274003/ab9e1c8b): MultiMesh source meshes are CylinderMesh×2 +
+BoxMesh — the classes the fortress already proves rasterize on web; NO ArrayMesh, NO
+get_image, no sheet touched.
+
+== 4. ENGINE + DATA GATES (tests/test_decor.py, 5 legs, kit probe test_diorama idiom) ==
+DC-CONTAINER one Decor at identity, 3 instanced children · DC-COUNT props=24 parts=38
+max=40 (budget leg, live off the tables) · DC-CLASS cyl/cyl/box + PrimitiveMesh per source
+(the web-proof proxy) · DC-LIT cast_off=1 emission=3 · DC-RIM outside=38 floored=38 ·
+DC-DET builds=3 identical=1 (live + two re-fills, byte-compare) · DC-SCREEN the 6 north
+canopy tops project INSIDE the DECOR census region through the SHIPPED Camera3D (the crop
+the served leg counts — a census pointed at empty sky is not one) · DC-TF 3+38 dump rows ·
+DC-OK-last + completion flag · stderr EMPTY. Determinism runs ACROSS PROCESSES too: two
+independent boots print byte-identical transcripts. Authored-build legs read the nodes'
+XFORMS_META stamp — runtime MultiMesh transforms live server-side (4.7 set/get
+round-trips through the RenderingServer; headless answers ZERO for every instance —
+VERIFIED this session, micro-probe rows A/B/C), and the SERVED leg is what proves the
+server-side copy PAINTS at the stamped places.
+PLANTED-REDs (L3; transcripts evidence-12111/red*.txt, byte-verified reverts, pre-red
+shas in pre-red-shas.txt, green re-held red-revert-green.txt):
+  red1 hook commented out -> DC-FAIL CONTAINER Decor nodes = 0 + hook leg + 2-builds RED (3 fail);
+  red2 budget plant 17 extra rows (41 props) -> DC-FAIL COUNT props=41 parts=72 (want 24/38, budget 40)
+       + no-engine data leg RED (3 fail) — the plan's declared plant;
+  red3 stateful builder counter (static _seq yaw jitter) -> DC-FAIL DET: re-fill dumps
+       differ + cross-process compare RED (2 fail).
+
+== 5. LEG 1 — THE MULTI_MESH WEB RASTER PROOF (plan: FIRST leg, fallback declared) ==
+Pillar word = MultiMeshInstance3D, UNPROVEN on web (kb 2d5274003 was about ArrayMesh; the
+plan demands a served proof before merge). PROVED: fresh export (tools/export_web.sh,
+EXPORT_EXIT=0; pck md5 76f3a8100e47b57fe5bf6e6412764e1c 7 448 424 B — a SECOND export of
+the same tree produced the SAME md5, reproducibility row), loopback-served
+(GW_PORT=51211, server killed at end, port verified free), shipped route (hub START click
+(105,165), icon-leg-11854 route; single deliberate click, 10 s wait — every pacing >=
+600 ms), STATE MARKER FIRST (snapshot phase_kind=build core=1800 + describe-image quotes
+"Build: wave 1 in 21 s" in-frame), then the DECOR-region crop + census.
+AFTER frame (full frames host-local evidence-12111/shots/ (MC 11840 bulk rule), DECOR
+crops committed vf-r1-decor-on-crop.png / vf-r2-decor-off-crop.png / vf-final-*):
+low-poly pine cones + rocks paint
+along the rim against the void. CONTROL export (same tree minus the ONE hook line, fresh
+export, pck md5 2710391ac15d0432a64417c6e1e2d3d4 — a different pck, the stale-pck trap is
+mechanically excluded): DECOR-OFF census green=15 (noise floor) vs DECOR-ON green=973 →
++958 decor px, delta 1272 px in the SAME camera — the raster proof is machine-pinned, not
+just seen. THE FALLBACK (one MeshInstance3D per prop, the lane_bands idiom) NEVER FIRED.
+Console errors: [] on all three served runs.
+
+== 6. SERVED P6 CENSUS + FRAME-TIME ROW (DECOR region 340,40–900,160; harness
+vf-served-12111.cjs, census vf_census_12111.py, logs served-run-*.log, census-*.txt) ==
+  AFTER (r1 AND final, byte-equal metrics): green=973 void=34085
+  CONTROL (hook removed, same rig/session): green=15  void=35170
+  BEFORE (v16-before-build.png):             green=1688 void=45784
+  silhouette: void px 45784→34085 in the rim band (−11 699: wall+trees+ledge fill what
+  was void in F-BUILD); AFTER vs BEFORE delta 32 348 px; AFTER vs CONTROL delta 1 272 px.
+  Green window declared from MEASURED canopy pixels ((53,97,37)..(77,132,50)): g in
+  [70,170], g>=r+25, g>=b+25 — excludes the void and warm stone structurally. BEFORE
+  green=1688 is the OLD checkerboard's own baked grass inside the window (declared §7f):
+  the same-rig DECOR-OFF control, not BEFORE, is the non-vacuity pair (kb 2c3ab44b).
+DESCRIBE-IMAGE LITERAL ROWS (Lane E qwen3.8-flash-next; REPORTS, I JUDGE; cost lines in
+describe-*.txt):
+  full frame: "low-poly green cone/triangle-shaped trees (flat green triangular foliage on
+    short brown trunks)… a row of them along the top edge, two or three above the left
+    wall, and one at the far right edge… small pale cream/tan blocky lumps (stone/rubble-
+    like shapes)" [describe-full.txt]
+  DECOR crop: "objects… placed standing on its top surface… five [cone] trees… pale
+    rounded lumps… All of these objects rest on top of the stone band, i.e. they stand
+    above the wall's upper edge. Behind and above them is a uniform dark brown-to-black
+    empty background" [describe-decor.txt] — scale-at-the-rim READ LITERALLY.
+  MARKER crop (read first): "Build: wave 1 in 21 s / Green 300 / cap 10000 / Defenses 0 /
+    cap 60 / Core 1800 / 1800 | sub_north 700 / 700" [describe-marker.txt]
+FRAME-TIME ROW (build phase, rAF deltas 6 s, same rig+session): DECOR-ON median 216.6/
+216.7 ms (runs r1/final), DECOR-OFF CONTROL median 216.7 ms — no measurable cost
+(<0.1%); the ~4.6 fps class is the known swiftshader floor (no fps claim — the plan's
+own words; the budget mechanism is the source-truth "zero per-frame code" leg, which
+red-fires on any _process/Timer/tween).
+
+== 7. DECLARED READINGS + FINDINGS ==
+(a) Budget reading: MAX_PROPS := 40 caps PROPS; the pinned census is props=24/parts=38 and
+    the probe checks BOTH against 40 — the strictest common reading of the row's "static
+    props ≤ 40" and the law's "≤ 40 decor nodes" (scene-node count is 1+3). The plan's
+    planted-red is literal: 41 props -> RED (§4 red2).
+(b) sprite_bank untouched (§1): no decor id exists in either node class; the "fallback
+    ids" clause never fired. No second path map was created.
+(c) "mission_world.gd (+1 hook)" read as the V-A shape: preload const + ONE call +
+    comments (the diorama precedent's own shape; header sentence added).
+(d) Determinism legs read the XFORMS_META authored stamp, because runtime MultiMesh
+    transforms are server-side (headless get answers ZERO for every instance — VERIFIED).
+    The stamp is the builder's own array (ONE writer), so no oracle is duplicated; the
+    served census (§5) proves the server-side copy paints exactly the stamped layout.
+(e) Layout tables carry 14+10=24 rows = the pinned census; the data leg (no engine)
+    reddens on any silent row add AND re-checks every row sits on a rim centerline
+    outside the board edge.
+(f) BEFORE green=1688 is the old baked checkerboard grass in the window — declared, not
+    tuned; the DECOR-OFF control pair carries the attribution.
+(g) Served route = gatefall HARD (core 1800) — the difficulty the shipped hub carries,
+    same row as V-A; the BEFORE frame was normal (core 1000). Crops are camera-derived
+    (difficulty-independent); V-G owns the strict same-pose BEFORE/AFTER pair.
+(h) FINDING (rides from V-A, unfixed by design): v1_world_probe.gd FLOOR row still pins
+    the old ground path (sim/ frozen for this card; L7) — still NOT collected by pytest.
+(i) Suite: baseline measured at this branch tip BEFORE the card = 352 passed rc=0
+    (VF's bar ≥ 352 per plan; +5 legs this card — this session's V-F added 5 test
+    functions (probe + 2-builds + hook + laws + data), above the +1 projection, counted
+    honestly).
+SUITE ROW (final): full `python3 -m pytest -q` on this exact tree (after LEDGER +
+evidence landed; no test reads those files, grep-verified) = 357 passed rc=0
+(evidence-12111/suite-committed.log; the pre-append run was byte-equal 357 rc=0
+(suite-preappend.log; baseline 352 at the branch tip (suite-baseline-352.log); exports
+EXPORT_EXIT=0 x3 (vf-export-*.log). hygiene 0 hits; GOVERNED_LITERALS 17 unchanged;
+mission.gd + test_mission_clicks.py ZERO new lines (tag diff AND worktree diff EMPTY);
+fixtures diff EMPTY; static/ uncommitted (export artifacts evidence-side, W12 law);
+server killed, 51211 verified FREE; GPU window CLOSED (never opened).
+VERIFY_EXIT=0

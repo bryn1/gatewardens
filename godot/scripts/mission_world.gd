@@ -15,12 +15,14 @@
 # lives in lane_bands.gd. V-A (MC 12081) adds the fifth: the fortress
 # plateau, same hook, builder lives in diorama.gd. V-B (MC 12082) adds
 # the sixth: the turret-aim observer node (tower_aim.gd), same hook,
-# read-only over the sim.
+# read-only over the sim. V-F (MC 12111) adds the seventh: the static
+# rim decor (instanced trees/rocks), same hook, builder lives in decor.gd.
 # Zero step order / zero sim data touched — the lane rows, waypoints
 # and core records are byte-identical; git show proves it.
 extends RefCounted
 
 const CORE_OBJ := preload("res://scripts/core_obj.gd")
+const DECOR := preload("res://scripts/decor.gd")
 const DIORAMA := preload("res://scripts/diorama.gd")
 const LANE_BANDS := preload("res://scripts/lane_bands.gd")
 const TOWER_AIM := preload("res://scripts/tower_aim.gd")
@@ -111,6 +113,11 @@ static func build_cores(m) -> void:
 	var aim := TOWER_AIM.new()
 	aim.name = "TowerAim"
 	m.add_child(aim)
+	# V-F hook (DECLARED, MC 12111, V16-PLAN-c2 §3): STATIC instanced rim
+	# decor (trees/rocks) on the fortress rim walls — same visual-mount
+	# home, const-only layout (zero RNG), zero per-frame code, zero sim
+	# data, nothing inside the play plane.
+	DECOR.build_decor(m)
 
 
 # D-2 shared read (MC 11723, v1.3 clean-code W2): the RAW map_def lane

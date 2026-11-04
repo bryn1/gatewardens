@@ -1,0 +1,3 @@
+SNAP phase_kind=build wave=0 core=1800
+FRAMETIME n=29 median_ms=216.7 p95_ms=266.7 max_ms=283.4
+ERRS []

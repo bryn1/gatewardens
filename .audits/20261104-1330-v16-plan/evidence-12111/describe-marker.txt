@@ -1,0 +1,6 @@
+Build: wave 1 in 21 s
+Green 300 / cap 10000
+Defenses 0 / cap 60
+Core 1800 / 1800 | sub_north 700 / 700
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=208 completion_tokens=243 6.4s

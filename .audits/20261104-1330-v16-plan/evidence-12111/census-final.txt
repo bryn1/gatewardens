@@ -1,0 +1,4 @@
+/tmp/vf-shots-r3/vf-1-build.png green=973 void=34085 delta_vs_vf-shots-r2/vf-1-build.png=1272
+/tmp/vf-shots-r2/vf-1-build.png green=15 void=35170 delta_vs_20261104-1330-v16-plan/v16-before-build.png=31256
+.audits/20261104-1330-v16-plan/v16-before-build.png green=1688 void=45784
+/tmp/vf-shots-r3/vf-1-build.png green=973 void=34085 delta_vs_20261104-1330-v16-plan/v16-before-build.png=32348

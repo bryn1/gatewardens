@@ -1,0 +1,14 @@
+**Overall layout:** A 3D perspective game view of a square stone-tiled board (brown/orange flagstones in a receding grid) framed by low brick walls, with HUD text in the four corners and a vertical button panel on the right.
+
+**Board:** A flat floor of large rectangular brown/terracotta stone tiles with darker mortar lines, drawn in one-point perspective so the far edge is narrow and the near edge is wide.
+
+**Walls:** Low tan/orange brick-textured walls run along the left edge (diagonally from lower-left toward upper-left) and along the right edge (diagonally from upper-right toward lower-right). The far (top) edge is bounded by a lighter pale-tan horizontal strip/ledge.
+
+**Objects standing along or above the walls (edge objects):**
+- Along the top pale ledge and poking above the left and right walls are several **low-poly green cone/triangle-shaped trees** (flat green triangular foliage on short brown trunks). They sit at intervals: a row of them along the top edge, two or three above the left wall, and one at the far right edge.
+- On the top pale ledge there are also a few small **pale cream/tan blocky lumps** (stone/rubble-like shapes) and one small **dark brown/black spiky round object** near the top-center.
+- At the very top-center, above the board, are two small **circular ring icons** stacked vertically (upper one orange/red ring, lower one green ring).
+
+**Objects on the board:**
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=1035 completion_tokens=900 30.4s

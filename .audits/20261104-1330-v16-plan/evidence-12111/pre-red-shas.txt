@@ -1,0 +1,2 @@
+81d5c63275c49a9191f81de1d41323b6a1f7c82cd71115b01d132d435c735f56  godot/scripts/decor.gd
+676e8a8d59d77c313fa55e1262bb4e952828b35da0e91f8f752e58c5860e63ad  godot/scripts/mission_world.gd
