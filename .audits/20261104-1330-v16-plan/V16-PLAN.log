@@ -1,0 +1,73 @@
+# V16-PLAN.log — trail for .audits/20261104-1330-v16-plan/V16-PLAN.md (planner, MC 12072, 2026-11-04)
+
+READ-ONLY session over /tmp/gw-v16-plan (branch card/12072 off 1271a6c, verified `git log -1` +
+`git status` clean at start). Deliverables authored: V16-PLAN.md + this log + one LEDGER.md row.
+No product file touched (porcelain = the card's own pathspec; verified pre-commit, this commit).
+
+## 1 Evidence reads (the plan's grounds; all THIS session at tree 1271a6c)
+
+- read_image BOTH before-frames: v16-before-build.png (1280x720, sha256 7b111321e248f29e…) and
+  v16-before-defeat.png (1280x720, sha256 02953714ebeb6830…). Literal observations (flat checkered
+  board in void, medallion towers, translucent arrow-strips, ~8-px hero, grey HUD, flat cool light)
+  are §0's rows — every disposition cites one of them or a file:line.
+- read_image godot/assets/v11/ground_arena.png — confirmed the checker board + baked flora is the
+  v1.5 ground texture (no arrows baked); the in-frame ghost arrows are therefore the G2
+  translucent lane_bands (lane_bands.gd:31 BAND_COLOR alpha 0.30) — V-C's replace-target.
+- V16-BEFORE.md (9 ln) — ratified gap pillars + constraints in force (zoom control law :8).
+- V15-PLAN-c2.md (261 ln) — structural template: dispositions table / waves / file-overlap matrix
+  / suite math / OD row / risks shapes + LEDGER keep-both law, all reused here.
+- docs/ARCHITECTURE.md (406 ln, full) — SHIPPED reuse rows: hero_pawn "VISUALS REPLACED"/
+  VISUALS-REPLACE slot, camera_zoom (D 56/128/8, ZOOM-only grant MC 11719 verbatim), world_text
+  (ONE world-text factory), fx_director (visual-only observer, read-only doctrine, 337/400), the
+  v1.5 kit-crossing `_observe_kits` pass; C4 camera pin #3 SPENT; R4 one-map; I1/I2/I7 invariants.
+- godot/scenes/mission.tscn (56 ln) — Ground node + env_greybox sub_resource + Sun shadow_enabled
+  + CameraRig transform (byte-frozen); 7 script ext rows (the test_mission_clicks :591 pin).
+- godot/data/maps/gatefall.json (62 ln) — 3 spawners, main core (0,0,0) + 1 sub, 3 ground + 2 air
+  lanes (V-A gatehouse/keep placement, V-C road shapes, V-F decor anchors read from here).
+- RELEASE-NOTES-v1.5.md (172 ln) — what players HAVE today + the frozen end-rows (DEFER 6 /
+  REJECT 1 / OD1 default-DEFER) this plan re-disposes honestly with v1.5-row citations.
+- hero_pawn.gd (103), camera_zoom.gd (93), world_text.gd (35), mission_world.gd (171),
+  sprite_bank.gd (144 — ground_path.png COMMITTED-UNWIRED :63-66), defense_obj.gd visual block,
+  lane_bands.gd header (G2 ArrayMesh web-DEATH law), lit_material.gd, fx_director.gd header.
+
+## 2 Measurements (the plan's constraint rows)
+
+- Gate metric `len(read().split("\n"))` (same expression as tools/check_hygiene.py:200):
+  mission.gd 400 (= ceiling, AT), tests/test_mission_clicks.py 600 (= tests ceiling, AT),
+  hud.gd 394 (WATCH, 6 headroom), defense_obj.gd 306, fx_director.gd 337, mission_world.gd 172,
+  sprite_bank.gd 145, lane_bands.gd 76, hero_pawn.gd 103, camera_zoom.gd 93.
+- GOVERNED_LITERALS = the 17-file set (check_hygiene.py:80-84) — defense_obj/hud/defense_panel IN;
+  new v1.6 files (diorama/tower_forms/tower_aim/ui_theme/decor) join the UNGOVERNED presentation
+  family (sprite_bank/lane_bands/world_text doctrine) — zero literals move into governed files.
+- Placement is SLOT-DISCRETE (defense_placer._build_slots over lane waypoints; no ground raycast
+  anywhere in defense_placer.gd — grep) → P1 terrain height CANNOT move placement; L7 grounds.
+- test_place_refusals node leg shape: is_instance_valid + get_parent()!=null (:130-135) — a
+  container Node3D passes (V-B re-pin risk bounded).
+- test_lane_bands pins LB-BANDS n=3/segs/mat=1 (:94-106) — V-C re-pins the material-shape row
+  RED-FIRST; node-count contract stays.
+- test_camera_zoom pins D 56.0/128.0 clamps — untouched by every v1.6 card (camera diff EMPTY).
+- Suite baseline: 345 with-export / 340 clean (RELEASE-NOTES-v1.5.md:159 + LEDGER v1.5 release
+  row, measured at tag f95e481). The plan does NOT re-run the suite (plan card, read-only; the
+  number is cited, labeled, and the floor is set from it — declared reading of the DoD's ">= 345").
+- kb_recall (reuse-gate STEP 0, fleet-memory): ab9e1c8b (web get_image EMPTY STUB law),
+  2d527400 (runtime ArrayMesh NEVER rasterizes on web — PrimitiveMesh law; served census is the
+  only gate), 2c3ab44b (served-browser pixel leg IS acceptance — engine probe proves nothing).
+  All three are law rows L5/L2 in the plan; no new mechanism invented where a kb law exists.
+- Skills loaded per SOUL: file-a-child-card (child cards are the ORCHESTRATOR's record act — this
+  leaf plans only; noted, not exercised), reuse-research-gate (STEP 0 done above: the plan's every
+  SHIP row reuses a shipped mechanism — build_cores mount hook, sprite_bank id map, observer
+  doctrine, PrimitiveMesh law), workspace-convention §Versioned-truth (audit-dir placement honored;
+  no truth-file superseded — a new milestone plan is an ADD, not a replace).
+
+## 3 DoD self-checks (run before this commit; re-run after)
+
+- test -f .audits/20261104-1330-v16-plan/V16-PLAN.md → TRUE
+- grep -c 'PLAN VERDICT: READY-FOR-DA' V16-PLAN.md → 1
+- dispositions: every candidate row carries SHIP/DEFER/REJECT/OWNER-DECISION/CONSTRAINT with a
+  BEFORE-frame or repo-truth citation (§2 table, rows 1-18).
+- waves: per-card worktrees + writable sets + ceilings respected + per-leg acceptance on named
+  served routes (§3, laws L1-L8; §4 overlap matrix).
+- this log + LEDGER row present; ONE commit, author planner (12072) <plan@agent-town.local>;
+  no push; no git config; no spawn.
+
+VERIFY_EXIT=0
