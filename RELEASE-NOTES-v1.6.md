@@ -14,9 +14,9 @@ procedural/engine geometry or a locally generated sheet, zero third-party game c
 ## THE PAIR — what changed, in plain words
 
 Same mission, same camera, same route, nothing built ("Defenses 0"), same "Core 1000 / 1000".
-Two poses, shot before (v1.5) and after (v1.6) at the identical poses:
-`v16-before-build.png` / `v16-before-defeat.png` → `v16-after-build.png` / `v16-after-defeat.png`
-(both committed in `.audits/20261104-1330-v16-plan/`, the after-pair in `evidence-12115/shots/`).
+Two poses, shot before (v1.5) and after (v1.6) identically: `v16-before-build.png` /
+`v16-before-defeat.png` → `v16-after-build.png` / `v16-after-defeat.png` (committed in
+`.audits/20261104-1330-v16-plan/`, the after-pair in `evidence-12115/shots/`).
 
 **BEFORE:** a flat checkered tan board floating over a black void. The paths were translucent pale
 arrow-strips laid on top of the ground. The only scenery — grass tufts, grey rocks, one flower — was
@@ -80,8 +80,8 @@ measured `git diff 1271a6c..HEAD` this session), and no sim/economy/balance numb
   opening (gate) of the keep". No camera mechanic was added or moved (OD1 deferred, below).
 - **P5 Golden hour, and the HUD is themed** (MC 12084, commit `908f337`). `mission.tscn` PROPERTY VALUES
   only — background `(0.055,0.065,0.085)→(0.165,0.105,0.06)`, ambient `(0.85,0.88,0.95)→(0.95,0.82,0.65)`,
-  Sun `RotY(30)·RotX(-45) → RotY(55)·RotX(-20)` + `light_color (1, 0.72, 0.45)`; sun elevation 45°→20°
-  by asin, no new resource and no second light. NEW `godot/scripts/ui_theme.gd` (68 ln) is the palette;
+  Sun `RotY(30)·RotX(-45) → RotY(55)·RotX(-20)` + `light_color (1, 0.72, 0.45)`; elevation 45°→20° by
+  asin — no new resource, no second light. NEW `godot/scripts/ui_theme.gd` (68 ln) is the palette;
   `hud.gd` and `defense_panel.gd` took TWO lines each (measured 396 and 368 this session). The
   pixel-judge law held engine-side: all 13 pinned button/label rects byte-equal with the theme ON and
   OFF (`VETH-RECT-EQUAL count=13`), and the shipped click-route suite stayed green in every card run.
@@ -107,26 +107,36 @@ measured `git diff 1271a6c..HEAD` this session), and no sim/economy/balance numb
   sprite probe's tower/gate legs pin the LIVE `TowerForm` container instead of a Sprite3D. The orphaned
   `WORLD_H_TOWER` const is gone with its mechanism (measured: 0 hits repo-wide).
 
-**Tested at this tree** (re-measured by this docs pass, not inherited): `python3 -m pytest tests/ -q`
-= **363 passed, rc=0** with `bash tools/export_web.sh` run first (my export: `index.pck` md5
-`ec50e154e62eb67a9b85fddbf3faf6cd`, 7,457,488 B); `tools/check_hygiene.py` → **0 hit(s)** (25 soft
->250 notes, none of them new); `git diff f95e481..HEAD -- tests/fixtures/` = **0 lines**; the governed
--literal set is **17 files**; `godot/scripts/mission.gd` **400** and `tests/test_mission_clicks.py`
-**600** on the gate metric, both AT their ceilings and carrying ZERO v1.6 lines; `hud.gd` 396;
-`camera_zoom.gd` **0 changed lines** since the milestone kickoff `1271a6c`. New v1.6 test files:
-`test_diorama.py` (5 legs), `test_tower_forms.py` (3), `test_hero_body.py` (2), `test_ui_theme.py` (2),
-`test_decor.py` (5), plus `test_lane_bands.py` re-pinned to the road shape.
+**Tested at this tree** (every number re-measured by this docs pass, none inherited):
+`tools/check_hygiene.py` → **0 hit(s)** (25 soft >250 notes, none new);
+`git diff f95e481..HEAD -- tests/fixtures/` = **0 lines**; the governed-literal set is **17 files**;
+`mission.gd` **400** and `test_mission_clicks.py` **600** on the gate metric — both AT their ceilings and
+carrying ZERO v1.6 lines; `hud.gd` 396; `camera_zoom.gd` **0 changed lines** since kickoff `1271a6c`; the
+new v1.6 test files are `test_diorama.py` (5 legs), `test_tower_forms.py` (3), `test_hero_body.py` (2),
+`test_ui_theme.py` (2), `test_decor.py` (5) + `test_lane_bands.py` re-pinned to the road shape.
 
-**Suite-count correction (this pass measured it, so it is written here rather than carried):** the
-v1.3–v1.5 release notes all state "+5 with export, N green from a CLEAN checkout". At this tree the real
-reconciliation is **+6**: with `static/` holding only its `.gitkeep`, `python3 -m pytest tests/ -q` answers
-**357 passed, 1 FAILED, 1 skipped** — the failure is
-`tests/test_scaffold.py::test_server_serves_placeholder_on_ephemeral_port`, which asks `GET /` for 200 and
-gets 404 because `static/index.html` is the export (build-side, gitignored since W12) and that leg is NOT
-export-gated the way `test_served.py` is. I measured the SAME red at the v1.5 tag `f95e481` in a scratch
-worktree this session, so this is PRE-EXISTING, not something v1.6 broke. Treat the run-with-export
-number (363) as the milestone's suite row, and the phrase "green from a clean checkout" as FALSE until a
-test card gates that leg.
+**Suite rows, both ways** (measured twice here — once at `3197a63`, then re-measured at the V-J tip
+`d963e2f` in a fresh worktree, so nothing below is inherited from a wave log):
+- **With the export** (the documented run): `bash tools/export_web.sh` → `python3 -m pytest tests -q` =
+  **363 passed, rc=0**; at `d963e2f` EXPORT_RC=0 with `static/index.pck` md5
+  `e6353cfe410c5db6bf299fb32dab7392` (the `3197a63` pass measured the same 363 at md5
+  `ec50e154e62eb67a9b85fddbf3faf6cd`, 7,457,488 B — export bytes are not reproducible between passes, so
+  two md5s are two runs of one suite, not a disagreement).
+- **With NO export at all** — a fresh worktree whose `static/` holds only its `.gitkeep` —
+  `python3 -m pytest tests -q` = **357 passed, 2 skipped, rc=0**: **v1.6 is green from a clean
+  checkout.** Both skips name their reason — `tests/test_served.py:37` (the module skip over its 5 served
+  legs) and `tests/test_scaffold.py:125` (the served `GET /` leg) carry the same W12 string — and with
+  the export restored those same two modules read **13 passed, 0 skipped, rc=0**.
+
+History, kept because it is where the fix came from: through v1.5 the phrase "green from a clean
+checkout" was a grep derivation, never a run — this card measured a clean checkout at `3197a63` **and**
+at the v1.5 tag `f95e481` as *357 passed, 1 FAILED, 1 skipped, rc=1*, because
+`tests/test_scaffold.py::test_server_serves_placeholder_on_ephemeral_port` needs the build-side export
+while carrying no gate. **MC 12122 (commit `eecb64f`) closed exactly that**: the leg now rides the
+EXISTING gate (same check, same reason string, a per-test marker so the module's other seven legs keep
+running export-less), and the gate was shown able to fail — planted-red forced the condition false in a
+clean tree, the leg went `1 FAILED, rc=1`, then was byte-reverted (`VJ-wave.log` §r6, `VERIFY_EXIT=0`).
+That card exists because this docs pass filed the measurement; nothing above contradicts these rows.
 
 ## Known limits (honest, and where each is declared)
 
@@ -163,25 +173,22 @@ test card gates that leg.
   billboards read acceptably and W1+W2 already carried ~6 builder surfaces. Re-opens only on an owner
   pillar-extension.
 - **Shadow polish (cast-on look) — NOT shipped.** The fortress ships cast-OFF per the V-A ruling above;
-  what shipped is the emission-floor substitute, not shadows. Anyone expecting crisper shadow-on looks
-  in v1.6 is expecting something this tree deliberately did not ship.
+  what shipped is the emission-floor substitute. Crisper shadow-on looks are not in this tree.
 - **Kit-spark cap-starvation — PRE-EXISTING, still open (WR 11897-F1).** v1.6 added no fx spawn site, and
   V-B's served windows painted 0 spark px while `test_kit_fx.py` stays green; V-B filed it as a finding
-  rather than silently "fixing" it (VB-wave.log FINDINGS 3). Do not read "the spark was proven in v1.5"
-  as "it paints in every served window today".
+  rather than silently "fixing" it (VB-wave.log FINDINGS 3) — do not read "proven in v1.5" as "paints today".
 - **The committed tower sheets now have no world consumer (v1.7 art-slim candidate).** Since V-B, no
   shipped node path asks `sprite_bank` for a defense id — the only `texture_for`/`make_sprite` callers pass
   hero, enemy, fx, world or `icon_*` ids (measured by grep this session) — yet 11 `tower_*.png` sheets
   (T1/T2/T3) stay committed and the bank still ANSWERS the ids, pinned by `v11_sprite_probe`'s bank-map
-  leg. They are dead weight in the pck, and the panel/HUD icons they were never used for ride separate
-  `icon_*` ids. A future card may retire them; that is a data+pck-size card, not a doc claim.
+  leg, and the panel/HUD icons ride separate `icon_*` ids. Retiring them is a data+pck-size card, not a
+  doc claim.
 - **Procedural sky, minimap, ready-up, per-tower keys, defense hp-tint, MAX_FX drop-priority, a second
-  map — unchanged dispositions** (plan rows 11–17; grounds are in `V16-PLAN-c2.md` §2 and the v1.5 rows
-  they inherit).
+  map — unchanged dispositions** (plan rows 11–17; grounds in `V16-PLAN-c2.md` §2 + the v1.5 rows).
 
 ## How to build & run
 
-Unchanged: `bash tools/export_web.sh` → serve `static/` with `python3 server/server.py`
-(`GW_PORT`, default 8124) — see README one-liners. Run the suite AFTER the export (see the suite-count
-correction above). The Windows desktop build comes from `bash tools/export_windows.sh`
-(see RELEASE_NOTES.md W18 rows).
+Unchanged: `bash tools/export_web.sh` → serve `static/` with `python3 server/server.py` (`GW_PORT`,
+default 8124) — see README one-liners. The export first counts all 363 legs; with NO export the suite
+still passes (357 + 2 named skips) — both rows are above. Windows desktop build:
+`bash tools/export_windows.sh` (see RELEASE_NOTES.md W18 rows).

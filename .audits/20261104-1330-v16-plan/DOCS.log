@@ -119,3 +119,76 @@ grep -rn "medallion" README.md docs/ARCHITECTURE.md | wc -l   -> 0              
 grep -ric "medallion|ghost|arrow|ground_arena" README.md      -> 0 / 0 / 0 / 0          (DoD-2 MET)
 git diff --name-only HEAD -- godot/ tests/ tools/ server/     -> EMPTY (zero product lines)
 VERIFY_EXIT=0
+
+== §c2 — 12121 FOLLOW-UP DE-STALE (2026-11-04T22:1xZ–22:4xZ, same card, parent brief in-channel) ==
+Trigger: V-J (MC 12122) landed at main tip d963e2f — code commit eecb64f export-gated
+tests/test_scaffold.py's served leg with the REUSED W12 idiom (same check + same reason string, as a
+per-test marker so the module's other seven legs keep running export-less; V-J's own planted-red row:
+gate condition forced false in a clean tree -> "1 FAILED rc=1", then byte-reverted — VJ-wave.log §r6,
+VERIFY_EXIT=0). That retired the conditional my own c1 release-notes block printed. All-callers rule:
+a claim I published is mine to retire.
+
+TREE MOVEMENT: git rebase d963e2f on card/12121 — my c1 commit 6eb2467 was DROPPED as already-applied
+(main carries it as a728a5d; verified: `git merge-base --is-ancestor a728a5d d963e2f` = true AND
+`git diff 6eb2467 d963e2f -- README.md docs/ARCHITECTURE.md RELEASE-NOTES-v1.6.md
+ .audits/20261104-1330-v16-plan/DOCS.log` = EMPTY, so main carries my c1 content byte-for-byte and
+there was no LEDGER race to keep-both: my row and V-J's row were both already in the tip's LEDGER).
+
+RE-MEASURED MYSELF AT THE REBASED TIP (instrument: a FRESH worktree, not the card tree —
+`git worktree add --detach /tmp/gw-12122-check d963e2f`; `HEAD=d963e2f`;
+`ls -A static/` = ".gitkeep" only; removed with `git worktree remove` + prune at teardown):
+  python3 -m pytest -q                                   -> 357 passed, 2 skipped in 202.63s  CLEAN_RC=0
+  bash tools/export_web.sh                               -> EXPORT_RC=0
+                                                          static/index.pck md5
+                                                          e6353cfe410c5db6bf299fb32dab7392
+  python3 -m pytest -q   (same tree, export present)      -> 363 passed in 200.31s            WITHEXPORT_RC=0
+  python3 -m pytest tests/test_scaffold.py tests/test_served.py -q -rs  (index.html/pck moved aside)
+       -> 7 passed, 2 skipped rc=0 with BOTH reasons printed:
+          SKIPPED [1] tests/test_served.py:37: static/index.html missing — the web export is build-side
+                 and never committed; run `bash tools/export_web.sh` first (W12 DoD runs it present)
+          SKIPPED [1] tests/test_scaffold.py:125: static/index.html missing — the web export is
+                 build-side and never committed; run `bash tools/export_web.sh` first
+  same two modules with the export restored               -> 13 passed, 0 skipped rc=0
+So the end-state sentence is: v1.6 IS green from a clean checkout (357 + 2 named skips, rc=0) and 363
+with the export. NOT re-run by me: V-J's planted-red (their row, cited not reproduced — instrument
+blind spot declared). NOT re-run: the suite on the c2 docs-only delta (see below why).
+
+WHAT CHANGED (docs only; `git diff --name-only` = RELEASE-NOTES-v1.6.md README.md
+docs/ARCHITECTURE.md LEDGER.md .audits/20261104-1330-v16-plan/DOCS.log — zero .gd/.py, so the two suite
+rows above are measurements OF THIS code tree, and a markdown delta cannot move them; that is why the
+suite was not run a third time):
+  1. RELEASE-NOTES-v1.6.md — the "Suite-count correction … FALSE until a test card gates that leg"
+     block is GONE, replaced by "Suite rows, both ways": both numbers with their commands, citing
+     eecb64f + VJ-wave.log §r6, plus the pre-fix history kept and labelled as history (it is where the
+     fix came from), and the `3197a63` pck md5 kept beside the `d963e2f` one with the reason they differ
+     (export bytes are not reproducible between passes). The How-to-build row now says the export first
+     counts 363 and the suite still PASSES with no export. File 187 -> 194 ln (the c1 LEDGER row's "187
+     ln" was true at 6eb2467; the c2 row states the new count — LEDGER rows are append-only history).
+  2. README.md — the pointer clause "the no-export count is NOT a green-minus-N number" (which V-J made
+     false) rewritten to the end-state: 363 with the export, 357 + 2 NAMED export-gated skips rc=0 from
+     a clean checkout, both re-measured at d963e2f.
+  3. docs/ARCHITECTURE.md — the static/ contract row (the canonical home of "static is the export")
+     learned the gate inventory: test_served module skip + the test_scaffold served leg marker since
+     MC 12122, with both suite counts and the DOCS.log §c2 pointer. 415 ln (unchanged, in-place clause).
+  4. LEDGER.md — a c2 row appended (not an edit of the c1 row: history is append-only; the c1 row's
+     clean-checkout measurement was TRUE at 3197a63 and stays, the c2 row names the end-state + the
+     commit that produced it).
+
+GREP SWEEPS AFTER THE EDIT (the DoD-4 re-check + the stale-conditional sweep):
+  grep -rn "medallion" README.md docs/ARCHITECTURE.md                                  -> 0 hits
+  grep -rn "1 FAILED" README.md docs/ARCHITECTURE.md                                  -> 0 hits
+  grep -rn "test card gates\|NOT a green-minus-N\|Suite-count correction" README.md docs/ARCHITECTURE.md
+                                                                                    -> 0 hits
+  grep -rn "1 FAILED" RELEASE-NOTES-v1.6.md -> 2 hits, BOTH inside the labelled history paragraph, quoted:
+     :133 "at the v1.5 tag `f95e481` as *357 passed, 1 FAILED, 1 skipped, rc=1*, because"  (what I
+           measured pre-fix, at the two trees named there)
+     :138 "clean tree, the leg went `1 FAILED, rc=1`, then was byte-reverted (`VJ-wave.log` §r6"  (V-J's
+           planted-red proof the new gate can still go RED — a gate that never fails is not a gate)
+  The new live claim is RELEASE-NOTES-v1.6.md:125-127 (the bullet, wrapped): "**With NO export at all** — a fresh
+  worktree whose `static/` holds only its `.gitkeep` — `python3 -m pytest tests -q` = **357 passed,
+  2 skipped, rc=0**: **v1.6 is green from a clean checkout.**"
+GATES AT THIS TREE: check_hygiene -> "check_hygiene: 0 hit(s)" rc=0 (25 soft notes, base set); suite
+rows as measured above (357 + 2 skips rc=0 / 363 rc=0); zero product-code lines; no push, no git config,
+no spawn. Scratch worktree /tmp/gw-12122-check REMOVED (`git worktree remove --force` + prune, verified
+gone); the card tree's static/ still carries only build-side artifacts (gitignored).
+VERIFY_EXIT=0
