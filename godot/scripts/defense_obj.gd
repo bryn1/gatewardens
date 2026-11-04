@@ -64,13 +64,7 @@ const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 const SIM_COMBAT := preload("res://sim/sim_combat.gd")
 const SIM_INVENTORY := preload("res://sim/sim_inventory.gd")
 
-const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
-
-const MESH_TOWER := preload("res://assets/mesh_capsule.tres")
-const MESH_BLOCK := preload("res://assets/mesh_box.tres")
-const MAT_TOWER := preload("res://assets/mat_defense_tower.tres")
-const MAT_BLOCKADE := preload("res://assets/mat_defense_blockade.tres")
-const MAT_TRAP := preload("res://assets/mat_defense_trap.tres")
+const TOWER_FORMS := preload("res://scripts/tower_forms.gd")
 
 var m = null                # mission root (injected: green + runner + economy)
 var uid := 0
@@ -83,8 +77,9 @@ var total_spent := 0        # C3 sell base: place + upgrade green ONLY
 var charges := 0            # trap_charges countdown (others: 0, unused)
 var fire_acc := 0.0         # trap charge meter (one drain per fire-second)
 var pos := Vector3.ZERO
-var node = null             # visual: bank Sprite3D or greybox MeshInstance3D
-                            # (made here, added by mission; swapped on upgrade)
+var node = null             # visual: the TowerForm container (V-B, made
+                            # by tower_forms, added by mission; swap-rebuilt
+                            # on upgrade — the same slot as before)
 var fire_by_class: Dictionary = {}   # pinned class-dispatch dict
 var relic_uid := 0          # assigned relic pool uid (0 = none, C11)
 var relic_bonuses: Dictionary = {}   # stat -> add (SimInventory's, C11)
@@ -259,11 +254,12 @@ func _apply_tier() -> void:
 
 
 # V1.1-b (MC 11520) upgrade hook: the visual is (id, tier)-chosen, so a
-# tier step repaints it — the same slot swaps to the new tier's bank
-# sheet (or stays greybox while the bank answers null). Replace-not-add:
-# one make_sprite call through _make_visual, no new node type, no
-# second render path; the mission's defense_list entry only ever reads
-# obj.node, so swapping the scene-tree child here is the whole update.
+# tier step repaints it — the same slot rebuilds through _make_visual
+# (since V-B MC 12082 the new tier's FORM; before that the new tier's
+# bank sheet). Replace-not-add: one visual decision site, no new node
+# type, no second render path; the mission's defense_list entry only
+# ever reads obj.node, so swapping the scene-tree child here is the
+# whole update.
 func _refresh_visual() -> void:
 	var old = node
 	node = _make_visual()
@@ -274,32 +270,13 @@ func _refresh_visual() -> void:
 		old.free()
 
 
-# Visual per idiom (W6/W8 primitives + .tres tints, zero per-entity
-# .tscn): tower capsule, blockade cube, trap flat plate. V1.1-a (MC
-# 11466): the bank-first question IS the visual decision — a committed
-# sheet replaces the greybox at the same footprint (replace-not-add,
-# one path, no fake art). V1.1-b (MC 11520): the bank answer is now
-# (id, CURRENT tier) — the 3 shooters pick their T1/T2/T3 sheet,
-# gate_blockade/barbed_snare carry their batch-2 sheet tier-agnostic,
-# un-sprited ids keep the greybox.
+# V-B (MC 12082, V16-PLAN-c2 §3 P2): the world visual is the primitive-
+# composed tower FORM — the ONE builder is tower_forms.gd, which owns
+# every size number (this file stays I2-governed, ZERO literals: the
+# BN1 split the plan names, ≤ 2 lines here). Replace-not-add: this is
+# still the single (id, tier)-chosen visual slot the V1.1-b upgrade hook
+# repaints through _refresh_visual; the medallion billboards RETIRED
+# from the world path only — the panel/HUD icons ride the separate
+# icon_* bank ids and paint untouched (plan row P2b).
 func _make_visual():
-	var sprite := SPRITE_BANK.make_sprite(String(trow["id"]),
-			SPRITE_BANK.WORLD_H_TOWER, tier + 1)
-	if sprite != null:
-		sprite.position = pos
-		return sprite
-	var vis := MeshInstance3D.new()
-	match class_id:
-		"tower":
-			vis.mesh = MESH_TOWER.duplicate()
-			vis.material_override = MAT_TOWER.duplicate()
-			vis.scale = Vector3(0.5, 2, 0.5)
-		"blockade":
-			vis.mesh = MESH_BLOCK.duplicate()
-			vis.material_override = MAT_BLOCKADE.duplicate()
-		_:
-			vis.mesh = MESH_BLOCK.duplicate()
-			vis.material_override = MAT_TRAP.duplicate()
-			vis.scale = Vector3(2, 0.5, 2)
-	vis.position = pos
-	return vis
+	return TOWER_FORMS.build(self)

@@ -13,7 +13,9 @@
 # mount: the spawn-gate eye billboards, same build_cores hook. G2
 # (MC 11694) adds the fourth: the lit lane bands, same hook, builder
 # lives in lane_bands.gd. V-A (MC 12081) adds the fifth: the fortress
-# plateau, same hook, builder lives in diorama.gd.
+# plateau, same hook, builder lives in diorama.gd. V-B (MC 12082) adds
+# the sixth: the turret-aim observer node (tower_aim.gd), same hook,
+# read-only over the sim.
 # Zero step order / zero sim data touched — the lane rows, waypoints
 # and core records are byte-identical; git show proves it.
 extends RefCounted
@@ -21,6 +23,7 @@ extends RefCounted
 const CORE_OBJ := preload("res://scripts/core_obj.gd")
 const DIORAMA := preload("res://scripts/diorama.gd")
 const LANE_BANDS := preload("res://scripts/lane_bands.gd")
+const TOWER_AIM := preload("res://scripts/tower_aim.gd")
 const MESH_CORE := preload("res://assets/mesh_core.tres")
 const MAT_CORE := preload("res://assets/mat_core.tres")
 const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
@@ -101,6 +104,13 @@ static func build_cores(m) -> void:
 	# — cliff skirt + rim + gatehouses + keep UNDER/AROUND the play plane,
 	# same visual-mount home, zero sim data, ground transform untouched.
 	DIORAMA.build_fortress(m)
+	# V-B hook (DECLARED, MC 12082): the turret-aim OBSERVER mounts as a
+	# mission-root child here (the HERO_RIG code-mount idiom — mission.gd
+	# at its 400 ceiling adds ZERO lines); it processes after the root's
+	# step(), reads published state only, writes Turret yaws only.
+	var aim := TOWER_AIM.new()
+	aim.name = "TowerAim"
+	m.add_child(aim)
 
 
 # D-2 shared read (MC 11723, v1.3 clean-code W2): the RAW map_def lane

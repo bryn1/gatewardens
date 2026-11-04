@@ -1,0 +1,204 @@
+# VB-wave.log — v1.6 V-B TOWER STRUCTURES + AIM (MC 12082, code)
+# Base 986353d41eadeafcad830360638cdc242605cb58 / branch card/12082
+# Brief /tmp/gw-briefs/v16-vb.md; plan .audits/20261104-1330-v16-plan/
+# V16-PLAN-c2.md §3 W1 V-B + §7 laws. Session 2026-11-04 15:38-18:40 UTC.
+
+## DELIVERABLE (BUILD)
+NEW  godot/scripts/tower_forms.gd      239 lines (ungoverned — every size
+                                        const lives HERE; PrimitiveMesh-
+                                        only per L5, ZERO Sprite3D/make_
+                                        sprite on the world path)
+NEW  godot/scripts/tower_aim.gd         64 lines (observer doctrine re-
+                                        used verbatim from fx_director/
+                                        selection_ring: reads published
+                                        state, ONE write — its own vis-
+                                        ual's yaw; ZERO-write idle)
+EDIT godot/scripts/defense_obj.gd       283 (was 306; NET -23: medallion
+                                        world path retires; _make_visual
+                                        = ONE delegation line, ZERO
+                                        literals — GOVERNED honored; the
+                                        icon_* bank ids stay for panel/
+                                        HUD per P2b, pinned by test)
+EDIT godot/scripts/mission_world.gd     181 (was 172; +9: the FIFTH code-
+                                        mount on build_cores, the same
+                                        hook the other four ride)
+NEW  tests/test_tower_forms.py          3 legs (suite 345 -> 348)
++    tests + evidence under .audits/20261104-1330-v16-plan/
+
+DECLARED READINGS:
+- mission_world.gd EDITED for the aim mount: the brief says tower_aim is
+  "code-mounted from the build_cores hook" and plan §4 grants mission.gd
+  (hook lines) ✔(aim mount) for V-B — mission.gd itself sits at 400/400
+  and carries ZERO V-B lines (token greps in test leg 3). The hook's
+  owner-file is mission_world.gd (build_cores lives there), so the mount
+  lands there — same file+pattern as the existing four mounts.
+- "form per class id": forms are keyed by id (every shipped id has one)
+  and class-gated features (Turret on shooters) follow towers.json
+  class — the DATA decides, pinned via the DATA leg, never a literal.
+
+## L1 CEILINGS (measured, zero-diff proofs vs base)
+git diff 986353d -- godot/scripts/fx_director.gd          EMPTY (337, ZERO lines)
+git diff 986353d -- godot/scripts/mission.gd              EMPTY (400, ZERO lines)
+git diff 986353d -- godot/scripts/enemy_runner.gd         EMPTY
+git diff 986353d -- godot/scripts/sprite_bank.gd          EMPTY
+git diff 986353d -- godot/scenes/mission.tscn             EMPTY (no .tscn mount —
+  code-mount idiom, G1; g1 probe Sprite3D-count pin stays green)
+git diff 986353d -- godot/sim/                            EMPTY (sim frozen)
+git diff 986353d -- tests/fixtures/                       EMPTY (L7)
+hygiene: check_hygiene 0 hit(s) (soft >250 notes are pre-existing rows;
+defense_obj 283 is BELOW its 306 starting size — the card made the gate
+file smaller).
+
+## MECH (tests/test_tower_forms.py — 3 legs, all through SHIPPED entries)
+Leg1 FORMS probe (tmp_path-generated, R5; REAL mission.tscn boot + setup
+  door; green top-up = harness license, mission_smoke precedent):
+  TF-MOUNT (build_cores mounted TowerAim) / TF-FORM x5 (one placed defense
+  per world id through mission.place_defense: container + meshes>0 +
+  prim==meshes (L5 web-raster proxy) + Turret iff class=="tower" +
+  turret y>0) / TF-TIER (shipped upgrade() swap-rebuilds, turret ladder
+  y0<y1<y2, node swapped) / TF-FALLBACK (unformed id still lands a
+  TowerForm greybox — bank-null contract carried).
+  PY side recomputes turret-presence from towers.json class + ranges.
+Leg2 AIM probe: IDLE sentinels 3/3 kept with ZERO entities (the driver
+  does not touch an idle turret) / TF-AIM x2 (ground skitterling at the
+  g1 mouth + air gale_harpy at the a2 mouth through runner.spawn; python
+  re-computes want=atan2(tx-px,tz-pz), tol 1e-3, + range-door check vs
+  towers.json T1 range) / SIMCALM (5 driver passes move NO sim field +
+  out-of-range bombard keeps its sentinel) / TRACK (30 REAL m.step frames
+  — mob walks, yaw re-tracks; movement pinned non-degenerate).
+Leg3 SOURCE TRUTH + committed planted-reds: driver constructs NOTHING,
+  touches no mutator token; the ONLY assignment is turret.rotation.y
+  (single-write regex); yaw expression == "atan2(to.x, to.z)" with
+  committed INVERSION + ARG-SWAP mutation gates (redens without touching
+  a file); _make_visual body == the one delegation line + zero literals
+  (reuse of check_hygiene.literal_violations) + delegation-removal
+  mutation gate; mission.gd/fx_director.gd carry ZERO V-B tokens
+  (tower_aim/TowerAim/tower_forms/TowerForm/Turret); icon bank survives
+  (P2b); exactly-one TOWER_AIM mount in build_cores.
+Probe-harness lessons (measured, honest): (a) "\" continuations inside
+python-embedded GDScript are string-literal-EATEN (joins lines silently)
+— probes now ride PARENTHESES only; (b) rotation.y stores float32 — the
+1e-9 sentinel tolerance failed on a float64 float32-roundtrip (kept=0),
+1e-4 is the honest eps; (c) Godot renames duplicate sibling node names to
+@Node3D@N on add_child — containers carry the uid-suffixed Row_%d idiom
+(TowerForm_<uid>), probes assert the prefix; (d) repo_path returns str,
+not Path.
+
+## L3 PLANTED-RED (runtime, committed-against-staged, F4 idiom)
+files staged FIRST (index = final bytes), then:
+  GREEN  tests/test_tower_forms.py .......... 3 passed (7.06s)
+  PLANT  sed yaw -> turret.rotation.y = -atan2(to.x, to.z)
+  RED    test_aim_probe  FAILED "yaw does not face the planted entity"
+         test_source_truth_and_planted_gates FAILED "yaw expression
+         drifted (RED)"           — 2 failed, 1 passed
+  REVERT git checkout -- godot/scripts/tower_aim.gd ; git diff --stat
+         EMPTY (0 lines); cmp <(git show :FILE) FILE -> BYTE-REVERT-OK
+  GREEN  test_aim_probe 1 passed (5.52s)
+Committed mutation gates (no-file-touched shape) additionally cover the
+argument SWAP and the delegation-line removal.
+
+## L3 CLASS-RE-PIN SWEEP (plan risk 6: world-node class changes)
+Measured inventory of every SUITE pin that touches a placed-defense node:
+- test_place_refusals: is_instance_valid + get_parent()!=null — SHAPE,
+  green against the TowerForm container (suite run).
+- test_kit_fx: get_instance_id + position — class-free, green.
+- test_kit_fx/kindling etc: bank/icon ids — untouched (bank zero-diff).
+=> NOTHING re-pinned (nothing pinned the Sprite3D class); the gates that
+   must have reddened first (yaw) did, above.
+FINDING (routed to parent, outside writable set): godot/sim/
+v11_sprite_probe.gd still pins `obj.node as Sprite3D` for towers — it has
+NO pytest driver (artifact-only; the sprite-era kit is declared-not-run),
+and WOULD redden if ever run at this tree. Stale-asset finding, not a
+suite failure.
+
+## L2 SERVED CENSUS (served-verify-first; kb 2c3ab44b + e4aa7e1f)
+STALE-PCK CLAUSE: pre-run static/index.pck md5 dbffc13df4b20bb6bd1b29be86e1caad
+  (2026-11-01 21:55) -> FRESH `bash tools/export_web.sh` rc=0 -> md5
+  6638631800aada2cd28a008c7e5bcf48 (2026-11-04 17:12, carries
+  tower_forms/tower_aim — 8 path hits via strings). Census ran against
+  the fresh bytes ONLY; suite re-ran against them too (348 rc=0).
+Server: SHIPPED server/server.py, 127.0.0.1:54877 (GW_PORT), static/ dir.
+Killed after evidence: job killed, curl -> connection refused (SERVER-
+DEAD-VERIFIED). Headless chromium 1280x720 (WK2 chrome), swiftshader.
+SEED ROUTE (DISCLOSED, harness-side, upgraded from WK2): the shipped
+server allowlist carries NO .bin, so instead of serving /seed.bin the
+driver (a) injects the engine-IDB user:// save write as a startGame-chain
+in the served index.html (WK2's exact declared wrapper), with the seed
+bytes INLINE base64 (relic-slot variant of wq-bank-seed-gen — mission.
+relic_pool filters slot=="relic", the WQ bank seed was weapons), and (b)
+the earlier interactive probe proves the same route pre-boot (bank_count
+read-back). Product bytes untouched; nothing extra served; static/ clean.
+SHIPPED CLICK ROUTE (>=600ms pacing; no key hooks; every leg via panel
+rows + world ghost click): START(105,165) -> [Blockade arm(1048,98)+place]
+-> [Hailspire arm(1048,221)+place, optional leg] -> Ballista arm(1048,55)
+-> ghost place -> uid-row SELECT(1024,UID_ROW) -> relic row(1024,460) ->
+ASSIGN(1024,630) / UNASSIGN(1024,668) / ASSIGN. Ghost lands FIRST-free
+slot (G5) — slot 1 sits under the gate-eye decor, so the census run
+BLOCKADES slot 1 and censuses the Ballista at slot 2 (clean ground).
+STATE MARKER FIRST (every pixel claim below is preceded by):
+  MARKER {"defenses":2,"green":150,"phase_kind":"build"} (panel row count
+  + green 300-50-100 exactly) + DEFENSES section row "uid N tower T1 hp
+  200/200" (read back on the panel screenshot, vb-placed-panel.png) +
+  hub/sel read-backs (bank_count=3, PRE-BUILD defenses=0, defenses 2).
+CENSUS ROWS (shots/ named frames; WK2 classifier REUSED wk-kit-census-
+11876.py, diff-based because V-A gate-eye gold sits inside any clip that
+covers the spawn-mouth slots — control-pulse measured 0 under the diff
+gate so subtraction is exact):
+- EMPTY->STRUCTURE silhouette: vb-empty-full vs vb-placed-full, tower
+  clip: 124 changed px (clean slot) [gate-mouth variant: 253 px];
+  crop reads a 3D form + range ring (vb-placed-towerclip / vb-bz-*).
+- TWO-FRAME TURRET crop delta in combat: 6 pairs x 0.9s — pair0..4 = 0
+  (door closed — ZERO-WRITE idle, the SAME behavior the probe pins),
+  pair5 = +24 px (mob inside the range 16 door -> turret yaws). Honest
+  note: the served delta is small because the Ballista sits at the a2
+  air-gate slot; the probe leg carries the exact-angle proof.
+- PANEL MEDALLION SAME FRAME: panel Ballista-row icon region (912-940,
+  46-72) = 257 non-background px on the SAME placed frame (icons retire
+  from the WORLD path only — P2b holds served).
+- KIT SPARK RE-CENSUS (WK2 window reused): window re-run 3x with the
+  burst starting the SAME tick as the final ASSIGN (the 700ms settle of
+  the first pass waited the sub-second spark life out — lesson logged).
+  PULSE 0, spark-delta peak 0 px, burst max RAW 38 px (turret-green
+  shifts only), across all three windows. FINDING (P2-class, routed up):
+  the kit-assign spark painted ZERO visible pixels in the served windows
+  although (a) ERRS [] every window (the re-census itself is RED-FREE),
+  (b) relics_assigned=1 landed every run (shipped assign works), (c) the
+  mechanism is suite-GREEN at this tree (test_kit_fx 348-run), (d)
+  fx_director carries ZERO V-B lines (kit observer reads obj.pos/
+  relic_uid — node-class-free). All three windows landed assign within
+  ~2s of the build->combat boundary (wave-1 build = 25s, mission boot
+  eats ~12s) where WR-wave.log's OPEN 11897-F1 cap-starvation applies.
+  NOT attributed to V-B; not this card's to fix (fx_director zero-line).
+- VISION (describe-image, Lane E qwen3.8-flash-next): on the placed
+  board: "...not a flat single-colour icon ... a small three-dimensional,
+  sprite-like appearance standing upright on the ground plane" (cost
+  prompt_tokens=477, 29.4s); on the tight crop: "reads as a THREE-
+  DIMENSIONAL TOWER-LIKE STRUCTURE ASSEMBLED FROM PRIMITIVES, not as a
+  flat billboard icon ... green rectangular stem ... cast shadow ...
+  meets the floor plane" (prompt_tokens=342, 23.3s). Attribution note:
+  slot 2 sits beside the V-A gate-eye decor; vision fused the eye disc
+  with the form's turret arm — quoted as returned, nothing cropped from
+  the answer.
+- console/page ERRORS across every served window: ERRS [] (RED-FREE).
+
+## FINDINGS (routed to parent)
+1. v11_sprite_probe stale asset (sprite-era class pin; no pytest driver;
+   would redden if revived) — godot/sim, outside writable set.
+2. sprite_bank WORLD_H_TOWER const orphaned (defense_obj was its only
+   reader) — sprite_bank outside writable set; hygiene does not flag
+   consts; next hygiene card can harvest.
+3. kit-spark served-window non-observation (see L2 row; WR 11897-F1
+   starvation open; mechanism suite-green; V-B zero-write on fx path).
+4. Gate-eye decor (V-A) sits exactly on spawn-mouth placement slots —
+   future form-crop evidence (V-G pairing card) should place-censuse
+   away from gates or subtract control frames like this card did.
+
+## SUITE + FINAL VERIFY
+suite-1 (pre-export, static stale): 348 passed rc=0 (195.14s)
+suite-2 (FRESH pck):                348 passed RC=0 (192.06s)
+final (post planted-red revert):    348 passed (193.90s) + hygiene
+                                    0 hits -> VERIFY_EXIT=0 (below)
+Floor >=345 honored; +3 legs (the plan's 352-356 projection was
+across ALL six W1 cards, not this one).
+
+VERIFY_EXIT=0
