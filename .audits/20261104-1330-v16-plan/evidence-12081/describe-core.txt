@@ -1,0 +1,7 @@
+The cropped view shows a single 3D structure centered in the frame, built from brick‑textured blocks (tan / light‑brown / orange‑brown bricks with visible mortar lines). Its shape consists of four vertical cylindrical pillars, one at each corner, each pillar capped with a slightly wider rounded top. Between the pillars are horizontal rectangular brick walls/panels that form an open rectangular enclosure, and the top is a flat brick platform/surface. The structure sits on a brown floor made of large rectangular paving‑stone tiles with darker grout lines.
+
+Standing on the top surface of the structure, near its center, is a small dark object/figure (dark brown‑to‑black with a few lighter speckles); its exact form is small and not clearly readable.
+
+Across the image run several translucent, pale gray angular shapes (flat, shard‑ or beam‑like polygons) oriented diagonally. White overlay text is present, partially cut off at the edges: the line "ttons on the right panel —" and, below it, "again places".
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=218 completion_tokens=533 18.1s

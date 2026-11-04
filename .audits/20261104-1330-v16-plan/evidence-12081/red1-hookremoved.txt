@@ -1,0 +1,70 @@
+F.F..                                                                    [100%]
+=================================== FAILURES ===================================
+__________________________ test_diorama_engine_probe ___________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-5212/test_diorama_engine_probe0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_diorama_engine_probe(tmp_path, class_cache):
+        proc = _run_probe(tmp_path, class_cache)
+>       assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+E       AssertionError: probe rc=1
+E         OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         DG-FAIL CONTAINER Fortress nodes = 0 (want 1)
+E         
+E         ERR:
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nDG-FAIL CONTAINER Fortress nodes = 0 (want 1)\n', stderr='').returncode
+
+tests/test_diorama.py:404: AssertionError
+________________ test_hook_one_call_in_build_cores_source_truth ________________
+
+    def test_hook_one_call_in_build_cores_source_truth():
+        world = WORLD_GD.read_text(encoding="utf-8")
+        assert 'const DIORAMA := preload("res://scripts/diorama.gd")' \
+            in world, "builder preloaded on the const block (G1 idiom)"
+        cores = _fn_body(world, "static func build_cores(")
+        # count the LIVE call shape (tab-indented statement): a commented
+        # hook is not a mount (proven by the card's planted-red 1).
+>       assert cores.count("\n\tDIORAMA.build_fortress(m)") == 1, cores
+E       AssertionError: m) -> void:
+E         	var cores_row: Dictionary = m.map_def.get("cores", {})
+E         	m.core_main = make_core(m, "main", "main", cores_row.get("main", {}),
+E         			Vector3.ONE)
+E         	for sub: Dictionary in cores_row.get("subs", []):
+E         		m.core_subs[String(sub["id"])] = make_core(
+E         				m, String(sub["id"]), "sub", sub, Vector3(0.5, 0.5, 0.5))
+E         	# V1 hook (DECLARED, MC 11559): painted ground SURFACE only — no sim
+E         	# field, no step order (W7/W10 visual-hook mount precedent).
+E         	paint_arena(m)
+E         	# G1 hook (DECLARED, MC 11690): gate-eye billboards at the spawner
+E         	# positions — same visual-mount home, zero sim data.
+E         	paint_spawn_gates(m)
+E         	# G2 hook (DECLARED, MC 11694): lit bands on the GROUND lane polylines
+E         	# of m.lanes — same visual-mount home, read-only, air lanes unbanded.
+E         	LANE_BANDS.paint_lane_bands(m)
+E         	# V-A hook (DECLARED, MC 12081, V16-PLAN-c2 §3): the fortress plateau
+E         	# — cliff skirt + rim + gatehouses + keep UNDER/AROUND the play plane,
+E         	# same visual-mount home, zero sim data, ground transform untouched.
+E         	#DIORAMA.build_fortress(m)
+E         
+E         
+E         # D-2 shared read (MC 11723, v1.3 clean-code W2): the RAW map_def lane
+E         # rows indexed by lane id — the ONE home of the raw lane->spawner/"air"
+E         # grouping (build_lanes drops those keys, so this reads map_def
+E         # directly, a public read; gatefall: spawn_a/spawn_b carry lane_a1/a2,
+E         # spawn_c plain). Callers: paint_spawn_gates here (the gate-eye wing
+E         # variant) and wave_telegraph._paint (per-gate counts) — one read,
+E         # two consumers.
+E       assert 0 == 1
+E        +  where 0 = <built-in method count of str object at 0x55cf69bd8570>('\n\tDIORAMA.build_fortress(m)')
+E        +    where <built-in method count of str object at 0x55cf69bd8570> = 'm) -> void:\n\tvar cores_row: Dictionary = m.map_def.get("cores", {})\n\tm.core_main = make_core(m, "main", "main", c...wn_gates here (the gate-eye wing\n# variant) and wave_telegraph._paint (per-gate counts) — one read,\n# two consumers.'.count
+
+tests/test_diorama.py:472: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_diorama.py::test_diorama_engine_probe - AssertionError: pro...
+FAILED tests/test_diorama.py::test_hook_one_call_in_build_cores_source_truth
+2 failed, 3 passed in 5.84s

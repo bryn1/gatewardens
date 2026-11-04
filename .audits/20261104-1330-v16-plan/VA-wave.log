@@ -1,0 +1,152 @@
+VA-wave.log — MC 12081 · v1.6 V-A FORTRESS PLATEAU (W1, milestone HEART) — 2026-11-04
+worktree /tmp/gw-v16-va · branch card/12081 · base 986353d41eadeafcad830360638cdc242605cb58
+plan .audits/20261104-1330-v16-plan/V16-PLAN-c2.md §W1 V-A + laws L1–L8 (all honored; declared readings §7)
+
+== 1. ART (L6 clean-room; imagegen local GPU, window CLOSED at end — status verified) ==
+Original generated sheets/icons, copied byte-identical into godot/assets/v11/; library sources
++ prompt sidecars under /home/claudecode/design-lab/library/2026/11/gatewardens/ (license_class
+null → internal-only). NO third-party game content, names, or copies anywhere (prompts quote
+only our own committed-PNG look: warm sandstone + gold + cyan gem, flat cartoon).
+  NEW ground_fortress.png   1024² RGB flagstone arena floor (ground_arena id remap target)
+  NEW fortress_stone.png    1024² RGB cliff/stone sheet (fortress_stone id; diorama.gd sole consumer)
+  IN-PLACE icon_core.png        512² RGBA keep-tower + golden winged cyan-gem crest (was medallion)
+  IN-PLACE icon_gate_eye.png    512² RGBA sandstone/gold arch plaque, cyan doorway (was white eye)
+  IN-PLACE icon_gate_eye_air.png 512² RGBA same plaque + golden wings (edit-mode ref of the plain)
+test_committed_sheets_keep_their_pinned_sizes: icons 512², sheets 1024² via IHDR struct unpack;
+test_gate_eye.py GREEN with ZERO re-pin (paths/ids/sizes untouched — pinned rows never edited).
+
+== 2. WIRING (writable set ONLY; two hook-adjacent lines + one bank remap + one bank row) ==
+mission_world.gd: + preload DIORAMA const; ONE call DIORAMA.build_fortress(m) inside
+build_cores (the paint_arena/G1/G2 visual-hook precedent). ZERO lines in mission.gd /
+mission.tscn / camera_zoom.gd / fx_director.gd (diff rows §5).
+sprite_bank.gd: ground_arena id REPLACED (not added) → assets/v11/ground_fortress.png;
+one new id row fortress_stone (the plan's own cliff/stone sheet deliverable wired per the
+L5 one-map law; the bank is the single id→file truth). ground_arena.png stays committed-but-
+unwired (the ground_path.png precedent; deletion not authorized by this card).
+
+== 3. BUILD (diorama.gd — PrimitiveMesh law kb 2d5274003/ab9e1c8b: engine-managed only) ==
+23 primitives = 9 BoxMesh + 14 CylinderMesh, budget 30 pinned (const MAX_PRIMITIVES := 30);
+ONE BoxMesh.new()/CylinderMesh.new()/Node3D.new()/m.add_child() site each (source-truth test
+counts them); ZERO ArrayMesh/get_image/raycalls/bare-rand (banned by regex, comments blanked
+first); ZERO writes onto m (WRITE_RE/MUT_RE minus add_child plumbing).
+Plateau 168×22×168 hangs BELOW the play plane (top face flush y=0, DG-PLATEAU top=0.000);
+rim walls + 4 corner towers on the board rim; a 2-tower+lintel gatehouse at EVERY spawner
+(gated=3 spawners=3 extra=0 — NEG leg: sid parsed by suffix-trim, a 4th spawner would ship);
+keep box at the main-core pos + 4 turrets. Grid-frozen proof: DG-GROUND byte-pins the ground
+node pos/rot/scale + mesh AABB (-80,0,-80 + 160,0,160) + root origin — placement is slot-
+discrete (defense_placer._build_slots), ground untouched.
+DECLARED SHADOW RULING (served-leg evidence): env_greybox ambient_light_source = 1 = DISABLED
+(Godot enum 0=BG/1=DISABLED/2=COLOR — the scene row; plan §0 premise "flat cool ambient 0.6"
+is CONTRADICTED: the color/energy values sit under a disabled source). The served frame with
+default casting painted unlit faces + ground shadows PURE BLACK (black blob spawn_c, black
+inner rim faces — read_image'd). V-A ships cast_shadow OFF + emission floor 0.3 (torch-lit
+warm, no black faces; EMISSION_FILL + SHADOW_CASTING consts live in diorama.gd so the flip
+back is one word when V-E gives the env real ambient — V-E owns the WorldEnv/Sun rows, and
+no env/Sun line moved here). Machine-pinned: DG-LIT cast_off=1 emission=23.
+KEEP CREST CLEARANCE: keep body 5.5→4.0 after the served describe-image read the pinned crest
+(rides y 4.5, another card's pin) as a "small dark object" half-swallowed by the roof; at 4.0
+the final read is "a golden/yellow crown- or wing-shaped ornament with a small blue gem …
+floating directly above the top edge".
+
+FINAL ENGINE PROBE (transcript in evidence-12081/probe-green-final.txt, stderr EMPTY, rc=0):
+  DG-CONTAINER n=1 · DG-COUNT n=23 max=30 · DG-CLASS boxes=9 cyls=14 prim=1 · DG-LIT cast_off=1 emission=23
+  DG-PLATEAU top=0.000 · DG-GROUND pos=0,0,0 scale=1,1,1 aabb_min=-80,0,-80 size=160,0,160
+  DG-FLOOR tex=res://assets/v11/ground_fortress.png repeat=0 mod=0.900,0.900,0.950
+  DG-GATE gated=3 spawners=3 extra=0 · DG-KEEP keep=(0.0, 2.0, 0.0) turrets=4
+  DG-AABB min=-84.0,-22.0,-84.0 max=84.0,7.5,84.0 · DG-SCREEN rows · DG-OK
+
+== 4. PLANTED REDS (L3 — both shown RED, both reverts byte-verified) ==
+RED 1 hook removed (evidence-12081/red1-hookremoved.txt): "#DIORAMA.build_fortress(m)" —
+  probe: DG-FAIL CONTAINER Fortress nodes = 0 (want 1) rc=1 → test_diorama_engine_probe RED;
+  AND the hardened hook leg (counts the LIVE tab-indented call shape — planted-red caught my
+  first substring version GREEN through a commented hook, a false-green CLOSED same session)
+  → 2 failed, 3 passed. Revert: git checkout -- + git diff --exit-code clean +
+  sha256 dbd277d80de0ccc3157851f0c9a9cd18307eb04e06607e7266d5efbbda48e7d4 == pre-plant.
+  Green re-run: 5 passed (red1-revert-green.txt).
+RED 2 budget plant 31 (evidence-12081/red2-budget31.txt): 8 "Plant_%d" boxes added →
+  probe: DG-FAIL COUNT primitives = 31 (want 23 pinned, budget 30) rc=1 → engine leg RED.
+  Revert byte-verified: sha256 599113ad049eb6aeaa50b2b41b34635f4e44c6de23018dcd1d2927b8276d4ddd
+  == pre-plant (pre-red-shas.txt); green re-run 14 passed incl. test_gate_eye + test_lane_bands
+  UNTOUCHED pins (red2-revert-green.txt).
+
+== 5. SUITE + HYGIENE + ZERO-DIFF (final tree) ==
+python3 -m pytest -q                      → 350 passed in 191.64s (0:03:11)  rc=0 (FINAL tree)
+  EXPLICIT COUNT LINE (plan §5 rule): baseline 345 measured at branch tip this session
+  ("345 passed in 209.46s rc=0") + test_diorama.py 5 legs = 350. Plan V-A row projected
+  +1–2 new tests; this file ships the plan's own leg list as 5 separate functions per the
+  test_lane_bands/test_kit_fx file idiom (engine probe / bank source-truth / hook source-truth /
+  builder law source-truth / PNG IHDR size pins). Above projection, reported as measured.
+python3 tools/check_hygiene.py            → check_hygiene: 0 hit(s) (rc=0; the 24 notes are
+  the pre-existing baseline set: soft-250 lines in sim/tools files, none in this card's files)
+GOVERNED_LITERALS (len, check_hygiene import) = 17 — UNCHANGED (I2 untouched)
+ZERO-DIFF PROOF (git diff HEAD + --cached, line counts; all worktree=0 staged=0):
+  godot/scripts/mission.gd · godot/scenes/mission.tscn · godot/scripts/camera_zoom.gd ·
+  godot/scripts/fx_director.gd · godot/sim · tests/fixtures · tools/check_hygiene.py
+  (camera 56/128/8 byte-frozen rows UNTOUCHED; no sim write, no fixture touch, gate frozen)
+
+== 6. SERVED P1 CENSUS (L2 fresh-export law kb e4aa7e1f; harness evidence-12081/va-served-12081.cjs) ==
+bash tools/export_web.sh rc=0 — FINAL pck md5 6b9033b91f6b127137d3f91dc1cd9e1c (7,4xx,xxx B;
+  earlier iterations c7b55242→0b3d67b6→24cb6610 were intermediate rulings, each FRESH exports,
+  never stale; the census below ran on the FINAL bytes only). Loopback server/server.py
+  GW_PORT=51209 127.0.0.1, KILLED after capture (SERVER_KILLED verified; no orphans).
+  Route: /index.html → wait 14 s → click START (105,165) [icon-leg-11854 shipped route; ≥600 ms
+  input pacing held — waits are 14 s/10 s] → snapshot → shots (va-0-hub..va-4-topstrip.png).
+STATE MARKER GATE FIRST (marker before anything else):
+  SNAP phase_kind=build wave=0 core=1800 · ERRS [] (zero console/page errors, run-final.log)
+  describe-image verbatim top-left: "Build: wave 1 in 21 s" (describe-marker.txt — same marker
+  row class as the BEFORE frame's "Build: wave 1 in 24 s"; note core=1800: the shipped START
+  click lands gatefall-HARD; the BEFORE frame was normal-1000 — camera pose is difficulty-
+  independent, all census crops are camera-derived; V-G owns the strict same-pose pairing).
+CENSUS (same crop rects on BEFORE v16-before-build.png vs AFTER va-1-build.png; full block in
+census-12081.txt + final block below; crops from the probe's own DG-SCREEN projections):
+  TOP-STRIP  (x340-880,y90-150) void 17193→6911 (−60%: rim walls + corner towers now occupy
+    the far band where the void met the board; remaining px = sky ABOVE the 3-u rim — the
+    skyline itself is V-E's pillar, the void→rim FLIP is measured and the metric is
+    red-able: computed on the BEFORE frame as the control row).
+  CENTER     (x420-860,y250-500) grass-green 1625→0 (the checkered+grass board texture is
+    GONE — replaced by the flagstone sheet; albedo path machine-pinned by DG-FLOOR + the
+    bank source-truth leg), white 3503→1985, void ~0 both, black 58→58 (static px).
+  CORE-REGION(x540-740,y246-420) box+coin → keep+crest: vision read below; black unchanged.
+  GATE-REGION(x260-392,y266-396) eye-sclera white 195→27 (the white coin-eye is gone),
+    grass 2064→0, black 17→2 (no cast-shadow blob — the shadow ruling VERIFIED on web).
+DESCRIBE-IMAGE LITERAL ROWS (Lane E qwen3.8-flash-next; REPORTS, I JUDGE — cost lines in files):
+  full frame: "The board is a flat grid of large, rounded-corner rectangular tiles in tan/
+    brown stone, separated by dark grey-brown grout lines… The board has a raised stone border/
+    edge running along its left and right sides… four such groups, each made of two short
+    vertical stone pillars with a horizontal stone block laid across their tops (a gate/portal
+    shape)" [describe-full.txt]
+  CORE crop: "at each of its four corners stands a short rounded/cylindrical tower… giving a
+    four-turreted keep silhouette. Floating directly above the top edge… a golden/yellow
+    crown- or wing-shaped ornament with a small blue gem or jewel at its center"
+    [describe-core-final.txt — box+coin→keep+crest READ LITERALLY]
+  GATE crop AFTER: "two thick arms sweep around… Inside the inner curve… a small flat emblem/
+    badge: a roughly circular or shield-shaped marker with a brownish-gold outer ring and a
+    pale interior, containing a vertical blue element" [describe-gate.txt]
+  GATE crop BEFORE (contrast, same rect from the BEFORE frame): "a round, dark (black/dark-
+    grey) outer ring… two gold/yellow, jagged, wing- or flame-shaped protrusions… a bright
+    blue round element (resembling an eye or gem)" [describe-before-gate.txt — coin-eye→
+    arch-plaque contrast PROVEN by the two literal reads]
+
+== 7. DECLARED READINGS + FINDINGS ==
+(a) sprite_bank got TWO lines: the ground_arena→ground_fortress REMAP (one line, replace-not-
+    add — the "ONE line" clause governs the remap itself) + the fortress_stone id row the plan's
+    own deliverable list names ("cliff/stone sheet"); L5's one-map law forbids a second path
+    map and diorama.gd is the sole consumer.
+(b) The engine probe is embedded INLINE in tests/test_diorama.py (test_kit_fx R5 idiom) because
+    L7 freezes godot/sim/ — a sim/ probe file would violate the card's own law.
+(c) Suite lands 350 (5 legs) — see explicit count line §5.
+(d) ground_arena.png stays committed-but-unwired (ground_path.png precedent; deleting a
+    committed asset is not this card's authority).
+(e) Census metric choices are named, not tuned-after: TOP-STRIP void-px (rim-vs-void), CENTER
+    grass-green-px (old board texture), CORE/GATE identity by describe-image literal reads +
+    white-eye-px; every metric has a BEFORE control row.
+(f) FINDING (stale truth, follow-up card): godot/sim/v1_world_probe.gd FLOOR row pins the OLD
+    path res://assets/v11/ground_arena.png. It is NOT collected by any pytest (grep: no caller)
+    so the suite is GREEN, but the probe is now STALE truth. sim/ is FROZEN for this card (L7) —
+    needs a one-line de-stale by a card that owns sim/ (report to parent).
+(g) Plan §0 "flat cool ambient 0.6" is CONTRADICTED at the scene row (ambient DISABLED) —
+    carried to V-E (its env re-tune is load-bearing for the fortress too); shadow flip-back is
+    one word here once V-E lands.
+(h) Served route = gatefall HARD (core 1800) vs BEFORE normal (1000): crops are camera-derived
+    (difficulty-independent); V-G owns the strict same-pose AFTER pair.
+VERIFY_EXIT=0

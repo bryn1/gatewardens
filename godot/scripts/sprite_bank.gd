@@ -64,7 +64,15 @@ const TEXTURES := {
 	# is deliberately NOT wired: NO lane mesh exists (lanes are waypoint
 	# DATA, C7), so painting it would author a second visual mechanism,
 	# not repaint a surface — the card's stated honest-cut row.
-	"ground_arena": preload("res://assets/v11/ground_arena.png"),
+	# V-A remap (MC 12081, replace-not-add): the SAME id now carries the
+	# clean-room fortress flagstone sheet — the flat checkered board
+	# becomes the fortress top surface; paint_arena stays the one
+	# consumer, zero code change there.
+	"ground_arena": preload("res://assets/v11/ground_fortress.png"),
+	# V-A fortress stone (MC 12081): the masonry sheet for the diorama
+	# primitives — diorama.gd is its only consumer (repeat-tiled on the
+	# engine-managed box/cylinder faces, the ONE id-map wiring).
+	"fortress_stone": preload("res://assets/v11/fortress_stone.png"),
 	# G1 spawn-gate eyes (MC 11690, V121-PLAN G1): the gate-mouth marker
 	# pair rides the SAME id->file map — mission_world.paint_spawn_gates
 	# is its only consumer (billboards through make_sprite, no second

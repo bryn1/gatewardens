@@ -1,0 +1,26 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________ test_diorama_engine_probe ___________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-5214/test_diorama_engine_probe0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_diorama_engine_probe(tmp_path, class_cache):
+        proc = _run_probe(tmp_path, class_cache)
+>       assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+E       AssertionError: probe rc=1
+E         OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         DG-CONTAINER n=1
+E         DG-FAIL COUNT primitives = 31 (want 23 pinned, budget 30)
+E         
+E         ERR:
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...- https://godotengine.org\n\nDG-CONTAINER n=1\nDG-FAIL COUNT primitives = 31 (want 23 pinned, budget 30)\n', stderr='').returncode
+
+tests/test_diorama.py:404: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_diorama.py::test_diorama_engine_probe - AssertionError: pro...
+1 failed in 5.57s

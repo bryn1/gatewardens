@@ -12,12 +12,14 @@
 # visual-mount file the brief names. G1 (MC 11690) adds the third such
 # mount: the spawn-gate eye billboards, same build_cores hook. G2
 # (MC 11694) adds the fourth: the lit lane bands, same hook, builder
-# lives in lane_bands.gd.
+# lives in lane_bands.gd. V-A (MC 12081) adds the fifth: the fortress
+# plateau, same hook, builder lives in diorama.gd.
 # Zero step order / zero sim data touched — the lane rows, waypoints
 # and core records are byte-identical; git show proves it.
 extends RefCounted
 
 const CORE_OBJ := preload("res://scripts/core_obj.gd")
+const DIORAMA := preload("res://scripts/diorama.gd")
 const LANE_BANDS := preload("res://scripts/lane_bands.gd")
 const MESH_CORE := preload("res://assets/mesh_core.tres")
 const MAT_CORE := preload("res://assets/mat_core.tres")
@@ -95,6 +97,10 @@ static func build_cores(m) -> void:
 	# G2 hook (DECLARED, MC 11694): lit bands on the GROUND lane polylines
 	# of m.lanes — same visual-mount home, read-only, air lanes unbanded.
 	LANE_BANDS.paint_lane_bands(m)
+	# V-A hook (DECLARED, MC 12081, V16-PLAN-c2 §3): the fortress plateau
+	# — cliff skirt + rim + gatehouses + keep UNDER/AROUND the play plane,
+	# same visual-mount home, zero sim data, ground transform untouched.
+	DIORAMA.build_fortress(m)
 
 
 # D-2 shared read (MC 11723, v1.3 clean-code W2): the RAW map_def lane

@@ -1,0 +1,21 @@
+CENSUS pck md5: 24cb6610d2644362bc2c27900e69df96 (fresh export; marker row + phase_kind gate passed FIRST, see served-run3.log)
+TOP-STRIP  (x340-880,y90-150)   area=32400
+  void         before= 17193 after=  6911
+  grass-green  before=  4056 after=     0
+  white        before=   154 after=    35
+  black        before= 17194 after=  6908
+CENTER     (x420-860,y250-500)  area=110000
+  void         before=    11 after=     1
+  grass-green  before=  1625 after=     0
+  white        before=  3503 after=  1847
+  black        before=    58 after=     2
+CORE-REGION(x540-740,y246-420)  area=34800
+  void         before=    11 after=     1
+  grass-green  before=     0 after=     0
+  white        before=  1808 after=  1066
+  black        before=    58 after=     2
+GATE-REGION(x260-392,y266-396)  area=17160
+  void         before=     5 after=     1
+  grass-green  before=  2064 after=     0
+  white        before=   195 after=    27
+  black        before=    17 after=     2

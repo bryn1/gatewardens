@@ -1,0 +1,2 @@
+dbd277d80de0ccc3157851f0c9a9cd18307eb04e06607e7266d5efbbda48e7d4  godot/scripts/mission_world.gd
+599113ad049eb6aeaa50b2b41b34635f4e44c6de23018dcd1d2927b8276d4ddd  godot/scripts/diorama.gd

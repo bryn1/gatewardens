@@ -1,0 +1,13 @@
+**Top-left corner:**
+Build: wave 1 in 21 s
+Green 300 / cap 10000
+Defenses 0 / cap 60
+Core 1800 / 1800 | sub_north 700 / 700
+
+**Top-right corner:**
+green 300 / cap 60 / defenses 0
+Ballista (100) *
+Gate Blockade (50)
+Barbed Snare (
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=1027 completion_tokens=220 6.7s

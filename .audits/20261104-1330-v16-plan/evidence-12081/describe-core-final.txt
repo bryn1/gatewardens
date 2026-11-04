@@ -1,0 +1,7 @@
+The image is a cropped, low‑resolution game screenshot. The background is a wall or floor of large brown/tan stone tiles separated by darker brown mortar lines in a rough grid. Centered in the frame is a small building rendered in a light tan/beige cobblestone‑brick texture. Its body is a low rectangular block of brick, and at each of its four corners stands a short rounded/cylindrical tower of the same brick texture, each capped with a flat, slightly wider top piece, giving a four‑turreted keep silhouette.
+
+Floating directly above the top edge of the structure, at the horizontal center, is a small emblem: a golden/yellow crown‑ or wing‑shaped ornament with a small blue gem or jewel at its center and short wing‑ or feather‑like projections on either side. Immediately beneath this emblem, still above the structure's top, is a line of small dark text with a light outline that reads "Grant War Awarded".
+
+Overlaid on top of the whole scene are two lines of larger white caption text with a dark outline: one across the left‑middle reading "ttons on the right panel —" (the line is cut off at the left edge), and one across the lower‑center reading "again places". Several semi‑transparent pale gray diagonal streaks (resembling light rays or scratches) cross the image from upper‑right to lower‑left. No other readable text or elements are visible.
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=228 completion_tokens=697 24.9s

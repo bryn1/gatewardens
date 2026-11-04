@@ -1,0 +1,15 @@
+The scene is a 3D top‑down/isometric view of a square game board set against a black background.
+
+**Ground surface material:** The board is a flat grid of large, rounded‑corner rectangular tiles in tan/brown stone, separated by dark grey‑brown grout lines, with faint crack lines across the tile faces. The board has a raised stone border/edge running along its left and right sides.
+
+**Structures standing on it (groups of stone towers with a block across them):** There are four such groups, each made of two short vertical stone pillars with a horizontal stone block laid across their tops (a gate/portal shape):
+1. One near the upper‑center of the board.
+2. One in the middle of the board, with a translucent light‑blue arrow/beam pointing at it from the upper‑right.
+3. One on the left side, tilted, with a translucent blue arrow/beam running from it toward the middle structure.
+4. One at the lower‑right, with a translucent blue arrow/beam pointing into it from the upper‑left and a small gold/brown circular token on the beam.
+
+**What stands at the center:** A white text overlay reads "BUILD: tower buttons on the right panel — click arms, click again places", positioned over the middle stone‑gate structure.
+
+**Along the far edge beyond the board:** Above the far (top) edge of the board
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=1078 completion_tokens=900 28.9s

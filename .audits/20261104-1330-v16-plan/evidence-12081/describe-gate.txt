@@ -1,0 +1,7 @@
+The image is a small, low‑resolution top‑down game view. The background is a tan/light‑brown ground plane divided by darker brown lines into large rectangular plots, giving a tiled or parcelled appearance. In the lower‑right corner there is a flat gray patch (a road or platform edge) cutting diagonally across the terrain.
+
+In the centre of the view sits a single structure built from a speckled beige‑and‑tan textured material (a mottled stone/thatch‑like pattern). Its overall shape is a curved, open ring or hook: two thick arms sweep around to form a C‑ or horseshoe‑like layout, with the opening facing toward the lower‑right. The structure is rendered as a flat, top‑down footprint rather than a tall 3‑D building.
+
+Inside the inner curve of this structure is a small flat emblem/badge: a roughly circular or shield‑shaped marker with a brownish‑gold outer ring and a pale interior, containing a vertical blue element (a narrow blue shape resembling an upward‑pointing sword or arrow) at its centre. Near the upper‑left edge of the structure there is a tiny white‑and‑gray icon/marker (a small flag‑ or pin‑like symbol). No readable text is present anywhere in the image.
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=221 completion_tokens=541 16.3s
