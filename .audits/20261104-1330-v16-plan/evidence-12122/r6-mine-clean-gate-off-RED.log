@@ -1,0 +1,16 @@
+....F...                                                                 [100%]
+=================================== FAILURES ===================================
+_______________ test_server_serves_placeholder_on_ephemeral_port _______________
+
+    @pytest.mark.skipif(False, reason=NO_EXPORT)  # PLANTED-RED (MC 12122 gate plant)
+    def test_server_serves_placeholder_on_ephemeral_port():
+        server = _Server()
+        try:
+            resp = server.wait_ready()
+            body = server.request("GET", "/")[1]
+>           assert resp.status == 200
+E           assert 404 == 200
+E            +  where 404 = <http.client.HTTPResponse object at 0x7f5048f4d720>.status
+
+tests/test_scaffold.py:131: AssertionError
+1 failed, 7 passed in 3.49s

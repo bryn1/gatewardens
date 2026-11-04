@@ -1,0 +1,5 @@
+....s...                                                                 [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_scaffold.py:125: static/index.html missing — the web export is build-side and never committed; run `bash tools/export_web.sh` first
+7 passed, 1 skipped in 3.36s
+R6B_RC=0

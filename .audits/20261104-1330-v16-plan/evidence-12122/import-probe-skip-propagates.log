@@ -1,0 +1,13 @@
+MINIMAL REPRO (NOT repo code — /tmp scratch, mirrors tests/test_served.py:37's allow_module_level skip):
+test_a_served_like.py = the W12 shape (module-level skip when the export is missing) + GW_NAMES const;
+test_b_scaffold_like.py = what a shared-constant REUSE would look like: from test_a_served_like import GW_NAMES
+
+$ python3 -m pytest -q -rs
+
+=========================== short test summary info ============================
+SKIPPED [2] test_a_served_like.py:4: export missing
+2 skipped in 0.01s
+
+=> the importer collects NO test of its own: the skip raised inside test_a propagates through the import and
+   pytest attributes 2 skips to test_a_served_like.py:4, so sharing the constant by import would skip
+   all 8 test_scaffold legs. That is why the sentence is restated, not imported.

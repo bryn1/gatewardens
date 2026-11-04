@@ -1,0 +1,23 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /tmp/gw-v16-vj-clean
+plugins: dash-4.4.1, aiohttp-1.1.0, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=strict, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 13 items
+
+tests/test_scaffold.py::test_project_godot_has_no_autoload_section PASSED [  7%]
+tests/test_scaffold.py::test_main_scene_wires_the_root_script PASSED     [ 15%]
+tests/test_scaffold.py::test_web_preset_contract PASSED                  [ 23%]
+tests/test_scaffold.py::test_web_shell_is_full_engine_template_with_gw_bridge PASSED [ 30%]
+tests/test_scaffold.py::test_server_serves_placeholder_on_ephemeral_port PASSED [ 38%]
+tests/test_scaffold.py::test_server_path_escape_is_404_json_not_found PASSED [ 46%]
+tests/test_scaffold.py::test_hygiene_gate_is_green_on_the_scaffold PASSED [ 53%]
+tests/test_scaffold.py::test_hygiene_gate_goes_red_on_planted_bare_randf PASSED [ 61%]
+tests/test_served.py::test_root_serves_200_text_html_with_body PASSED    [ 69%]
+tests/test_served.py::test_served_body_is_the_real_engine_bootstrap PASSED [ 76%]
+tests/test_served.py::test_no_raw_godot_tokens_survive_substitution PASSED [ 84%]
+tests/test_served.py::test_every_referenced_asset_serves_200_nonempty PASSED [ 92%]
+tests/test_served.py::test_unknown_paths_get_the_shipped_json_404_shape PASSED [100%]
+
+============================== 13 passed in 3.84s ==============================

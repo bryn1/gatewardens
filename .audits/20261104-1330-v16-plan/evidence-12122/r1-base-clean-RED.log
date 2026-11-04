@@ -1,0 +1,22 @@
+........................................................................ [ 20%]
+........................................................................ [ 40%]
+........................................................................ [ 60%]
+........................................................................ [ 80%]
+.....................................F................................   [100%]
+=================================== FAILURES ===================================
+_______________ test_server_serves_placeholder_on_ephemeral_port _______________
+
+    def test_server_serves_placeholder_on_ephemeral_port():
+        server = _Server()
+        try:
+            resp = server.wait_ready()
+            body = server.request("GET", "/")[1]
+>           assert resp.status == 200
+E           assert 404 == 200
+E            +  where 404 = <http.client.HTTPResponse object at 0x7feb821f6da0>.status
+
+tests/test_scaffold.py:117: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_scaffold.py::test_server_serves_placeholder_on_ephemeral_port
+1 failed, 357 passed, 1 skipped in 208.65s (0:03:28)
+R1_RC=1

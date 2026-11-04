@@ -1,0 +1,2 @@
+d3ea12120a18b37cc7cb23af7be7386a  static/index.pck
+-rw-r--r-- 3 claudecode claudecode 7457200 Nov  4 19:40 static/index.pck

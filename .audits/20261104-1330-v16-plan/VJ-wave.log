@@ -1,0 +1,160 @@
+VJ-wave.log — MC 12122 · v1.6 V-J EXPORT-GATE the test_scaffold served leg (W4 test-card, clean-checkout green) — 2026-11-04
+worktree /tmp/gw-v16-vj · branch card/12122 · author "code (12122)" · merge base / main tip a728a5da5fe8ffc909f5c7a2f034fa2ee38be6d6 · CODE commit b569b550b71c64092ad4128e3185c0de4b27b2f7
+finding source MC 12121 F-1 (DOCS.log §F-1) · brief /tmp/gw-briefs/v16-vj.md · all transcripts in evidence-12122/
+
+== 0. WHAT THIS CARD TOUCHES ==
+ONE file: tests/test_scaffold.py (+17 / −3, 158 → 172 ln — under the 250 soft note).
+Gate row on the CODE commit: `git diff --name-only a728a5d..b569b55` =
+`tests/test_scaffold.py` and NOTHING else — ZERO product code, ZERO other test files, no
+conftest change, no tool change, no new mechanism. The LEDGER row + this log +
+evidence-12122/ ride the second commit (the EVIDENCE commit), which adds no test and no
+product line.
+
+== 1. THE FINDING RE-MEASURED AT THE MERGE BASE, BEFORE ANY EDIT ==
+A CLEAN checkout was built the literal way — `git worktree add --detach
+/tmp/gw-v16-vj-base a728a5d` — whose static/ holds ONLY the committed .gitkeep (the web
+export is build-side, .gitignore'd since W12). That is the point of the leg, so the
+clean-checkout legs below never ran anywhere a stale static/ could help them.
+
+  (r1) python3 -m pytest -q            →  1 failed, 357 passed, 1 skipped   rc=1
+       FAILED tests/test_scaffold.py::test_server_serves_placeholder_on_ephemeral_port
+       assert 404 == 200        (tests/test_scaffold.py:117 at base)
+
+Exactly MC 12121 F-1: the leg asks `GET /` for 200 + text/html + "Gatewardens", and
+server/server.py has been static-ONLY since W12 — `GET /` resolves static/index.html,
+which IS the export, so a checkout without it correctly answers the shipped C10
+404 {"error":"NOT_FOUND"}. The leg was asking a build artifact of a clean checkout, and
+it was the only served-shaped leg in the suite carrying no export gate.
+
+  (r2) SAME tree with the export present = the merge-base floor the DoD names:
+       python3 -m pytest -q            →  363 passed   rc=0
+       (static/index.pck md5 d3ea12120a18b37cc7cb23af7be7386a, 7 457 200 B — the
+        export this tree was handed; pck bytes are not reproducible, so this md5 is a
+        run row, never compared against another card's.)
+
+== 2. THE FIX — THE EXISTING GATE, NOT A SECOND ONE ==
+tests/test_served.py has carried the export gate since W12 (MC 11274.1.21): it skips on
+`not os.path.isfile(static/index.html)` with a reason naming tools/export_web.sh. This
+card reuses THAT condition and THAT reason sentence on the one leg that needs them — the
+only new constants are `INDEX` (the same path) and `NO_EXPORT` (test_served.py's sentence
+verbatim, minus only its trailing "(W12 DoD runs it present)" parenthetical, which names
+another card's run). Importing the constant instead of restating it was PROBED and
+REJECTED (import-probe-skip-propagates.log, a minimal /tmp pair mirroring the two module
+shapes): the module-level Skipped propagates through the import and the importer collects
+NO test of its own, so sharing by import would skip all 8 scaffold legs. The gate lands
+as a per-test
+`@pytest.mark.skipif` rather than a module-level skip because a module skip would take
+this file's OTHER seven legs with it: they read
+committed files only and must keep running with no export — and
+test_server_path_escape_is_404_json_not_found is the one leg that is STRONGER without an
+export (its 404 then comes from a missing file, not from the extension allowlist).
+Alternatives weighed and NOT built, so nobody re-adds them: a GW_EXPORT env var; a
+conftest helper/fixture; a second skip-list; deleting the leg (the served 200/html/title
+contract is real, it just needs the artifact).
+
+== 3. THE DoD LEGS, RUN AT MY COMMIT b569b55, COMMANDS VERBATIM ==
+Both fresh `git worktree add --detach` trees created THIS session
+(/tmp/gw-v16-vj-clean at b569b55, /tmp/gw-v16-vj-red at b569b55), each starting with
+static/ = .gitkeep only:
+
+  (r4) CLEAN CHECKOUT, no export:  python3 -m pytest -q
+       → 357 passed, 2 skipped in 205.32s            rc=0     r4-mine-clean-suite.log
+       The 2 skips are exactly the export-gated ones — test_served.py's module skip and
+       this leg. 0 failed: the RED leg is gone from a clean checkout.
+  (r8) and WHICH two they are, named, in the no-export tree:
+       python3 -m pytest tests/test_scaffold.py tests/test_served.py -q -rs
+       → 7 passed, 2 skipped   rc=0                        r8-clean-both-served-files-skips.log
+         SKIPPED [1] tests/test_served.py:37:   static/index.html missing — … (W12 DoD runs it present)
+         SKIPPED [1] tests/test_scaffold.py:125: static/index.html missing — …
+       One sentence, two gates: the leg now skips on the SAME reason the W12 gate prints
+       (reuse row, visible in the transcript rather than asserted here).
+  (r3) targeted, with the export (see r5's export step), same file:
+       python3 -m pytest tests/test_scaffold.py -q -rs → 8 passed, 0 skipped   rc=0
+  (r5) WITH EXPORT, same fresh tree: bash tools/export_web.sh && python3 -m pytest -q
+       EXPORT_RC=0 (static/index.pck md5 04c581b61091b39e1cb6c05fe5f3e96a, 7 457 488 B)
+       → 363 passed in 202.42s                       rc=0     r5-mine-with-export-suite.log
+  (r7) the two served files leg-by-leg with the export present, in the fresh tree:
+       python3 -m pytest tests/test_scaffold.py tests/test_served.py -v
+       → 13 passed (8 scaffold + 5 served), 0 SKIPPED          r7-…-legs-verbose.log
+       i.e. with the export the gated leg COUNTS GREEN again, it never went silent.
+
+== 4. PLANTED-RED — THE GATE PROVEN TO BE THE THING HOLDING THE GREEN ==
+A9 rule: a check that has never gone red is not a check. In the no-export tree
+/tmp/gw-v16-vj-red at b569b55, the gate condition was forced off
+(`skipif(not os.path.isfile(INDEX))` → `skipif(False)`), nothing else touched:
+
+  (r6) python3 -m pytest tests/test_scaffold.py -q -rs → 1 failed, 7 passed   rc=1
+       FAILED …::test_server_serves_placeholder_on_ephemeral_port — assert 404 == 200
+       (r6-mine-clean-gate-off-RED.log)
+  (r6b) byte-revert `git checkout -- tests/test_scaffold.py` → md5
+       28992feeb8068aca012e177a1ed5f42b, byte-identical to `git show HEAD:…` AND to the
+       pre-red record (byte-shas.txt); `git status --short` EMPTY; re-run
+       → 7 passed, 1 skipped with the gate reason printed                  rc=0
+So: gate OFF in a clean checkout = RED, gate ON = SKIP-with-reason, export present =
+GREEN. The gate is doing exactly one job and it is the job F-1 named.
+
+== 5. THE ONE DoD NUMBER THAT MEASURES DIFFERENT (declared, not smoothed over) ==
+The brief expects the with-export run to read "364+ passed — the +1 leg counts again".
+Measured 363, at BOTH the merge base (r2) and my commit (r5), and those two cannot
+differ: this card ADDS NO LEG. That leg already counted inside the 363 whenever the
+export is present — it only ever went MISSING from the green count in a clean checkout,
+where it went RED instead. The "+1" is real but it lives in the transition, not in the
+total: clean checkout 1 FAILED/357 passed/1 skipped rc=1 → 0 FAILED/357 passed/2 skipped
+rc=0. A 364 at my commit would mean a test materialised out of nowhere; recorded at the
+measured 363 (>= 363, the DoD's other floor, holds at both trees).
+
+== 6. OTHER GATES AT THIS TREE ==
+check_hygiene → "0 hit(s)" rc=0 in THREE trees (clean worktree, merge base with export,
+my worktree after the export — hygiene-clean.log / hygiene-main.log /
+hygiene-with-export.log), 25 soft >250 notes = the base set, none new.
+GOVERNED_LITERALS 17 (unchanged). fixtures / camera_zoom.gd / godot/sim: ZERO changed
+lines — nothing outside the one test file moved (§0 gate). No .gd touched, so no
+bare-rand / i2 / rename surface at all.
+
+== 7. DOCS FOLLOW-UP THIS CARD CANNOT LAND (writable-set cap — rides to the parent) ==
+RELEASE-NOTES-v1.6.md:120–129 is the "Suite-count correction" paragraph: it states the
+clean checkout answers "357 passed, 1 FAILED, 1 skipped" and says to treat "green from a
+clean checkout" as FALSE "until a test card gates that leg". This card IS that test card,
+so at b569b55 a clean checkout answers 357 passed, 2 skipped, rc=0 and the "until"
+clause is satisfied. The paragraph is a true HISTORICAL measurement plus a now-closed
+conditional — a docs pass in the MC 12121 family should append one line pointing at this
+commit (and README's pointer with it). NOT touched here: a .md is outside this card's
+ONE-file writable set, and leaving it silently stale is exactly the contradiction F-1
+was filed for, so it is routed rather than fixed sideways.
+
+== 8. TEARDOWN ==
+Scratch worktrees removed + `git worktree prune`: /tmp/gw-v16-vj-base (the base RED
+reproduction), /tmp/gw-v16-vj-red (the planted-red tree) and /tmp/gw-v16-vj-tip (the
+evidence-commit clean-checkout re-run), each after its transcripts were
+copied into evidence-12122/. The DoD tree /tmp/gw-v16-vj-clean stays until the parent
+verifies, then `git worktree remove --force /tmp/gw-v16-vj-clean` (it carries the export
+bytes — gitignored, never committed, same W12 law). No server/server.py process left
+(3 running server.py matches are harness MCP servers, inspected — none from this card);
+every test server killed by its own fixture. GPU window never opened. No push; no
+`git config`; no spawn; commit author code (12122) via per-command -c flags only.
+
+== 9. SUITE ROW ON THE COMMITTED TREE (after this log + the LEDGER row landed) ==
+`python3 -m pytest -q` on /tmp/gw-v16-vj WITH the export, run on the exact tree this
+commit contains → **363 passed rc=0** (r9-committed-tree-with-export-suite.log) — the
+same total as r2 at the merge base and r5 at my commit, i.e. the evidence files moved
+nothing. And the CLEAN-CHECKOUT leg re-run once more in a fresh `git worktree add --detach
+/tmp/gw-v16-vj-tip <evidence commit>` (static/ = .gitkeep only) → **357 passed, 2 skipped
+rc=0**, byte-equal outcome to r4 at the code commit (r10-tip-clean-suite.log). Honest
+ordering note: a commit cannot contain a transcript of its own run, so r10 ran on the
+evidence tree one append earlier — same test material, only this log's and the LEDGER's
+lines differ between the two. No test reads a LEDGER or an .audits file as DATA (grep over tests/*.py +
+tools/*.py: the only hits are docstring/comment citations), and hygiene's walk exempts
+.log/.md, so these lines cannot false-green or false-redden anything.
+
+== FINAL VERIFY (run THIS session, b569b55) ==
+python3 -m pytest -q                    (fresh worktree, static/ = .gitkeep only) → 357 passed, 2 skipped rc=0
+python3 -m pytest tests/test_scaffold.py tests/test_served.py -q -rs (same tree)  → 7 passed, 2 NAMED skips rc=0
+bash tools/export_web.sh && python3 -m pytest -q   (same fresh worktree)          → EXPORT_RC=0, 363 passed rc=0
+python3 -m pytest tests/test_scaffold.py tests/test_served.py -v (same, exported) → 13 passed, 0 skipped rc=0
+python3 -m pytest -q                    (merge base a728a5d, export present)      → 363 passed rc=0   (>= 363 floor)
+python3 -m pytest -q                    (committed tree, export present)          → 363 passed rc=0
+python3 -m pytest -q                    (fresh worktree at the EVIDENCE commit, no export) → 357 passed, 2 skipped rc=0
+python3 -m pytest tests/test_scaffold.py -q -rs  (no-export tree, gate forced off) → 1 FAILED rc=1, then byte-revert + rc=0
+python3 tools/check_hygiene.py           (all three trees)                         → 0 hit(s) rc=0
+git diff --name-only a728a5d..b569b55                                               → tests/test_scaffold.py ONLY (zero product/test-file lines)
+VERIFY_EXIT=0

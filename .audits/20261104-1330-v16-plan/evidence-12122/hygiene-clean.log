@@ -1,0 +1,26 @@
+note: godot/scripts/defense_obj.gd 283 lines > soft 250
+note: godot/scripts/defense_panel.gd 368 lines > soft 250
+note: godot/scripts/defense_placer.gd 336 lines > soft 250
+note: godot/scripts/dummy_range.gd:77 sanctioned draw: randf((
+note: godot/scripts/fx_director.gd 337 lines > soft 250
+note: godot/scripts/game_state.gd 396 lines > soft 250
+note: godot/scripts/hero_combat.gd:125 sanctioned draw: randf((
+note: godot/scripts/hub.gd 290 lines > soft 250
+note: godot/scripts/hud.gd 396 lines > soft 250
+note: godot/scripts/mission.gd 400 lines > soft 250
+note: godot/sim/g4_range_ring_probe.gd 358 lines > soft 250
+note: godot/sim/g6_zoom_relay_probe.gd 276 lines > soft 250
+note: godot/sim/sim_headless.gd 317 lines > soft 250
+note: godot/sim/sim_loot.gd:47 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:60 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:64 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:68 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:76 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:86 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:88 sanctioned draw: randi((
+note: godot/sim/sim_loot.gd:103 sanctioned draw: randf((
+note: godot/sim/sim_loot.gd:119 sanctioned draw: randi((
+note: godot/sim/v11_sprite_probe.gd 288 lines > soft 250
+note: godot/sim/v6_tween_probe.gd 313 lines > soft 250
+note: tools/check_hygiene.py 270 lines > soft 250
+check_hygiene: 0 hit(s)
