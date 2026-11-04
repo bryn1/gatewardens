@@ -49,8 +49,10 @@ measured `git diff 1271a6c..HEAD` this session), and no sim/economy/balance numb
   measured this session); two new clean-room sheets (`ground_fortress.png`, `fortress_stone.png`) and
   three IN-PLACE icon redraws (`icon_core`, `icon_gate_eye`, `icon_gate_eye_air`) so the in-frame
   emblems match the architecture. Served proof (VA-wave.log §6): marker-first state read, then
-  TOP-STRIP void 17193→6911 px, CENTER checker-grass 1625→0 px, and Lane E reading the keep+crest and
-  the gate plaque LITERALLY where v1.5 read "circular gold token".
+  TOP-STRIP void 17193→6911 px, CENTER checker-grass 1625→0 px, and Lane E's literal reads: the CORE
+  crop as "a four‑turreted keep silhouette" crowned by "a golden/yellow crown‑ or wing‑shaped ornament" (`describe-core-final.txt`) and the gate crop's coin-eye as
+  "a roughly circular or shield‑shaped marker with a brownish‑gold outer ring" (`describe-gate.txt`, against `describe-before-gate.txt` at the same rect) — where the
+  v1.5 BEFORE frame read "A few circular gold‑rimmed token icons sit on tiles" (`describe-v16-before-build.txt:1`).
 - **P2 A placed defense is a 3D structure that aims** (MC 12082, commit `33d5abe`). NEW
   `godot/scripts/tower_forms.gd` (239 ln) composes a form per `towers.json` id out of BoxMesh/CylinderMesh
   only, with a `Turret` child on the shooter classes (the DATA row's `class` decides, never a literal);
@@ -76,8 +78,8 @@ measured `git diff 1271a6c..HEAD` this session), and no sim/economy/balance numb
   stands at the core position, so a ground-anchored figure is swallowed by the core/keep box. V-H is the
   merge-occlusion re-tune: `BODY_OFFSET := Vector3(0.0, 0.0, 6.5)` (measured at `hero_pawn.gd:82`), a
   presentation-only offset past the keep's near face. Served at the merged tree: HERO crop 0→262 px
-  (evidence-12114/census-final.txt) and Lane E's literal "a small dark grey figure … at the bottom
-  opening (gate) of the keep". No camera mechanic was added or moved (OD1 deferred, below).
+  (evidence-12114/census-final.txt) and Lane E's literal, in source order: "At the bottom opening (gate) of the keep stands a small dark grey figure, partly inside the doorway"
+  (`describe-final-hero.txt:7`). No camera mechanic was added or moved (OD1 deferred, below).
 - **P5 Golden hour, and the HUD is themed** (MC 12084, commit `908f337`). `mission.tscn` PROPERTY VALUES
   only — background `(0.055,0.065,0.085)→(0.165,0.105,0.06)`, ambient `(0.85,0.88,0.95)→(0.95,0.82,0.65)`,
   Sun `RotY(30)·RotX(-45) → RotY(55)·RotX(-20)` + `light_color (1, 0.72, 0.45)`; elevation 45°→20° by
@@ -105,7 +107,11 @@ measured `git diff 1271a6c..HEAD` this session), and no sim/economy/balance numb
 - **Docs hygiene of the retired pins** (MC 12116, commit `3197a63`, probe rows only). The three stale
   sprite-era probe pins are re-truthed: the world probe's FLOOR row now pins the flagstone board, and the
   sprite probe's tower/gate legs pin the LIVE `TowerForm` container instead of a Sprite3D. The orphaned
-  `WORLD_H_TOWER` const is gone with its mechanism (measured: 0 hits repo-wide).
+  `WORLD_H_TOWER` const is gone with its mechanism — measured **0 hits in every code tree** (the run
+  instrument is `grep -rn WORLD_H_TOWER godot/ tests/ server/ static/ tools/` → rc=1, recorded in
+  `evidence-12116/grep-zero-world-h-tower.txt`); every surviving mention sits in a record file —
+  `LEDGER.md`, a wave log, a release note or an evidence file — and a re-count here finds ZERO readers
+  outside those (.md/.log/.txt) trees.
 
 **Tested at this tree** (every number re-measured by this docs pass, none inherited):
 `tools/check_hygiene.py` → **0 hit(s)** (25 soft >250 notes, none new);
@@ -125,16 +131,22 @@ new v1.6 test files are `test_diorama.py` (5 legs), `test_tower_forms.py` (3), `
 - **With NO export at all** — a fresh worktree whose `static/` holds only its `.gitkeep` —
   `python3 -m pytest tests -q` = **357 passed, 2 skipped, rc=0**: **v1.6 is green from a clean
   checkout.** Both skips name their reason — `tests/test_served.py:37` (the module skip over its 5 served
-  legs) and `tests/test_scaffold.py:125` (the served `GET /` leg) carry the same W12 string — and with
-  the export restored those same two modules read **13 passed, 0 skipped, rc=0**.
+  legs) and `tests/test_scaffold.py:125` (the served `GET /` leg) carry the SAME skip idiom — the
+  scaffold marker re-uses the module skip's sentence MINUS its "(W12 DoD runs it present)" tail, so the
+  two printed reasons are deliberately not byte-identical (V-J names both, apart, in `VJ-wave.log` §r8).
+  With the export restored those same two modules read **13 passed, 0 skipped, rc=0**.
 
 History, kept because it is where the fix came from: through v1.5 the phrase "green from a clean
-checkout" was a grep derivation, never a run — this card measured a clean checkout at `3197a63` **and**
-at the v1.5 tag `f95e481` as *357 passed, 1 FAILED, 1 skipped, rc=1*, because
+checkout" was a grep derivation, never a run. This card measured a clean checkout at `3197a63` as
+*357 passed, 1 FAILED, 1 skipped, rc=1*; at the v1.5 tag `f95e481` it measured **the same leg inside its
+own module** — *1 failed, 7 passed in 3.44s* (`DOCS.log` §c1, the transcript line) — and deliberately
+does NOT restate a full-suite number for that tag: `tests/` there holds 47 paths against 52 at this tip,
+so 17 of the legs counted above did not exist at `f95e481` (verified: `git ls-tree --name-only f95e481
+tests/` names none of `test_diorama/test_tower_forms/test_hero_body/test_ui_theme/test_decor`). Because
 `tests/test_scaffold.py::test_server_serves_placeholder_on_ephemeral_port` needs the build-side export
 while carrying no gate. **MC 12122 (commit `eecb64f`) closed exactly that**: the leg now rides the
-EXISTING gate (same check, same reason string, a per-test marker so the module's other seven legs keep
-running export-less), and the gate was shown able to fail — planted-red forced the condition false in a
+EXISTING gate (the same `isfile` check, the same reason sentence minus that tail, as a per-test marker
+so the module's other seven legs keep running export-less), and the gate was shown able to fail — planted-red forced the condition false in a
 clean tree, the leg went `1 FAILED, rc=1`, then was byte-reverted (`VJ-wave.log` §r6, `VERIFY_EXIT=0`).
 That card exists because this docs pass filed the measurement; nothing above contradicts these rows.
 
@@ -145,7 +157,8 @@ That card exists because this docs pass filed the measurement; nothing above con
   casting, unlit faces and ground shadows painted PURE BLACK on the web frame because `env_greybox`
   ambient is DISABLED at the scene row — the plan's "ambient 0.6" premise was contradicted by the file).
   One const (`diorama.gd:73 SHADOW_CASTING := false`) is the flip-back; V-G audited the AFTER frames
-  black-blob-free (0/6/3 fortress black px in the three declared crops).
+  black-blob-free: **0/0/6/3 px across the four declared crops** (GATE 0, PATH-A 0, DECOR 6, TOP-STRIP 3
+  — `VG-wave.log` §7 BLACK-BLOB row; Lane E named no blob in any frame).
 - **The hero is a ~30 px dark silhouette at the default distance** and its arms merge into the torso
   block; head/torso/legs read, fingers don't (V-D §6b, restated V-H §limit b). The crest medallion + name
   still ride the pawn origin, i.e. behind/inside the keep, and read as a banner over the gate — that

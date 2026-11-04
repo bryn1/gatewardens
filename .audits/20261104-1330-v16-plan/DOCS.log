@@ -192,3 +192,83 @@ rows as measured above (357 + 2 skips rc=0 / 363 rc=0); zero product-code lines;
 no spawn. Scratch worktree /tmp/gw-12122-check REMOVED (`git worktree remove --force` + prune, verified
 gone); the card tree's static/ still carries only build-side artifacts (gitignored).
 VERIFY_EXIT=0
+
+== §c3 — 12121 DA-GATE ROUND-1 FIXES (2026-11-04T23:0xZ–23:2xZ, same card, third commit) ==
+Trigger: DA gate round 1 verdict FIX (/tmp/gw-da-v16-docs/DA-verdict.md + DA-findings.md, read in full).
+Tree: `git rebase 8719c2e` on card/12121 — my c2 commit 8dcabbe dropped as already-applied (main carries
+it as 8719c2e), tree clean, no LEDGER race. Delta of THIS commit is markdown-only
+(`git diff --name-only` = RELEASE-NOTES-v1.6.md docs/ARCHITECTURE.md LEDGER.md this file); no code, no
+suite re-run needed — the §c2 rows (357 passed + 2 skips rc=0 clean / 363 rc=0 with export, measured in
+a fresh worktree at d963e2f) are measurements of a code tree this commit cannot touch.
+EVERY refutation below was RE-RUN by me here, not accepted from the findings file.
+
+F-A (P2, the one that matters) — RN history sentence attributed a FULL-SUITE number to a tag that cannot
+    produce it. Instruments: `git ls-tree -r --name-only f95e481 tests/ | wc -l` = 47 vs 52 at HEAD;
+    `git ls-tree --name-only f95e481 tests/ | grep -cE "test_(diorama|tower_forms|hero_body|ui_theme|decor)\.py"`
+    = 0 — the 17 legs those five files add did not exist at the tag. What my §c1 transcript actually
+    recorded at f95e481 is THIS file's own lines 74-75 (wrapped): "the SAME leg measured / FAILED (1
+    failed, 7 passed in 3.44s) at the v1.5 tag f95e481 in a scratch worktree" — an 8-leg module run. Rewritten (now RN:138-145) to attribute each
+    measurement to the tree that carries it, and the tag claim narrowed to the leg-in-its-module number
+    with the 47-vs-52 proof inline. ROUTED, outside this card's writable set: the `eecb64f` COMMIT BODY
+    carries the same conflation ("measured … at main-tip AND at the v1.5 tag f95e481") — parent, that row
+    belongs to MC 12122's record, not to a docs card; I did not touch it.
+F-B (P3) — RN:53 quoted v1.5's Lane E read as "circular gold token"; `grep -rn "circular gold token"`
+    over the repo returned ONE hit — the RN line itself, i.e. a quote with no source. Fixed by quoting
+    five strings pulled programmatically out of the evidence files and re-verified BYTE-EQUAL in both
+    directions (python `q in src and q in rn`, printed 5/5 BYTE-EQUAL): "a four‑turreted keep silhouette"
+    + "a golden/yellow crown‑ or wing‑shaped ornament" (evidence-12081/describe-core-final.txt),
+    "a roughly circular or shield‑shaped marker with a brownish‑gold outer ring"
+    (evidence-12081/describe-gate.txt, against describe-before-gate.txt at the same rect),
+    "A few circular gold‑rimmed token icons sit on tiles" (evidence-12115/describe-v16-before-build.txt:1)
+    and the hero read below. Note for anyone re-running this by eye: those files use U+2011 (‑), not
+    U+002D — a hand-typed hyphen does NOT match, which is how the drift class happens.
+F-C (P3) — "carry the same W12 string" / ARCH "the SAME reason" were string-identity claims the code
+    refutes: tests/test_served.py:36-39 ends "(W12 DoD runs it present)"; tests/test_scaffold.py's
+    NO_EXPORT (:39-40) is that sentence MINUS the tail. `grep -c W12 tests/test_scaffold.py` = 2 — both
+    in the comment above the marker (:33-34), zero inside the reason string, so the honest wording is
+    same check + same sentence minus the tail, and V-J's own §r8 transcript prints the two apart.
+    Reworded at RN:133-136, in the history clause (RN:146-147) and at docs/ARCHITECTURE.md:294.
+F-D (P3) — "0 hits repo-wide" was instrument-scope overreach. Re-run here: `grep -rn WORLD_H_TOWER godot/
+    tests/ server/ static/ tools/` → rc=1 (zero, the run recorded in evidence-12116/
+    grep-zero-world-h-tower.txt) while `grep -rn WORLD_H_TOWER` over the repo = 10 line-hits across 7
+    record files at 8719c2e (release notes, LEDGER, three wave logs, the V-I evidence file: 3 .md + 3 .log
+    + 1 .txt) — history, not readers. RN:110-113 now states the scoped instrument and that every survivor
+    is a record file, with ZERO readers outside .md/.log/.txt (DA counted 4 hits; mine 10 line-hits — we
+    counted differently and both agree the code-tree zero is instrument-scoped; I publish mine).
+    Self-reference row: this very section ADDS a WORLD_H_TOWER mention, so any repo-wide count re-run after
+    this commit reads one hit higher — which is exactly why the RN states the scoped instrument instead of
+    a repo-wide number that its own prose moves.
+F-E (P4) — RN:148's "0/6/3 … three declared crops" restored to the log's four: "0/0/6/3 px across the
+    four declared crops (GATE 0, PATH-A 0, DECOR 6, TOP-STRIP 3 — VG-wave.log §7 BLACK-BLOB row)" at
+    RN:159-160. Deliberate residual grep hits DECLARED, not stale: RN:71 "three declared crops" is V-C's
+    own three-crop road census (VC §6), and "0/6/3" now survives only as a substring of "0/0/6/3".
+F-F (P4) — the transposed ellipsis quote replaced by the source-order sentence, byte-equal, with its
+    address: "At the bottom opening (gate) of the keep stands a small dark grey figure, partly inside
+    the doorway" (evidence-12114/describe-final-hero.txt:7) at RN:81-82.
+F-G (P4, APPEND-ONLY CORRECTION — this line IS the correction; nothing above it is edited): §c1's
+    README word-census line reads "…speck 0 · void 0 · checker 0." That line was FALSE at commit time.
+    Measured on the README this card shipped (and already at a728a5d): `grep -in checker README.md` → 1
+    hit, README:9 "the flat checkered floor is now a stone flagstone plateau" — legitimate was→now
+    retirement copy, which is exactly the copy the retired-claim doctrine REQUIRES, so the shipped file
+    stands and the log line is corrected here: medallion 0 · ghost 0 · arrow 0 · ground_arena 0 ·
+    billboard 0 · speck 0 · void 0 · **checker 1 (intentional)**.
+F-H (P4, no edit by parent's instruction) — the "see RELEASE_NOTES.md W18 rows" pointer is byte-identical
+    to the ratified RELEASE-NOTES-v1.5.md:172, i.e. inherited text, so it is left as-is. Reading for the
+    record: RELEASE_NOTES.md carries the Windows-download rows (there :306/:406) while the "W18" LABEL
+    lives in LEDGER.md:75; a v1.7 doc card may restate both halves in one place.
+
+SUPERSEDED-REFERENCE NOTE (append-only): §c2 quoted RELEASE-NOTES-v1.6.md ":133", ":138" and ":125-127".
+Those addresses point at the PRE-c3 text; after this commit the same claims sit at RN:140, RN:147 and
+RN:131-133 respectively, and the ":133" one is now the F-A-corrected sentence — read §c2's quotes as
+content, re-resolve any line number here.
+SIZES AFTER c3: RELEASE-NOTES-v1.6.md 207 ln (was 194; +13 of citation precision, all of it DA-demanded,
+length reason at the top of the file, ceiling is 300); docs/ARCHITECTURE.md 415 ln (in-place clause);
+README.md 11 ln (untouched this round); LEDGER.md 198 ln (one appended row — the c1/c2 rows untouched);
+this file grows by this section only.
+RE-ZERO SWEEP for the old forms (README + ARCHITECTURE + RN + LEDGER; the two declared residuals above):
+  "circular gold token" 0 · "same W12 string" 0 · "same reason string" 0 · "SAME reason as a per-test" 0 ·
+  "0 hits repo-wide" 0 · "three declared crops" 1 (RN:71, V-C's own census — declared) ·
+  F-A's tag-attributed full-suite clause 0 · transposed hero quote 0.
+GATES: check_hygiene → "check_hygiene: 0 hit(s)" rc=0 re-run after the edits; no product lines; no push;
+no git config; no spawn.
+VERIFY_EXIT=0
