@@ -1,5 +1,7 @@
-# g2_lane_band_probe — the G2 lit lane band headless proof (MC card
-# 11694 / V121-PLAN G2; G2-FIX MC 11698). Boot idiom = g1_gate_eye_probe
+# g2_lane_band_probe — the G2 lane band headless proof (MC card
+# 11694 / V121-PLAN G2; G2-FIX MC 11698; V-C in-world road re-pin of
+# the MATERIAL rows, MC 12110 — node/segment/class/wps/neg rows and
+# every LB-BANDS count and seg count are UNCHANGED). Boot idiom = g1_gate_eye_probe
 # (itself v1_world_probe): mission.tscn instantiated, _ready and setup
 # driven directly (E5), the pinned smoke seed, root.size = the served
 # canvas. Rows (machine lines, any failure prints LB-FAIL <why> and
@@ -10,9 +12,13 @@
 #         the mission origin, carrying ONE MeshInstance3D child per
 #         waypoint segment; every child sits at the segment midpoint
 #         at y BAND_Y, is scaled (segment length, 1, BAND_WIDTH) and
-#         carries the override material in the pinned lit-translucent
-#         shape (unshaded + alpha + BAND_COLOR — bank-never-oracle:
-#         the expectation is a pinned literal, not the material).
+#         carries the override material in the pinned opaque-road
+#         shape (unshaded + TRANSPARENCY_DISABLED + ROAD_TINT + the
+#         committed ground_path albedo — the V-C re-pin, MC 12110;
+#         bank-never-oracle: the expectation is a pinned literal, not
+#         the material). LB-ROAD prints once per ground lane after its
+#         segment rows (opaque=1 tex=ground_path — the machine row the
+#         re-pinned pytest leg asserts).
 #  CLASS  the WEB-PROOF PROXY (the G2-fix): every segment mesh is a
 #         PlaneMesh AND a PrimitiveMesh — engine-managed geometry, the
 #         class the arena ground rasterizes from under GL Compatibility
@@ -43,7 +49,8 @@ const N_GROUND := 3                        # gatefall ground lanes (pinned)
 const N_AIR := 2                           # gatefall air lanes (pinned)
 const EPS := 0.05                          # wp-follow tolerance, u
 const UNSHADED := 0                        # BaseMaterial3D literals, pinned
-const ALPHA := 1
+const OPAQUE := 0                          # TRANSPARENCY_DISABLED (V-C)
+const ROAD_TEX := "res://assets/v11/ground_path.png"  # the pinned sheet
 
 
 var _failed := false
@@ -150,6 +157,7 @@ func _bands(m) -> void:
 		_wps(lid, wps, segs)
 		if _failed:
 			return
+		print("LB-ROAD %s opaque=1 tex=ground_path" % lid)
 	for lid: String in air:
 		if bands.has(lid):
 			_fail("NEG: air lane %s must carry NO band" % lid)
@@ -184,9 +192,11 @@ func _segment(lid: String, seg: MeshInstance3D, a: Vector3, b: Vector3) \
 		return
 	var mat := seg.material_override as StandardMaterial3D
 	if mat == null or int(mat.shading_mode) != UNSHADED \
-			or int(mat.transparency) != ALPHA \
-			or mat.albedo_color != LANE_BANDS.BAND_COLOR:
-		_fail("band %s segment is not the pinned lit-translucent shape" % lid)
+			or int(mat.transparency) != OPAQUE \
+			or mat.albedo_color != LANE_BANDS.ROAD_TINT \
+			or mat.albedo_texture == null \
+			or String(mat.albedo_texture.resource_path) != ROAD_TEX:
+		_fail("band %s segment is not the pinned opaque-road shape" % lid)
 		return
 	if absf(seg.position.y - LANE_BANDS.BAND_Y) > EPS:
 		_fail("band %s segment y = %s (want BAND_Y %s)" % [lid,

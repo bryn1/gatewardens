@@ -1,0 +1,65 @@
+F...F.                                                                   [100%]
+=================================== FAILURES ===================================
+_________________________ test_lane_band_engine_probe __________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-5244/test_lane_band_engine_probe0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_lane_band_engine_probe(tmp_path, class_cache):
+        proc = conftest.run_probe_script(PROBE, (), tmp_path)
+>       assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+E       AssertionError: probe rc=1
+E         OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         
+E         ERR:SCRIPT ERROR: Parse Error: Cannot find member "ROAD_TINT" in base "res://scripts/lane_bands.gd".
+E                   at: GDScript::reload (res://sim/g2_lane_band_probe.gd:196)
+E         ERROR: Failed to load script "res://sim/g2_lane_band_probe.gd" with error "Parse error".
+E            at: load (modules/gdscript/gdscript_resource_format.cpp:46)
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...im/g2_lane_band_probe.gd" with error "Parse error".\n   at: load (modules/gdscript/gdscript_resource_format.cpp:46)\n').returncode
+
+tests/test_lane_bands.py:101: AssertionError
+______________ test_road_is_opaque_in_world_material_source_truth ______________
+
+    def test_road_is_opaque_in_world_material_source_truth():
+        """THE V-C REPLACE-NOT-ADD LEG (MC 12110): the ghost-arrow mechanism
+        must be DEAD in the builder, not merely painted over. Comments are
+        blanked first (the header is allowed to NAME the retired shape to
+        explain the replacement), then lane_bands.gd carries NO trace of
+        it — no BAND_COLOR, no cyan literal, no TRANSPARENCY_ALPHA, no
+        lit_material use (that builder stays for its other consumer, the
+        G4 range ring — byte-untouched by this card) — and the file owns
+        exactly ONE opaque road-material site reading the ground_path sheet
+        through the ONE sprite_bank map. The bank wires the committed PNG
+        (PNG + .import on disk) and the retired V1 blocking claim
+        ("deliberately NOT wired") is grep-zero in the bank source: a claim
+        that survives its implementation is CONTRADICTED, not debt.
+        Mechanism count stays ONE band node, ONE segment node, ONE
+        material construction site (replace-do-not-add proof rows)."""
+        code = re.sub(r"#.*", "", read(BANDS_GD))
+        for retired in ("BAND_COLOR", "0.55, 0.8, 1.0", "TRANSPARENCY_ALPHA",
+                        "LIT_MATERIAL"):
+>           assert retired not in code, \
+                "retired ghost-arrow mechanism crept back: %s" % retired
+E           AssertionError: retired ghost-arrow mechanism crept back: BAND_COLOR
+E           assert 'BAND_COLOR' not in '\n\n\n\n\n\...turn seg\n\n'
+E             
+E             'BAND_COLOR' is contained here:
+E                  
+E               const BAND_COLOR := Color(0.55, 0.8, 1.0, 0.30)  
+E             ?       ++++++++++
+E               
+E               ...
+E             
+E             ...Full output truncated (41 lines hidden), use '-vv' to show
+
+tests/test_lane_bands.py:235: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_lane_bands.py::test_lane_band_engine_probe - AssertionError...
+FAILED tests/test_lane_bands.py::test_road_is_opaque_in_world_material_source_truth
+2 failed, 4 passed in 5.29s
+RC=1

@@ -1,0 +1,10 @@
+The image shows four lines of light-colored (white/off-white) text on a dark brown/black background, left-aligned. From top to bottom, the text reads verbatim:
+
+Build: wave 1 in 19 s
+Green 300 / cap 10000
+Defenses 0 / cap 60
+Core 1800 / 1800 | sub_north 700 / 700
+
+At the bottom of the image there is an orange/tan horizontal band resembling terrain, with a small rounded mound shape on the right side that partially overlaps the end of the fourth text line.
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=193 completion_tokens=304 8.3s

@@ -1,0 +1,67 @@
+F...F.                                                                   [100%]
+=================================== FAILURES ===================================
+_________________________ test_lane_band_engine_probe __________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-5250/test_lane_band_engine_probe0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_lane_band_engine_probe(tmp_path, class_cache):
+        proc = conftest.run_probe_script(PROBE, (), tmp_path)
+>       assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+E       AssertionError: probe rc=1
+E         OUT:Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+E         
+E         LB-BANDS n=3 ground=3
+E         LB-BAND lane_g1 segs=4 mat=1
+E         LB-CLASS lane_g1 mesh=PlaneMesh prim=1 segs=4
+E         LB-FAIL band lane_g1 segment is not the pinned opaque-road shape
+E         
+E         ERR:
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64', '--headless', '--path',...S lane_g1 mesh=PlaneMesh prim=1 segs=4\nLB-FAIL band lane_g1 segment is not the pinned opaque-road shape\n', stderr='').returncode
+
+tests/test_lane_bands.py:101: AssertionError
+______________ test_road_is_opaque_in_world_material_source_truth ______________
+
+    def test_road_is_opaque_in_world_material_source_truth():
+        """THE V-C REPLACE-NOT-ADD LEG (MC 12110): the ghost-arrow mechanism
+        must be DEAD in the builder, not merely painted over. Comments are
+        blanked first (the header is allowed to NAME the retired shape to
+        explain the replacement), then lane_bands.gd carries NO trace of
+        it — no BAND_COLOR, no cyan literal, no TRANSPARENCY_ALPHA, no
+        lit_material use (that builder stays for its other consumer, the
+        G4 range ring — byte-untouched by this card) — and the file owns
+        exactly ONE opaque road-material site reading the ground_path sheet
+        through the ONE sprite_bank map. The bank wires the committed PNG
+        (PNG + .import on disk) and the retired V1 blocking premise ("NO
+        lane mesh exists") is grep-zero in the bank source: a claim that
+        survives its implementation is CONTRADICTED, not debt (the
+        skitterling run-pose refusal row is a different, still-true claim
+        and stays — scope guardrail).
+        Mechanism count stays ONE band node, ONE segment node, ONE
+        material construction site (replace-do-not-add proof rows)."""
+        code = re.sub(r"#.*", "", read(BANDS_GD))
+        for retired in ("BAND_COLOR", "0.55, 0.8, 1.0", "TRANSPARENCY_ALPHA",
+                        "LIT_MATERIAL"):
+>           assert retired not in code, \
+                "retired ghost-arrow mechanism crept back: %s" % retired
+E           AssertionError: retired ghost-arrow mechanism crept back: TRANSPARENCY_ALPHA
+E           assert 'TRANSPARENCY_ALPHA' not in '\n\n\n\n\n\...return mat\n'
+E             
+E             'TRANSPARENCY_ALPHA' is contained here:
+E               aterial3D.TRANSPARENCY_ALPHA
+E               	mat.albedo_color = ROAD_TINT
+E               	var tex := SPRITE_BANK.texture_for(ROAD_ID)
+E               	if tex != null:
+E               		mat.albedo_texture = tex...
+E             
+E             ...Full output truncated (4 lines hidden), use '-vv' to show
+
+tests/test_lane_bands.py:237: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_lane_bands.py::test_lane_band_engine_probe - AssertionError...
+FAILED tests/test_lane_bands.py::test_road_is_opaque_in_world_material_source_truth
+2 failed, 4 passed in 5.81s
+RC=1

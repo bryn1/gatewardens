@@ -1,0 +1,12 @@
+== .audits/20261104-1330-v16-plan/v16-before-build.png
+PATH-A n=11500 ghost=719 warm=8633
+PATH-B n=12375 ghost=1502 warm=6786
+PATH-C n=10500 ghost=365 warm=7157
+== .audits/20261104-1330-v16-plan/evidence-12081/shots/va-1-build.png
+PATH-A n=11500 ghost=819 warm=6276
+PATH-B n=12375 ghost=3111 warm=1804
+PATH-C n=10500 ghost=1745 warm=4962
+== .audits/20261104-1330-v16-plan/evidence-12110/shots/vc-1-build.png
+PATH-A n=11500 ghost=6 warm=8258
+PATH-B n=12375 ghost=0 warm=9521
+PATH-C n=10500 ghost=4 warm=8468

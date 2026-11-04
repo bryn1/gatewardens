@@ -1,10 +1,12 @@
-"""G2 lit lane bands (MC card 11694 / V121-PLAN G2; G2-FIX MC 11698).
+"""G2 lane bands / V-C in-world road (MC cards 11694, 11698; V-C
+re-pin MC 12110 / V16-PLAN-c2 §3 V-C).
 
-The band contract, per the plan (Rev 2 binding): a lit translucent band
-painted along the EXISTING waypoint polylines — per GROUND lane ONE
-band node carrying one segment plane per waypoint segment at y
-slightly > 0, one material, reading m.lanes (build_lanes' records)
-ONLY. AIR lanes get NO band (the winged gate-eye of G1 is their
+The band contract, per the plan (Rev 2 binding, V-C re-pin): an opaque
+in-world road painted along the EXISTING waypoint polylines — per
+GROUND lane ONE band node carrying one segment plane per waypoint
+segment at y slightly > 0, one pinned opaque-road material (unshaded +
+TRANSPARENCY_DISABLED + the committed ground_path albedo + warm
+ROAD_TINT), reading m.lanes (build_lanes' records) ONLY. AIR lanes get NO band (the winged gate-eye of G1 is their
 declared cue). One mechanism: the static builder lane_bands.gd, called
 ONCE from mission_world.build_cores (the paint_arena/G1 visual-hook
 precedent); mission.gd adds ZERO lines (it sits at the 400-line
@@ -24,6 +26,19 @@ through material_override in that same web build), positioned at the
 segment midpoint, rotated to the segment direction, scaled to
 (segment length, 1, BAND_WIDTH). Node names, lane counts, the read-
 only m.lanes contract and every probe/test LEG are preserved.
+
+THE V-C RE-PIN (MC 12110): the band MATERIAL contract moved from the
+lit-translucent cool cyan (BAND_COLOR, alpha 0.30 — the ghost arrows
+the v1.6 BEFORE frames show) to the OPAQUE baked road: the committed
+ground_path.png wired through the ONE sprite_bank map, repeat-tiled
+per segment, warm ROAD_TINT, transparency DISABLED — the cyan alpha
+dies in this commit (replace-not-add: the builder carries NO trace of
+the retired shape, the source-truth leg below greps for it). The
+probe's pinned shape and the per-lane LB-ROAD machine row are the
+re-pinned half (L3: the OLD translucent shape was shown REDDING under
+the new pin BEFORE the build landed — VC-wave.log §1); node names,
+lane counts, seg counts and the LB-BANDS/LB-CLASS/LB-WPS/LB-NEG rows
+are byte-UNCHANGED.
 
 ENGINE LEG: the shipped kit godot/sim/g2_lane_band_probe.gd (boot idiom
 = g1_gate_eye_probe) asserts the band node count == ground-lane count,
@@ -59,6 +74,7 @@ on. Every ground lane carries >= 2 waypoints (a drawable segment).
 """
 
 import json
+import os
 import re
 
 import conftest
@@ -66,6 +82,7 @@ from conftest import repo_path
 
 PROBE = "res://sim/g2_lane_band_probe.gd"
 BANDS_GD = repo_path("godot", "scripts", "lane_bands.gd")
+BANK_GD = repo_path("godot", "scripts", "sprite_bank.gd")
 WORLD_GD = repo_path("godot", "scripts", "mission_world.gd")
 MAP_JSON = repo_path("godot", "data", "maps", "gatefall.json")
 
@@ -103,7 +120,8 @@ def test_lane_band_engine_probe(tmp_path, class_cache):
     for ln in bands:
         lid = ln.split()[1]
         assert ("segs=%d " % segs[lid]) in ln, out
-        assert "mat=1" in ln, out            # pinned material shape
+        assert "mat=1" in ln, out       # pinned material-shape row
+                                        # (V-C: the OPAQUE road shape)
     # WEB-PROOF PROXY rows: engine-managed PlaneMesh/PrimitiveMesh
     # geometry per segment (the G2 ArrayMesh never rasterized in web).
     classes = [ln for ln in out.splitlines()
@@ -115,6 +133,14 @@ def test_lane_band_engine_probe(tmp_path, class_cache):
     wps = [ln for ln in out.splitlines() if ln.startswith("LB-WPS ")]
     assert len(wps) == 3, out          # every ground lane's wps followed
     assert all(("eps=" + EPS) in ln for ln in wps), out
+    # V-C re-pin rows: every ground lane's per-segment material census
+    # answered the OPAQUE road shape (the LB-BANDS/LB-BAND seg counts
+    # above are the unchanged half of the contract).
+    roads = [ln for ln in out.splitlines() if ln.startswith("LB-ROAD ")]
+    assert len(roads) == 3 and \
+        {ln.split()[1] for ln in roads} == GROUND, out
+    for ln in roads:
+        assert "opaque=1 tex=ground_path" in ln, out
     # NEGATIVE leg: air lanes carry NO band.
     assert "LB-NEG air=2 banded=0" in out.splitlines(), out
     assert "LB-OK" in out.splitlines(), out
@@ -186,6 +212,50 @@ def test_builder_rides_primitive_mesh_geometry_source_truth():
                     "PackedVector3Array", "PackedInt32Array"):
         assert retired not in code, \
             "retired web-dead mechanism crept back: %s" % retired
+
+
+def test_road_is_opaque_in_world_material_source_truth():
+    """THE V-C REPLACE-NOT-ADD LEG (MC 12110): the ghost-arrow mechanism
+    must be DEAD in the builder, not merely painted over. Comments are
+    blanked first (the header is allowed to NAME the retired shape to
+    explain the replacement), then lane_bands.gd carries NO trace of
+    it — no BAND_COLOR, no cyan literal, no TRANSPARENCY_ALPHA, no
+    lit_material use (that builder stays for its other consumer, the
+    G4 range ring — byte-untouched by this card) — and the file owns
+    exactly ONE opaque road-material site reading the ground_path sheet
+    through the ONE sprite_bank map. The bank wires the committed PNG
+    (PNG + .import on disk) and the retired V1 blocking premise ("NO
+    lane mesh exists") is grep-zero in the bank source: a claim that
+    survives its implementation is CONTRADICTED, not debt (the
+    skitterling run-pose refusal row is a different, still-true claim
+    and stays — scope guardrail).
+    Mechanism count stays ONE band node, ONE segment node, ONE
+    material construction site (replace-do-not-add proof rows)."""
+    code = re.sub(r"#.*", "", read(BANDS_GD))
+    for retired in ("BAND_COLOR", "0.55, 0.8, 1.0", "TRANSPARENCY_ALPHA",
+                    "LIT_MATERIAL"):
+        assert retired not in code, \
+            "retired ghost-arrow mechanism crept back: %s" % retired
+    assert "TRANSPARENCY_DISABLED" in code, "the road ships OPAQUE"
+    assert 'const ROAD_ID := "ground_path"' in code, "the road id"
+    assert "SPRITE_BANK.texture_for(ROAD_ID)" in code, "the ONE bank map"
+    assert code.count("StandardMaterial3D.new()") == 1, \
+        "ONE road-material construction site, ONE mechanism"
+    bank = read(BANK_GD)
+    assert '"ground_path": preload("res://assets/v11/ground_path.png")' \
+        in bank, "the committed sheet is wired through the ONE id map"
+    # The retired V1 BLOCKING PREMISE (the exact clause that refused the
+    # wiring) must be grep-zero in the bank — a claim that survives its
+    # implementation is CONTRADICTED, not debt. Scoped to that sentence:
+    # the skitterling run-pose "deliberately NOT wired" row beside it is
+    # a DIFFERENT, still-TRUE claim and stays (scope guardrail).
+    assert "NO lane mesh exists" not in bank, \
+        "the retired V1 blocking premise survived its implementation"
+    for leaf in ("ground_path.png", "ground_path.png.import"):
+        assert os.path.isfile(repo_path("godot", "assets", "v11", leaf)), \
+            "committed sheet: " + leaf
+    assert code.count("Node3D.new()") == 1, "ONE band node site"
+    assert code.count("MeshInstance3D.new()") == 1, "ONE segment node site"
 
 
 def test_gatefall_ground_air_split_is_the_pinned_data():

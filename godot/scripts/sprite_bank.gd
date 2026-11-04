@@ -60,10 +60,7 @@ const TEXTURES := {
 	"fx_proj_ice": preload("res://assets/v11/fx_proj_ice.png"),
 	# V1 world pass (MC 11559): the framed arena board rides the SAME
 	# id->file map — mission_world.paint_arena is its only consumer (the
-	# ground material albedo, 1:1 over the whole plane). ground_path.png
-	# is deliberately NOT wired: NO lane mesh exists (lanes are waypoint
-	# DATA, C7), so painting it would author a second visual mechanism,
-	# not repaint a surface — the card's stated honest-cut row.
+	# ground material albedo, 1:1 over the whole plane).
 	# V-A remap (MC 12081, replace-not-add): the SAME id now carries the
 	# clean-room fortress flagstone sheet — the flat checkered board
 	# becomes the fortress top surface; paint_arena stays the one
@@ -73,6 +70,16 @@ const TEXTURES := {
 	# primitives — diorama.gd is its only consumer (repeat-tiled on the
 	# engine-managed box/cylinder faces, the ONE id-map wiring).
 	"fortress_stone": preload("res://assets/v11/fortress_stone.png"),
+	# V-C in-world road (MC 12110, premise change DECLARED): the V1
+	# honest-cut row retired above kept this sheet UNWIRED — lanes were
+	# waypoint DATA (C7), NO lane mesh existed, and painting it then
+	# would have authored a second visual mechanism. V-C ships the road
+	# mesh: the G2 band segments ARE that mesh, so the blocking premise
+	# died with the ghost arrows; the committed sheet now wires to
+	# exactly ONE consumer — the opaque road material in lane_bands.gd
+	# (replace-not-add: repainting the existing lane surface, no new
+	# mechanism beside it).
+	"ground_path": preload("res://assets/v11/ground_path.png"),
 	# G1 spawn-gate eyes (MC 11690, V121-PLAN G1): the gate-mouth marker
 	# pair rides the SAME id->file map — mission_world.paint_spawn_gates
 	# is its only consumer (billboards through make_sprite, no second

@@ -1,0 +1,7 @@
+The board floor is rendered as a perspective grid of rectangular stone slabs in shades of brown and tan, separated by darker brown mortar seams, giving a cobblestone/paved appearance.
+
+Running along certain lanes between the small blocky stone arch/tower structures is a winding ribbon‑like strip. Its texture is grainy, speckled and sandy (a rough, granular surface distinct from the smoother slab tiles), and its colour is a lighter cream/tan/beige, paler than the surrounding brown floor tiles. This strip is opaque, not translucent.
+
+The lanes themselves (the gaps between the arches) are just the same brown stone‑slab grid; nothing else runs along them. There are no pale arrows, glowing strips, or any translucent/semi‑transparent overlay rendered on the floor. The only semi‑transparent element in the scene is the white instructional text floating over the centre of the board ("BUILD: tower buttons on the right panel — click arms, click again places"), which is text, not a floor overlay.
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=1052 completion_tokens=535 24.3s

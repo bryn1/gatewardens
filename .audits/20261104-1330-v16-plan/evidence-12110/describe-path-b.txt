@@ -1,0 +1,5 @@
+The image is a wide, short rectangular crop dominated by two brown tones. A horizontal band of speckled material runs across the middle, slightly angled downward from left to right. This band is a pale tan / light beige color covered densely with small darker brown and orange‑brown flecks, giving it a granular, cork‑ or sandstone‑like texture. Its top edge is fairly straight but slightly wavy; its bottom edge is irregular, with a rectangular notch cut upward into it near the center‑right, and the right end flares out into a wider triangular point.
+
+Above and below this band is a darker, reddish‑brown background with soft, wavy, lighter‑brown shading streaks (a marbled or wood‑grain‑like pattern). The speckled band is opaque; nothing in the crop appears translucent or see‑through. The overall shape is a horizontal strip, not an arrow; there is no pale arrow‑shaped element visible. No text, icons, or error messages are present.
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=212 completion_tokens=368 12.8s
