@@ -71,3 +71,34 @@ No product file touched (porcelain = the card's own pathspec; verified pre-commi
   no push; no git config; no spawn.
 
 VERIFY_EXIT=0
+
+## 4 §C2 — DA gate r1 FIX pass (2026-11-04, same card; DA-verdict.md = FIX at /tmp/gw-da-v16/)
+
+Amendments applied (DA-findings.md → V16-PLAN-c2.md row), each RE-MEASURED at this tree:
+
+| DA finding | c2 landing | measurement this pass |
+|---|---|---|
+| F-1 (P1) §0 coins misattribution | §0 row rewritten; new §2 row 1b (SHIP, rides V-A: in-place redraw of icon_core/icon_gate_eye(_air) — same paths/ids/sizes, test_gate_eye pins id→PATH at :80-81 so NO re-pin, zero code); A2 + V-B SERVED census → "EMPTY board → structure" | mission_world.gd `paint_spawn_gates` :120-133 + emblem `make_sprite("icon_core"…)` :156 READ; defense_obj `node = _make_visual()` :137 AND :269 → `_make_visual` :285 (sed this session); test_gate_eye.py :40-41/:80-81 path-pins (grep); sprite_bank ids :53/:73-74 (grep); F-BUILD prints "Defenses 0 / cap 60" (frame re-viewed) |
+| F-2 (P2) perf | V-A "FORTRESS NODE BUDGET ≤ 30 PRIMITIVES" + count leg in test_diorama.py probe (rides the existing probe row → §5 math UNCHANGED); V-G FRAME-TIME ROW worded verbatim per the DA + >2× knob clause | mission.tscn Sun shadow_enabled=true (read); V-A is the first shadow-caster adder — risk 7 rewritten |
+| F-3 (P3) stale-pck | L2 STALE-PCK CLAUSE (kb e4aa7e1f: fresh-export + cache-bust + pck byte-size/MD5 verify) + V-G logs pck md5 beside each frame | kb law cited per DA's recall; clause text in L2 |
+| N1 | §2 row 1: the mission_world.gd:47 "placement raycasts" comment marked VESTIGIAL, not re-granted | code vindicates: zero raycast code (DA grep + mine agree) |
+| N2 | L1: mission_world/sprite_bank marked NOT-governed; GOVERNED only on defense_obj | governed set check_hygiene.py:80-84 (17 files) re-listed |
+| N3 | drifts: defense_obj :143→:137/:269; lane_bands :31→:33 (also §2 row 4); defense_panel 365→366 | each line re-located by sed/grep this pass |
+| N4 | §2 row 14: tier fields = hp/damage/fire_rate/range/effect (V15 8b imprecision noted, conclusion unchanged) | towers.json tier keys (V15 §0 N6 measured; DA pass 5 re-measured) |
+| OD1 ANSWERED | §2 row 6 + §6 record the owner ruling verbatim "Defer tracking (Planner's rec)" (2026-11-04, orchestrator channel): FIXED framing this milestone for BEFORE/AFTER comparability; no tracking mechanic | ruling quoted by the orchestrator's channel message; no new mechanic ships |
+
+VERSIONED-TRUTH: V16-PLAN.md first line now `SUPERSEDED 2026-11-04 (MC 12072 DA-gate-r1 FIX):
+DO NOT USE — live version: V16-PLAN-c2.md`; c2 header verdict = READY-FOR-DA-c2; nothing deleted
+(V15-c2 precedent; builders read ONE plan).
+
+## 5 c2 self-checks
+
+- grep -c 'PLAN VERDICT: READY-FOR-DA-c2' V16-PLAN-c2.md → 1; V16-PLAN.md line 1 SUPERSEDED marker
+  present and its own legacy verdict line remains (old-DoD grep on c1 stays == 1); c2 = 214 lines.
+- §2 rows 1..18 + 1b all carry a disposition with a BEFORE-frame or repo-truth citation; waves,
+  matrix, suite math UNCHANGED (DA passes 1-7 stand).
+- ONE commit on card/12072 (files: V16-PLAN-c2.md new, V16-PLAN.md SUPERSEDED-line, this log,
+  LEDGER row amended same-line); author planner (12072) <plan@agent-town.local>; no push; no
+  git config; no spawn.
+
+VERIFY_EXIT=0

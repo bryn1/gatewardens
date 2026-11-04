@@ -1,3 +1,4 @@
+SUPERSEDED 2026-11-04 (MC 12072 DA-gate-r1 FIX): DO NOT USE — live version: V16-PLAN-c2.md (this dir)
 # V16-PLAN — v1.6 "look-and-feel" (MC 12072 · plan seat · 2026-11-04)
 PLAN VERDICT: READY-FOR-DA
 
