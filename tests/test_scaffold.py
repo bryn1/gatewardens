@@ -1,8 +1,9 @@
 """W1 scaffold contract (card 11292): no autoloads (C1), the web export
 preset shape (F2-3/F9), the FULL engine-template web shell with the GW
-bridge inlined, the C10 static server smoke, and the hygiene gate proven
-GREEN on the tree and RED on a planted bad file — a gate that has never
-gone red is not a gate (A9 rule).
+bridge inlined, the C10 static server smoke (export-gated — the served
+index IS the web export), and the hygiene gate proven GREEN on the tree
+and RED on a planted bad file — a gate that has never gone red is not a
+gate (A9 rule).
 """
 
 import http.client
@@ -13,6 +14,8 @@ import subprocess
 import sys
 import time
 import urllib.request
+
+import pytest
 
 import conftest
 from conftest import REPO_ROOT, repo_path
@@ -25,6 +28,16 @@ GODOT_TOKENS = (
 VS_BRANDED = ("VS_STATE", "__vsSnapshot", "vsHost", "vsShowSubmit",
               "Hollow Dawn", "HollowDawn", "vampire")
 HYGIENE = repo_path("tools", "check_hygiene.py")
+INDEX = repo_path("static", "index.html")
+# The export gate, same check + same reason as tests/test_served.py's module
+# skip (W12 idiom): static/index.html IS the web export — build-side,
+# .gitignore'd since W12 — so a clean checkout can only serve 404 there. The
+# gate lands as a marker, not a module skip, because this module's OTHER legs
+# read committed files and must keep running with no export (MC 12121 F-1 /
+# MC 12122); the DoD run executes `bash tools/export_web.sh` first, so the
+# leg counts green-not-skipped there.
+NO_EXPORT = ("static/index.html missing — the web export is build-side and "
+             "never committed; run `bash tools/export_web.sh` first")
 
 
 def read(*parts):
@@ -109,6 +122,7 @@ class _Server:
         self.proc.wait(timeout=10)
 
 
+@pytest.mark.skipif(not os.path.isfile(INDEX), reason=NO_EXPORT)
 def test_server_serves_placeholder_on_ephemeral_port():
     server = _Server()
     try:
