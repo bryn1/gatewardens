@@ -1,0 +1,121 @@
+MC 12121 — v1.6 DOCS TAIL (tech-writer) — RUN LOG
+Tree: /tmp/gw-v16-docs @ 3197a636c87ff13d6dc7998960e6a028eb01c792 (branch card/12121 at commit time)
+Started 2026-11-04T20:5xZ, ended 2026-11-04T21:38Z. Brief: /tmp/gw-briefs/v16-docs.md.
+ZERO product-code lines: the diff is README.md + docs/ARCHITECTURE.md + RELEASE-NOTES-v1.6.md +
+LEDGER.md + this log. No push, no `git config`, no spawn, no server left running.
+
+== READ (all of it, this session) ==
+Brief; V16-PLAN-c2.md (214 ln, dispositions + §6 OD1); V16-BEFORE.md; V16-GATES.md (A1–A8);
+NINE wave logs — VA VB VC VD VE VF VG VH VI. DECLARED READING: the brief says "eight V*-wave.log";
+nine exist at this tree (VI-wave.log is the HEAD commit's own card, MC 12116). I read and cited all
+nine rather than choosing eight. Each wave log's VERIFY section read to its own VERIFY_EXIT=0 line.
+evidence-12081 / 12110 / 12111 / 12114 / 12115 / 12116 + shots/; the four owner frames
+(v16-before-build / v16-before-defeat / v16-after-build / v16-after-defeat) VIEWED with read_image
+— the opening section of the release notes is what I saw, in the owner's plain-word register, and
+the Lane E literal reads (describe-v16-{before,after}-build.txt) are quoted, not paraphrased.
+
+== WROTE ==
+1. RELEASE-NOTES-v1.6.md (NEW, 187 ln < 300, length reason at top): the pair in plain words, per-pillar
+   rows each cited to the wave log + commit that PROVES it, Known limits, NOT SHIPPED HERE, the suite
+   correction, how to build & run.
+2. README.md line 9 REWRITTEN v1.5 → v1.6 (claims current at this tree; suite row now says what I
+   measured, and points at the correction instead of inheriting the old "+5 clean-checkout" idiom).
+3. docs/ARCHITECTURE.md 406 → 415 ln: FIVE new rows (diorama / tower_forms / tower_aim / ui_theme /
+   decor) + the HERO BODY clause on the hero_pawn row (one file = one row, the W-G kit-row shape:
+   role, web-law note, served-proof pointer) + in-place de-stales of the claims v1.6 made untrue
+   (mission_world mount list + ground_arena remap, lane_bands material, defense_obj delegation,
+   assets/v11 note, the scenes-layer paragraph, I7's billboard-only wording, the two surviving
+   "lit lane bands" labels).
+4. LEDGER.md 194 → 195 ln: the MC 12121 row (appended in THIS commit).
+5. This log.
+
+== GREP SWEEPS (the DoD rows, with the instrument and its blind spot) ==
+DoD-4  `grep -rn "medallion" README.md docs/ARCHITECTURE.md` -> HITS = 0.
+        The sweep is over the TRACKED files at this tree only; there were NO panel/UI-context hits to
+        quote — the word does not appear in either file. (It DOES appear 3× in RELEASE-NOTES-v1.6.md
+        and in the historical files RELEASE_NOTES.md / RELEASE-NOTES-v1.5.md / LEDGER.md / the
+        .audits plan+gates rows, all of which are history or name the retirement — left as-is.)
+README retired claims (grep -ric, per word): medallion 0 · ghost 0 · arrow 0 · ground_arena 0 ·
+        billboard 0 · speck 0 · void 0 · checker 0. (Instrument: substring count on README.md; a
+        reworded claim in another file would not show — hence the ARCHITECTURE pass below.)
+ARCHITECTURE: medallion 0 · "ghost arrow" 0 · "lit lane" 0 (2 hits found and rewritten) ·
+        ground_arena 3 — ALL THREE are the CURRENT remap truth, quoted:
+          :63   "...REMAPS the ground_arena id onto the flagstone sheet (ground_arena.png stays
+                committed, zero code references)"
+          :234  "the `ground_arena` id this row paints from was REMAPPED (id kept, file swapped) onto
+                the fortress flagstone board at MC 12081"
+          :253  "one new bank id `fortress_stone` + the remapped `ground_arena`"
+        (mission_world.gd:64 still asks for the ID `ground_arena`; sprite_bank.gd:75 answers it with
+        ground_fortress.png — verified, so the id is live and the FILE is the retired thing.)
+All-callers check on the retired MEDALLION-WORLD-PATH claim: `grep -rn "medallion" godot/scripts/` ->
+        5 hits, ALL read this session, NONE of them a live world-path claim: defense_obj.gd:278
+        "the medallion billboards RETIRED", tower_forms.gd:3 "replacing the medallion billboard on
+        the [world path]", tower_forms.gd:90 "(the same fields the medallion path read)" — retired
+        context — plus hero_pawn.gd:24 and :68, the hero CREST's own live medallion backdrop (the
+        crest miniature riding the pawn origin), i.e. the heraldic/UI-context sense the DoD allows.
+        No live code paints a defense medallion, so no live doc row may describe one either: the docs
+        rows now say RETIRED (docs/ARCHITECTURE.md:254 tower_forms, :258 defense_obj).
+New-file greps (DoD "one row each"): `grep -c "^| scripts/\(diorama\|tower_forms\|tower_aim\|ui_theme\|decor\).gd"
+        docs/ARCHITECTURE.md` = 5 rows. Hero body = the hero_pawn row's v1.6 clause (1 row).
+
+== MEASURED AT THIS TREE (v1.5 gate lesson applied: every number re-measured, none inherited) ==
+FRESH EXPORT: bash tools/export_web.sh -> EXPORT_RC=0, static/index.pck md5
+        ec50e154e62eb67a9b85fddbf3faf6cd, 7,457,488 B. (This log's md5 pins what MY runs measured;
+        it is NOT byte-equal to V-G's f1c2b4f8… and the repo does not claim export byte-identity —
+        pck bytes are not reproducible, so a release reader must not compare these two md5s.)
+SUITE (with the export present, the documented DoD run): python3 -m pytest tests -q ->
+        363 passed in 200.40s, rc=0. Log /tmp/12121-suite3.log. (Earlier in this card, same tree,
+        same command: 363 passed in 201.77s — the number is stable, not inherited from a wave log.)
+CLEAN-CHECKOUT MEASUREMENT (the new finding): static/ holding ONLY its .gitkeep ->
+        `python3 -m pytest tests -q` = 1 FAILED, 357 passed, 1 skipped, rc=1; the failure is
+        tests/test_scaffold.py::test_server_serves_placeholder_on_ephemeral_port (GET / -> 404 == the
+        export's index.html missing; that leg is NOT export-gated, unlike tests/test_served.py's 5
+        module-skipped legs). Isolation runs: with only index.html removed -> the same single failure;
+        with only index.pck removed -> suite green. PRE-EXISTING, NOT v1.6: the SAME leg measured
+        FAILED (1 failed, 7 passed in 3.44s) at the v1.5 tag f95e481 in a scratch worktree
+        (/tmp/gw-v15-docs-check, created and `git worktree remove --force`d this session). So the
+        "+5 green from a clean checkout" sentence in the v1.3/v1.4/v1.5 release notes was a grep
+        derivation (v1.5's own DOCS-wave.log:91 says "grep-counted 5"), never a run — and it is FALSE
+        as a green claim. Written as a suite-count correction in the RN + a pointer in README. The
+        fix (an export-gate on that one leg) is a TEST card, outside this card's writable set.
+HYGIENE: python3 tools/check_hygiene.py -> "check_hygiene: 0 hit(s)", rc=0, 25 soft notes (the base
+        set; none created by this card — it touched no .gd/.py).
+GOVERNED_LITERALS: 17 (instrument: import tools/check_hygiene.py, len(GOVERNED_LITERALS)).
+CEILINGS: mission.gd 400 and test_mission_clicks.py 600 on the gate metric (len(split("\n")), the
+        metric check_hygiene prints) — BOTH AT their ceilings, and `git diff 1271a6c..HEAD` proves
+        ZERO v1.6 lines in either; hud.gd 396 / defense_panel.gd 368 (+2 each from V-E); fx_director 337.
+FIXTURES: git diff f95e481(tag v1.5)..HEAD -- tests/fixtures/ -> 0 lines.
+CAMERA: git diff --numstat 1271a6c..HEAD -- godot/scripts/camera_zoom.gd -> 0 lines (empty).
+SIM: git diff --name-only 1271a6c..HEAD -- godot/sim/ -> exactly godot/sim/g2_lane_band_probe.gd,
+        v11_sprite_probe.gd, v1_world_probe.gd (the V-C/V-I probe rows). Zero sim/balance movement.
+CONSTS QUOTED IN THE DOCS, each read this session: diorama.gd:27 MAX_PRIMITIVES 30, :73
+        SHADOW_CASTING false, :74 EMISSION_FILL 0.3 · lane_bands.gd:45 ROAD_ID "ground_path", :46
+        ROAD_TINT Color(0.78, 0.66, 0.54), :104 TRANSPARENCY_DISABLED · sprite_bank.gd:75 the remap ·
+        hero_pawn.gd:82 BODY_OFFSET (0,0,6.5) · decor.gd:31 MAX_PROPS 40 (+ the 24-props/38-parts
+        table row at :54, matching VF-wave.log DC-COUNT props=24 parts=38) · mission.tscn:34
+        shadow_enabled = true · 11 committed tower_*.png sheets (ls count) with ZERO world-path
+        consumer (grep: no texture_for/make_sprite call passes a defense id).
+FILE HYGIENE: RELEASE-NOTES-v1.6.md 187 ln (<300, one subject, reason line at top) · README.md 11 ln ·
+        docs/ARCHITECTURE.md 415 ln (living doc, +9 in-place; its length reason is pinned at the top) ·
+        LEDGER.md 195 ln (history file, grows by design).
+
+== FINDINGS ROUTED TO PARENT ==
+F-1 (P2, PRE-EXISTING, test-class): the "+5 clean-checkout green" reconciliation is false — the
+     test_scaffold served-placeholder leg needs the export and is not export-gated. Measured red at
+     f95e481 AND at this tree. Docs now state the measured numbers; a test card should gate the leg.
+F-2 (P3, art/data): the 11 tower_* sheets have no world consumer post-V-B and ride dead weight in the
+     pck; the bank still ANSWERS the ids (pinned by v11_sprite_probe's bank-map leg). v1.7 art-slim
+     candidate, NOT a doc claim either way.
+F-3 (P4, brief drift): "eight V*-wave.log" vs nine at this tree (VI = MC 12116). Declared reading.
+
+TEARDOWN: no server, no browser, no scratch worktree left (the v1.5 check tree was removed + pruned);
+the suite left only standard __pycache__ (untracked, gitignored). static/ carries MY fresh export —
+gitignored build artifacts, never committed. VERIFY runs below.
+
+== FINAL VERIFY (run THIS session on this tree, after the docs edits) ==
+python3 -m pytest tests -q                      -> 363 passed in 200.40s                 rc=0
+python3 tools/check_hygiene.py                  -> check_hygiene: 0 hit(s)               rc=0
+grep -rn "medallion" README.md docs/ARCHITECTURE.md | wc -l   -> 0                       (DoD-4 MET)
+grep -ric "medallion|ghost|arrow|ground_arena" README.md      -> 0 / 0 / 0 / 0          (DoD-2 MET)
+git diff --name-only HEAD -- godot/ tests/ tools/ server/     -> EMPTY (zero product lines)
+VERIFY_EXIT=0
