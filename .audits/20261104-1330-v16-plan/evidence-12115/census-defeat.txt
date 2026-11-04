@@ -1,0 +1,39 @@
+== v16-before-defeat.png
+TOP-STRIP  (340,90,880,150) void=17218 black=17193 warm=10273 ghost=370 pine=1487
+CENTER     (420,250,860,500) void=76 black=60 warm=97002 ghost=2698 pine=845
+CORE       (540,246,740,420) void=76 black=60 warm=28218 ghost=1012 pine=0
+GATE       (260,266,392,396) void=60 black=10 warm=13065 ghost=839 pine=589
+PATH-A     (620,225,735,325) void=0 black=0 warm=8633 ghost=719 pine=51
+PATH-B     (365,360,590,415) void=0 black=0 warm=6786 ghost=1502 pine=12
+PATH-C     (865,520,1005,595) void=91 black=77 warm=7157 ghost=365 pine=0
+DECOR      (340,40,900,160) void=45784 black=45716 warm=15460 ghost=584 pine=1688
+HERO       (460,210,820,570) void=76 black=60 warm=116927 ghost=1808 pine=1090
+PANEL      (904,28,1150,470) void=37771 black=35759 warm=52467 ghost=755 pine=6963
+SKY        (0,0,1280,55) void=67846 black=67180 warm=80 ghost=7 pine=15
+FULL       —
+== v16-before-recap-defeat.png
+TOP-STRIP  (340,90,880,150) void=17218 black=17193 warm=10273 ghost=370 pine=1487 delta_vs_before=0
+CENTER     (420,250,860,500) void=76 black=60 warm=97002 ghost=2698 pine=845 delta_vs_before=0
+CORE       (540,246,740,420) void=76 black=60 warm=28218 ghost=1012 pine=0 delta_vs_before=0
+GATE       (260,266,392,396) void=60 black=10 warm=13065 ghost=839 pine=589 delta_vs_before=0
+PATH-A     (620,225,735,325) void=0 black=0 warm=8633 ghost=719 pine=51 delta_vs_before=0
+PATH-B     (365,360,590,415) void=0 black=0 warm=6786 ghost=1502 pine=12 delta_vs_before=0
+PATH-C     (865,520,1005,595) void=91 black=77 warm=7157 ghost=365 pine=0 delta_vs_before=0
+DECOR      (340,40,900,160) void=45784 black=45716 warm=15460 ghost=584 pine=1688 delta_vs_before=0
+HERO       (460,210,820,570) void=76 black=60 warm=116927 ghost=1808 pine=1090 delta_vs_before=0
+PANEL      (904,28,1150,470) void=37771 black=35759 warm=52467 ghost=755 pine=6963 delta_vs_before=0
+SKY        (0,0,1280,55) void=67846 black=67180 warm=80 ghost=7 pine=15 delta_vs_before=0
+FULL       delta_vs_before=0
+== v16-after-defeat.png
+TOP-STRIP  (340,90,880,150) void=6596 black=3 warm=21038 ghost=4 pine=275 delta_vs_before=25209
+CENTER     (420,250,860,500) void=277 black=97 warm=78564 ghost=0 pine=0 delta_vs_before=107419
+CORE       (540,246,740,420) void=277 black=97 warm=24982 ghost=0 pine=0 delta_vs_before=32809
+GATE       (260,266,392,396) void=10 black=0 warm=14075 ghost=17 pine=0 delta_vs_before=16368
+PATH-A     (620,225,735,325) void=0 black=0 warm=8282 ghost=0 pine=0 delta_vs_before=11151
+PATH-B     (365,360,590,415) void=0 black=0 warm=9521 ghost=0 pine=0 delta_vs_before=11732
+PATH-C     (865,520,1005,595) void=131 black=79 warm=8468 ghost=4 pine=0 delta_vs_before=9969
+DECOR      (340,40,900,160) void=34085 black=6 warm=24681 ghost=11 pine=973 delta_vs_before=32348
+HERO       (460,210,820,570) void=277 black=97 warm=88689 ghost=0 pine=0 delta_vs_before=127020
+PANEL      (904,28,1150,470) void=28385 black=1 warm=41970 ghost=0 pine=96 delta_vs_before=64020
+SKY        (0,0,1280,55) void=67596 black=18 warm=80 ghost=7 pine=15 delta_vs_before=0
+FULL       delta_vs_before=684700

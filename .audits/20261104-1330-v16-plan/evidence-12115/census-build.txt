@@ -1,0 +1,39 @@
+== v16-before-build.png
+TOP-STRIP  (340,90,880,150) void=17218 black=17193 warm=10273 ghost=370 pine=1487
+CENTER     (420,250,860,500) void=86 black=57 warm=95188 ghost=3200 pine=805
+CORE       (540,246,740,420) void=86 black=57 warm=27151 ghost=1402 pine=0
+GATE       (260,266,392,396) void=68 black=15 warm=13055 ghost=833 pine=589
+PATH-A     (620,225,735,325) void=0 black=0 warm=8633 ghost=719 pine=51
+PATH-B     (365,360,590,415) void=0 black=0 warm=6786 ghost=1502 pine=12
+PATH-C     (865,520,1005,595) void=91 black=77 warm=7157 ghost=365 pine=0
+DECOR      (340,40,900,160) void=45784 black=45716 warm=15460 ghost=584 pine=1688
+HERO       (460,210,820,570) void=86 black=57 warm=115457 ghost=2310 pine=1050
+PANEL      (904,28,1150,470) void=35976 black=35311 warm=46132 ghost=731 pine=6287
+SKY        (0,0,1280,55) void=67293 black=66748 warm=128 ghost=7 pine=15
+FULL       —
+== v16-before-recap-build.png
+TOP-STRIP  (340,90,880,150) void=17218 black=17193 warm=10273 ghost=370 pine=1487 delta_vs_before=0
+CENTER     (420,250,860,500) void=86 black=57 warm=95188 ghost=3200 pine=805 delta_vs_before=0
+CORE       (540,246,740,420) void=86 black=57 warm=27151 ghost=1402 pine=0 delta_vs_before=0
+GATE       (260,266,392,396) void=68 black=15 warm=13055 ghost=833 pine=589 delta_vs_before=0
+PATH-A     (620,225,735,325) void=0 black=0 warm=8633 ghost=719 pine=51 delta_vs_before=0
+PATH-B     (365,360,590,415) void=0 black=0 warm=6786 ghost=1502 pine=12 delta_vs_before=0
+PATH-C     (865,520,1005,595) void=91 black=77 warm=7157 ghost=365 pine=0 delta_vs_before=0
+DECOR      (340,40,900,160) void=45784 black=45716 warm=15460 ghost=584 pine=1688 delta_vs_before=0
+HERO       (460,210,820,570) void=86 black=57 warm=115457 ghost=2310 pine=1050 delta_vs_before=0
+PANEL      (904,28,1150,470) void=35976 black=35311 warm=46132 ghost=731 pine=6287 delta_vs_before=0
+SKY        (0,0,1280,55) void=67296 black=66761 warm=128 ghost=7 pine=15 delta_vs_before=122
+FULL       delta_vs_before=122
+== v16-after-build.png
+TOP-STRIP  (340,90,880,150) void=6596 black=3 warm=21038 ghost=4 pine=275 delta_vs_before=25209
+CENTER     (420,250,860,500) void=299 black=56 warm=76776 ghost=19 pine=0 delta_vs_before=105966
+CORE       (540,246,740,420) void=299 black=56 warm=24145 ghost=19 pine=0 delta_vs_before=32184
+GATE       (260,266,392,396) void=13 black=1 warm=14062 ghost=17 pine=0 delta_vs_before=16352
+PATH-A     (620,225,735,325) void=14 black=0 warm=8258 ghost=6 pine=0 delta_vs_before=11170
+PATH-B     (365,360,590,415) void=0 black=0 warm=9521 ghost=0 pine=0 delta_vs_before=11732
+PATH-C     (865,520,1005,595) void=131 black=79 warm=8468 ghost=4 pine=0 delta_vs_before=9969
+DECOR      (340,40,900,160) void=34085 black=6 warm=24681 ghost=11 pine=973 delta_vs_before=32348
+HERO       (460,210,820,570) void=299 black=56 warm=87173 ghost=19 pine=0 delta_vs_before=125865
+PANEL      (904,28,1150,470) void=6327 black=49 warm=35358 ghost=61 pine=32 delta_vs_before=77755
+SKY        (0,0,1280,55) void=63606 black=21 warm=128 ghost=7 pine=15 delta_vs_before=3733
+FULL       delta_vs_before=702737

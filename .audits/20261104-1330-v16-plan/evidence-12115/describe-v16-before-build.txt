@@ -1,0 +1,26 @@
+The frame shows a 3D perspective grid of square ground tiles in tan, beige, and light‑brown shades, receding toward a horizon against a solid black background. Scattered across the tiles are small green grass‑tuft sprites, flat gray rock sprites, and one white‑and‑yellow flower sprite on the right side. Translucent pale blue‑white arrow‑shaped path strips are drawn across several tiles (one running diagonally from center toward upper‑right, one horizontal in the left‑middle, one in the lower‑right). A small blue humanoid figure stands near the center with a tiny, mostly unreadable label above it (appears to read "Bram Wardenfell"). A few circular gold‑rimmed token icons sit on tiles (center, left‑middle, lower‑right). The lighting is flat and even with no cast shadows; the mood is bright tiles against a dark void.
+
+Top‑left HUD text (white, left‑aligned):
+"Build: wave 1 in 24 s"
+"Green 300 / cap 10000"
+"Defenses 0 / cap 60"
+"Core 1000 / 1000 | sub_north 400 / 400"
+
+Top‑center: three small stacked circular icons (red‑rimmed, green‑rimmed, and a tiny blue one).
+
+Top‑right panel header (white): "green 300 / cap 60 / defenses 0". Below it a vertical list of dark buttons each with a small circular icon on the left:
+"Ballista (100) *"
+"Gate Blockade (50)"
+"Barbed Snare (80)"
+"Bombard (160)"
+"Hailspire (140)"
+Then three greyed‑out (dimmed) buttons: "Upgrade", "Repair", "Sell".
+Then white section labels "DEFENSES" and "RELICS", followed by two greyed buttons: "Assign relic", "Unassign relic".
+
+Large center‑screen overlay text (white, two lines):
+"BUILD: tower buttons on the right panel — click arms, click"
+"again places"
+
+Bottom‑left character bar (white text): a row "[F1]      [F
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=1036 completion_tokens=900 31.0s

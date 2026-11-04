@@ -1,0 +1,9 @@
+PCK 0-route md5=f1c2b4f8c6424f5ba5c430ad59586ffd bytes=7457200
+SNAP-BUILD {"phase":"mission","phase_kind":"build","difficulty":"normal","wave":0,"green":300,"outcome":null,"alive":0,"wave_remaining":0,"core_hp":1000,"core_max":1000}
+PCK 1-build md5=f1c2b4f8c6424f5ba5c430ad59586ffd bytes=7457200
+FRAMETIME pose=build n=30 median_ms=200.1 p95_ms=233.3 max_ms=233.3
+WATCH t=31s {"phase":"mission","phase_kind":"combat","difficulty":"normal","wave":0,"green":300,"outcome":null,"alive":4,"wave_remaining":4,"core_hp":1000,"core_max":1000}
+SNAP-DEFEAT after 41s {"phase":"mission","phase_kind":"combat","difficulty":"normal","wave":0,"green":300,"outcome":"lose","alive":0,"wave_remaining":0,"core_hp":0,"core_max":1000}
+PCK 2-defeat md5=f1c2b4f8c6424f5ba5c430ad59586ffd bytes=7457200
+FRAMETIME pose=defeat n=30 median_ms=200.1 p95_ms=233.3 max_ms=233.4
+ERRS []

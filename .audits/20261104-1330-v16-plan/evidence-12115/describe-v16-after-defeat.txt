@@ -1,0 +1,9 @@
+The frame is a 3D perspective view of a tower‑defense style game board set against a very dark brown, near‑black background. The playfield is a large rectangular grid of warm orange‑brown stone tiles, each tile showing cracked‑stone texture and raised darker seams, receding toward a horizon line at the top. The left and right edges of the board are bounded by low brick‑textured walls running in perspective, and a row of small green cone‑shaped trees (low‑poly pines) sits along the top edge, with one or two more trees on the left and right margins.
+
+Across the board run winding paths made of a lighter tan, cork‑ or cobble‑textured strip. One path starts at a square node on the left (bearing a small circular icon), curves right and up through a central stone structure, then continues to a square node near the top marked with a "?" symbol. A separate short path segment at the lower right connects a small creature‑like sprite on a node to a gray block‑like structure. The central structure is a brick‑and‑stone building with two short towers and a wall; above it is small white text reading "Bram Wardenfell", and overlaid across its center is large bold white text reading "DEFEAT". A small dark creature sprite stands at the base of this structure. Near the top center, above the board, are two small stacked circular icons (upper one reddish, lower one greenish) and a small creature sprite on the path.
+
+Top‑left HUD text, in white, reads line by line: "Wave 1 / 11", "Green 300 / cap 10000", "Defenses 0 / cap 60", "Core 0 / 1000 | sub_north 400 / 400".
+
+Top‑right panel text, in white and dimmed gray,
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=1036 completion_tokens=900 36.1s

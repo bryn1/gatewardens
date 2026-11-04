@@ -1,0 +1,106 @@
+VG-wave.log — MC 12115 · v1.6 V-G RE-CAPTURE + MILESTONE GATES (W3 final, no product-code change) — 2026-11-04
+worktree /tmp/gw-v16-vg · branch card/12115 · base 18aca6c4660f9d031071afdeef974df6a3c6252b (V-H merged tip)
+plan .audits/20261104-1330-v16-plan/V16-PLAN-c2.md §W3 V-G + laws L1–L8 (all honored; declared readings §9)
+
+== 1. WHAT THIS CARD IS ==
+The owner-facing BEFORE/AFTER pair at the identical poses + the frame-time regression row vs a
+SAME-RIG v1.5 baseline re-export + the milestone gate roll-up (V16-GATES.md). ZERO product-code
+lines: the whole diff is .audits/20261104-1330-v16-plan/ + one LEDGER row (§7 diff proof).
+
+== 2. THE ROUTE RECONSTRUCTION (V16-BEFORE.md read first, as the brief orders) ==
+V16-BEFORE.md records the frames + the strict-pair law; the pose is FIXED by law (L4: the camera
+never moves — zero wheel events), so pose identity IS route identity. Route = hub click (90,132)
+= WAR TABLE "Start gatefall — NORMAL" (the VE-wave-verified coord; the BEFORE frames carry the
+NORMAL core — v16-before-defeat.png prints "Core 0/1000", normal max; the (105,165) HARD route
+the W1/W2 cards used is NOT the pair route — VA §7(h)/VF §7(g) deferred exactly this to V-G).
+Pose 1 = build phase, countdown visible; pose 2 = wave 1 UNDEFENDED (zero clicks after start)
+until the shipped DEFEAT screen. One deliberate click per run, all waits ≥ 600 ms, MARKER FIRST
+(snapshot + marker-crop describe before each pose shot), fresh chromium (empty cache), fresh
+export per side, pck md5+size fetched from the SERVED URL beside every frame (L2/kb e4aa7e1f).
+
+== 3. RECAP PROOF — the route reproduces the archived BEFORE frames MECHANICALLY ==
+v1.5 base 1271a6c re-exported in the SCRATCH worktree /tmp/gw-v16-baseline (product bytes ==
+v1.5 tag f95e481: `git diff f95e481..1271a6c -- godot/ server/ tests/ tools/` EMPTY, checked),
+served :51242, run through the SAME committed v16-capture.cjs:
+  RECAP vs archived v16-before-defeat.png: FULL-frame delta = 0 px — PIXEL-IDENTICAL.
+  RECAP vs archived v16-before-build.png:  FULL delta = 122 px, ALL in the countdown glyphs
+    (original shows "in 24 s", recap "in 19 s"); every WORLD region delta = 0 (census rows).
+So the strict pair holds by construction, not by eyeball (evidence-12115/census-build.txt,
+census-defeat.txt RECAP rows; served-run-before-recap.log).
+
+== 4. THE OWNER PAIR + PCK-MD5-PER-FRAME (L2 stale-pck law) ==
+v16-after-build.png / v16-after-defeat.png committed beside the BEFORE frames.
+AFTER run (tip 18aca6c): export md5 f1c2b4f8c6424f5ba5c430ad59586ffd = 7,457,200 B == served
+PCK0(route)/PCK1(build-frame)/PCK2(defeat-frame) rows; SNAP-BUILD {mission,build,normal,
+core 1000/1000}; defeat after 41 s {outcome lose, core 0/1000}; ERRS [].
+BEFORE-rig run (1271a6c): export md5 2bc2bb13d26a01ef2ee0ab98ca91967b = 5,201,680 B == served
+per-frame rows; same SNAP shape; defeat after 25 s; ERRS [].
+TWO different md5s, each frame's served bytes == that side's on-disk export — a stale pck is
+mechanically excluded, exactly per kb e4aa7e1f. Both sides NORMAL difficulty (strict pair).
+
+== 5. FRAME-TIME ROW (DA F-2) — the >2x decision row ==
+Same rig (headless swiftshader chromium 1243, 1280x720), same script, rAF deltas 6 s, medians:
+  build  pose: v1.5 base 150.0 ms (n=42) → v1.6 tip 200.1 ms (n=30) = 1.33x
+  defeat pose: v1.5 base 150.0 ms (n=43) → v1.6 tip 200.1 ms (n=30) = 1.33x
+1.33x ≤ 2x => PRESENTATION-ONLY KNOBS STAY AS SHIPPED (shadows-off fortress, 24 props, ≤30
+primitives) — nothing to tone. Declared: both are the known swiftshader web floor (plan §18,
+NO fps claim); absolute ms drift by session (VF daytime 216.7 ms) — the verdict rides the
+same-evening sequential pair, machine rows in served-run-after.log / served-run-before-recap.log.
+
+== 6. CENSUS DELTA TABLES (same rects, both sides; every metric window REUSED) ==
+vg-census.py (evidence-12115) — windows byte-reused from census-12081/vc/vf/vh (no new measure);
+regions = the cards' declared rects (TOP-STRIP/CENTER/CORE/GATE, PATH-A/B/C, DECOR, HERO, PANEL,
+SKY). Pose-1 rows (BEFORE→AFTER, full table in census-build.txt): TOP-STRIP void 17218→6596;
+CENTER ghost 3200→19 delta 105966; PATH ghost 719→6/1502→0/365→4 (byte-equal VC's rows);
+DECOR void 45784→34085, pine 1688→973 (byte-equal VF's rows — deterministic merged tree, no
+drift); FULL delta 702737/921600 px. Pose-2 (census-defeat.txt): FULL delta 684700 px, ghost
+370→4 TOP-STRIP, 2698→0 CENTER. Named crops committed: vg-after-{decor,core,gate,path-b}-crop.png.
+
+== 7. VISION (Lane E qwen3.8-flash-next, describe_image.py; it REPORTS, I JUDGE; cost lines in
+each describe-*.txt) — SAME QUESTION both sides, 6 calls (2 markers + 2 AFTER + 2 BEFORE) ==
+AFTER build (marker FIRST): "Build: wave 1 in 20 s / Green 300 / cap 10000 / Defenses 0 / cap 60
+/ Core 1000 / 1000 | sub_north 400 / 400"; full: "large rectangular stone paving slabs… low
+brick-textured walls… small green cone-shaped trees… warm orange-brown tones… a tiny character
+sprite… 'Bram Wardenfell'". AFTER defeat: "Core 0 / 1000"; "large bold white text reading 'DEFEAT'".
+BEFORE same reader: "grid of square ground tiles… solid black background… translucent pale
+blue-white arrow-shaped path strips… lighting is flat and even with no cast shadows" / defeat
+"DEFEAT… Core 0 / 1000". (Crop/full countdown 20s vs 19s: two shots one tick apart, honest row.)
+BLACK-BLOB check (V-A shadow law on the merged tree): fortress-region black-window px AFTER:
+GATE 0, PATH-A 0, DECOR 6, TOP-STRIP 3 — no blob anywhere; Lane E named none.
+
+== 8. MILESTONE GATES (roll-up V16-GATES.md; A1..A8 with an EVIDENCE LEVEL per row) ==
+Suite THIS tree: `python3 -m pytest tests/ -q` = 363 passed rc=0 (evidence-12115/suite-committed
+.txt; = V-H's committed 358 + the 5 test_served legs that run ONLY with an export on disk — the
+with-export/clean reconciliation idiom, floor 345, plan §5). Grep-verified no test reads .audits/
+or LEDGER.md (all hits docstring prose), so the line holds for the committed tree (VF idiom).
+hygiene 0 hit(s); GOVERNED_LITERALS 17 (set parsed); fixtures diff f95e481..HEAD = 0 lines;
+ceilings gate metric len(read().split("\n")): mission.gd 400 (AT), test_mission_clicks.py 600
+(AT), hud.gd 396 (≤396 V-E WATCH max held); camera_zoom.gd 0-diff + CameraRig row 0 changed
++/- lines vs 1271a6c; sim/ diff = the ONE declared V-C probe re-pin.
+
+== 9. SHADOW FLIP-BACK — orchestrator decision recorded (brief line) ==
+SHIPS OFF for v1.6 — the VA-wave.log:38-43 ruling stands (ambient DISABLED at the scene row;
+default casting painted pure-black faces/shadows on web → cast OFF + emission floor 0.3).
+Flip-back = v1.7 candidate (VA-wave.log:148 "the flip is one word" for a V-E-class env re-tune).
+V-G leg: the AFTER pair carries NO black-blob regression (§7 rows + vision reads).
+
+== 10. DECLARED READINGS ==
+(a) "exact two poses" read as same-route+zero-wheel (L4 makes them identical); PROVEN by §3.
+(b) Strict pair = NORMAL difficulty (not the HARD route W1/W2 used) — the difficulty IS part of
+    the pose contract (the defeat frame prints the core max).
+(c) Wall-clock to defeat 25 s base vs 41 s tip: sim ROWS byte-frozen (fixtures 0, outcome/cores
+    identical both sides); frame-driven pacing rides the render rate — declared, not a law break.
+(d) suite count 363 = 358 + 5 served legs (export present) — reconciliation row, floor 345 held.
+(e) PANEL pose-2 delta includes the themed panel + the world strip right of it — reused window.
+(f) FINDINGS: none P0/P1. One note: `tools/export_web.sh` + `rm -rf static` drops the TRACKED
+    static/.gitkeep (restored via git checkout in this worktree; W12 export law unchanged — a
+    one-word fix belongs to a future export-card, not this zero-product-line card).
+
+== 11. OPS + LAW ROWS ==
+Servers :51241 (tip) + :51242 (baseline) KILLED, both ports verified FREE (curl refused). SCRATCH
+worktree /tmp/gw-v16-baseline DELETED (git worktree remove --force + prune; ls proves gone).
+GPU window NEVER opened (imagegen untouched; image_window status = CLOSED verified §final).
+ZERO product-code lines: post-commit `git diff --name-only HEAD^..HEAD` = audit dir + LEDGER.md
+ONLY (§7). No push; no git config (author via -c flags: code (12115) <code@agent-town.local>);
+no spawn (leaf); pacing ≥ 600 ms; console ERRS [] both runs.
+VERIFY_EXIT=0

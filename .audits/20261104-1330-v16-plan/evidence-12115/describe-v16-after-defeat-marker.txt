@@ -1,0 +1,6 @@
+Wave 1 / 11
+Green 300 / cap 10000
+Defenses 0 / cap 60
+Core 0 / 1000 | sub_north 400 / 400
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=198 completion_tokens=206 10.7s
