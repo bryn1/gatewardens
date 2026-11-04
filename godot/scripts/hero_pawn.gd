@@ -12,6 +12,21 @@ extends Node3D
 # scene serves W7 and the archetype split rides the 3090 pipeline wave
 # (reading recorded in W7-evidence.md, pinned-table precedent MC
 # 11274.1.9-.13 applied to the visual-only row).
+# v1.6 P4a (MC 12083, V16-PLAN V-D): the F-BUILD frame read the hero as
+# an ~8-px speck at the frozen D=64 rig — the pawn was ONE billboard.
+# The pawn becomes a PRIMITIVE-COMPOSED BODY per archetype (shipped
+# BoxMesh/CylinderMesh law, kb 2d5274003 — zero runtime ArrayMesh), the
+# per-hero MATS tints REUSED, silhouette inside the WORLD_H_HERO 3u
+# door. DECLARED: the committed hero sheet does NOT survive as visible
+# body decor — it hides through the SAME shipped visibility-swap idiom
+# as $Visual below (its G7 eff_h=3.0 scale contract stays byte-pinned
+# on the live node), and the sheet survives visibly in its 1.2u crest
+# miniature, which rides the pawn origin as the figure's medallion
+# backdrop (the core-box truth moved the figure in front of the rim —
+# see BODY_PARTS §COMPOSITION; served-proven VD-wave.log). The crest
+# block stays byte-untouched (P8 shipped); camera_zoom.gd /
+# mission.tscn / hero_controller.gd ZERO lines (L4 — OD1 DEFER, fixed
+# framing).
 
 const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
 const WORLD_TEXT := preload("res://scripts/world_text.gd")
@@ -44,8 +59,49 @@ const CREST_NAME_DY := 2.55    # name line above the crest anchor (P8 re-shoot)
 const CREST_NAME_H := 1.1      # name line world height — x2 the P4 pin
 const CREST_NAME_OUTLINE := 10 # px outline over OUTLINE_PX for the floor
 
-var hero_id := ""
+# Body presentation numbers (v1.6 P4a, same ungoverned-home doctrine as
+# the crest consts): one composed figure per ARCHETYPE (heroes.json
+# "archetype" through the array door — never a per-id branch), parts =
+# BoxMesh {"box": size} / CylinderMesh {"cyl": (r_top, r_bot, h)} at
+# {"at": pos}, world units. Feet sit on the pawn origin (y=0); every
+# top stays inside the 3u door (the crest miniature 1.8..3.0 rides the
+# pawn origin BEHIND the figure as its medallion backdrop).
+# SERVED TRUTH (VD-wave.log §COMPOSITION): the main core's greybox box
+# (mesh_core 3x4x3, rim y~2) stands ON the hero stand (hero_controller
+# position = core_main.pos), so a pawn at the origin renders INSIDE the
+# box — the shipped sheet top (1.5u) was already under the rim, which
+# is WHY F-BUILD reads only crest + rim. The figure therefore stands
+# BODY_OFFSET toward the camera, on the board in front of the near box
+# face: hero-forward framing at the frozen D=64 rig, feet on the ground
+# plane, a visual-only offset (the pawn node and every sim position are
+# untouched — zero-sim-writes law).
+const BODY_OFFSET := Vector3(0.0, 0.0, 2.6)  # toward the camera (+z at rig)
+const BODY_PARTS := {
+	"melee": [
+		{"box": Vector3(0.45, 0.82, 0.45), "at": Vector3(-0.34, 0.41, 0.0)},
+		{"box": Vector3(0.45, 0.82, 0.45), "at": Vector3(0.34, 0.41, 0.0)},
+		{"box": Vector3(1.2, 1.12, 0.65), "at": Vector3(0.0, 1.38, 0.0)},
+		{"box": Vector3(1.75, 0.38, 0.73), "at": Vector3(0.0, 2.14, 0.0)},
+		{"box": Vector3(0.67, 0.62, 0.6), "at": Vector3(0.0, 2.47, 0.0)},
+		{"box": Vector3(0.2, 1.25, 0.94), "at": Vector3(-1.02, 1.32, 0.0)},
+	],
+	"ranger": [
+		{"box": Vector3(0.34, 0.9, 0.36), "at": Vector3(-0.26, 0.45, 0.0)},
+		{"box": Vector3(0.34, 0.9, 0.36), "at": Vector3(0.26, 0.45, 0.0)},
+		{"box": Vector3(0.83, 1.06, 0.52), "at": Vector3(0.0, 1.45, 0.0)},
+		{"box": Vector3(1.04, 0.15, 1.04), "at": Vector3(0.0, 2.07, 0.0)},
+		{"box": Vector3(0.57, 0.65, 0.55), "at": Vector3(0.0, 2.44, 0.0)},
+		{"box": Vector3(1.93, 0.15, 0.15), "at": Vector3(0.58, 1.53, 0.0)},
+	],
+	"mage": [
+		{"cyl": Vector3(0.33, 0.83, 1.7), "at": Vector3(0.0, 0.85, 0.0)},
+		{"box": Vector3(0.75, 0.63, 0.58), "at": Vector3(0.0, 1.89, 0.0)},
+		{"box": Vector3(0.65, 0.63, 0.63), "at": Vector3(0.0, 2.39, 0.0)},
+		{"cyl": Vector3(0.09, 0.09, 2.88), "at": Vector3(0.83, 1.44, 0.0)},
+	],
+}
 
+var hero_id := ""
 
 # One-call parameterization (setup-by-injection doctrine, R3): id picks
 # the visual. V1.1-a (MC 11466): a committed batch-1 sheet replaces the
@@ -61,14 +117,52 @@ var hero_id := ""
 # hero for free: the crest over the visible pawn is the active hero's name.
 func setup_pawn(id: String) -> void:
 	hero_id = id
+	# v1.6 P4a: the composed body mounts FIRST (the hero), the crest
+	# last as shipped. The null-guard is the declared planted-red home
+	# (V16-PLAN V-D): a builder that stops composing reddens HB-BODY.
+	var body := _make_body(id)
+	if body != null:
+		add_child(body)
 	var sprite := SPRITE_BANK.make_sprite(id, SPRITE_BANK.WORLD_H_HERO)
 	if sprite != null:
 		sprite.name = "Sprite"
+		sprite.visible = false   # P4a: the body is the hero (see header)
 		$Visual.visible = false
 		add_child(sprite)
 	else:
 		$Visual.material_override = MATS.get(id, MATS["warden"]).duplicate()
 	add_child(_make_crest(id))
+
+
+# The primitive-composed figure (v1.6 P4a): one Body node of BoxMesh/
+# CylinderMesh parts from the BODY_PARTS table of the hero's archetype
+# (heroes.json through the array door — I2-safe, a greybox "melee"
+# default for an absent/unknown archetype, never a crash), tinted with
+# the hero's shipped MATS entry REUSED (one duplicate per pawn shared
+# by its parts). Zero sim reads/writes beyond the heroes.json door.
+func _make_body(id: String) -> Node3D:
+	var body := Node3D.new()
+	body.name = "Body"
+	body.position = BODY_OFFSET   # in front of the core box (see above)
+	var mat: StandardMaterial3D = MATS.get(id, MATS["warden"]).duplicate()
+	var parts: Array = BODY_PARTS.get(hero_archetype(id), BODY_PARTS["melee"])
+	for spec: Dictionary in parts:
+		var mi := MeshInstance3D.new()
+		if spec.has("box"):
+			var bm := BoxMesh.new()
+			bm.size = spec["box"]
+			mi.mesh = bm
+		else:
+			var cm := CylinderMesh.new()
+			var dims: Vector3 = spec["cyl"]
+			cm.top_radius = dims.x      # MEASURED 4.7.2 property names
+			cm.bottom_radius = dims.y
+			cm.height = dims.z
+			mi.mesh = cm
+		mi.position = spec["at"]
+		mi.material_override = mat
+		body.add_child(mi)
+	return body
 
 
 # The name crest (V121-PLAN G7b): a small sheet miniature + the hero's
@@ -100,4 +194,15 @@ static func hero_name(id: String) -> String:
 	for row: Dictionary in GW_TABLES.new().rows("heroes"):
 		if String(row["id"]) == id:
 			return String(row["name"])
+	return ""
+
+
+# hero_archetype (v1.6 P4a) reads the hero's archetype through the SAME
+# array door as hero_name — the body SHAPE is data (heroes.json), the
+# tint stays the MATS palette (asset data, the W6 header reading).
+# Empty for an id absent from the table (greybox melee default).
+static func hero_archetype(id: String) -> String:
+	for row: Dictionary in GW_TABLES.new().rows("heroes"):
+		if String(row["id"]) == id:
+			return String(row.get("archetype", ""))
 	return ""
