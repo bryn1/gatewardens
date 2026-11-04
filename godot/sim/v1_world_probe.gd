@@ -7,9 +7,14 @@
 # own unproject_position answers — no re-derived projection anywhere.
 # Rows (machine lines, any failure prints V1W-FAIL <why> and quits 1):
 #  FLOOR  the live Ground material's albedo texture is pinned by its
-#         COMMITTED RESOURCE PATH (ground_arena — never through the
-#         bank, the v11_sprite_probe bank-as-oracle lesson), repeat is
-#         OFF, and the modulate is the pinned ARENA_MODULATE value.
+#         COMMITTED RESOURCE PATH (ground_fortress — the WIRED sheet:
+#         the V-A remap MC 12081 moved the ground_arena bank id onto
+#         the fortress flagstone board; the sprite-era ground_arena.png
+#         pin was de-staled by MC 12116) — never through the
+#         bank, the v11_sprite_probe bank-as-oracle lesson; the bank
+#         id answer is pinned against the SAME literal path (the wired
+#         identity), repeat is OFF, and the modulate is the pinned
+#         ARENA_MODULATE value.
 #  AABB   the ground node's mesh AABB (component-wise numeric pin) and
 #         its node-local transform origin are byte-pinned, with the
 #         mission root's own transform origin pinned at zero (pre==post:
@@ -38,7 +43,9 @@ const MISSION_SCENE := "res://scenes/mission.tscn"
 const HERO_IDS := ["warden", "deadeye", "embercaller"]  # deck seed (v4)
 const VIEW := Vector2i(1280, 720)          # the A9 screenshot viewport
 const MIN_MARGIN := 60.0                   # the brief's pinned frame margin
-const ARENA_PATH := "res://assets/v11/ground_arena.png"
+const ARENA_PATH := "res://assets/v11/ground_fortress.png"  # V-A remap
+		# (MC 12081): the ground_arena bank id now carries the fortress
+		# flagstone sheet — literal-pinned identity (MC 12116 de-stale)
 const PATH_TRAP := "res://assets/v11/ground_path.png"   # planted-red only
 const CORE_PATH := "res://assets/v11/icon_core.png"
 const REPEAT_OFF := false         # 4.7.2 texture_repeat is a BOOL (VERIFIED
@@ -124,9 +131,15 @@ func _floor(m) -> void:
 		_fail("arena modulate drifted: %s != %s" % [str(mat.albedo_color),
 				str(MISSION_WORLD.ARENA_MODULATE)])
 		return
-	if not _planted and SPRITE_BANK.texture_for("ground_arena") == null:
-		_fail("ground_arena missing from the ONE sprite_bank map")
-		return
+	if not _planted:
+		var bank_tex := SPRITE_BANK.texture_for("ground_arena")
+		if bank_tex == null:
+			_fail("ground_arena missing from the ONE sprite_bank map")
+			return
+		if String(bank_tex.resource_path) != ARENA_PATH:
+			_fail("ground_arena id not on the wired board: %s != %s" \
+					% [str(bank_tex.resource_path), ARENA_PATH])
+			return
 	print("V1W-FLOOR tex=%s repeat=off modulate=%s" % [want_arena,
 			str(mat.albedo_color)])
 

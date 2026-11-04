@@ -1,15 +1,22 @@
 # sprite_bank — the ONE v1.1 sprite map (V1.1-a MC 11466, (id, tier)
 # aware since V1.1-b MC 11520): unit id + tower tier -> the committed
 # 3090 sheet under assets/v11/, plus the ONE billboard factory every
-# sprite-backed unit shares. Replace-not-add: each draw site
-# (hero_pawn, defense_obj, enemy_runner) asks HERE first and keeps its
-# greybox when this returns null — no second render path.
+# sprite-backed unit shares. Replace-not-add: every sprite draw site
+# asks HERE first and keeps its greybox when this returns null — no
+# second render path. The site list moved with V-B (MC 12082): placed
+# defenses no longer ask — their world visual is the TOWER_FORMS
+# container (hero_pawn, enemy_runner et al still do; MC 12116
+# de-stale of this retired sentence).
 # Tier skin rule (V1.1-b): TEXTURES carries the BASE sheet of every
 # sprited id — the T1 skin of the 3 shooters, the tier-agnostic sheets
 # (gate_blockade, barbed_snare since batch 2, heroes, enemies);
 # TIER_TEXTURES adds the committed _T2/_T3 shooter skins only — all
-# six are wired since clean-code W2 (MC 11575 CR-1: bombard T3 landed
-# with batch 3 but shipped unwired, so a T3 bombard still read T1).
+# six rode the world repaint since clean-code W2 (MC 11575 CR-1:
+# bombard T3 landed with batch 3 but shipped unwired, so a T3 bombard
+# still read T1) until V-B (MC 12082) moved placed-defense worlds to
+# TOWER_FORMS; the bank still ANSWERS the six, pinned by the
+# v11_sprite_probe tier legs (MC 12116 de-stale; map removal is no
+# card here).
 # An unknown tier falls back to the base sheet (no _T4/_T5 sheets
 # exist -> those tiers read T1), so a tiered id is never null once a T1
 # exists. Ids with no committed sheet at all (future ids) return null
@@ -113,12 +120,14 @@ const TIER_TEXTURES := {
 # World height each sheet is scaled to — the greybox footprint it
 # replaces (VISUAL-TARGET "scaled to the existing box footprint"): the
 # ground-enemy capsule is 2 world units tall (hero pawns read bigger,
-# WORLD_H_HERO below — G7), the tower capsule is authored scale.y 2 ->
-# 4 units. Sprite3D maps 100 px to one world unit at scale 1, so the
-# scale is height / (px / 100); no layout or coordinate ever changes
-# (the node still sits on the record's pos).
+# WORLD_H_HERO below — G7). Sprite3D maps 100 px to one world unit at
+# scale 1, so the scale is height / (px / 100); no layout or coordinate
+# ever changes (the node still sits on the record's pos).
+# MC 12116 de-stale: the tower height const is GONE with its mechanism
+# — since V-B (MC 12082) placed defenses are the primitive-composed
+# TOWER_FORMS containers (no world sheet to scale; defense_obj was its
+# only reader, grep-zero readers pinned in VI-wave.log).
 const WORLD_H_UNIT := 2.0     # enemies: the 2u capsule
-const WORLD_H_TOWER := 4.0    # tower capsule footprint: scale.y 2 -> 4u
 # v1.2.1 G7 (MC 11695, V121-PLAN G7a): heroes-only presentation const —
 # the hero must read bigger than the 2u mobs it fights at the shipped
 # D=64 rig (camera LOCKED, pin #3 spent). Capsules, pos and every sim

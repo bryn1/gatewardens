@@ -3,17 +3,24 @@
 # composition root under -s, enters a mission through the shipped
 # router (main.start_mission — never around it), and asserts on the
 # LIVE scene tree that (1) the 12 committed batch-1 sheets load at
-# 512px, (2) every sprite-backed entity node carries its bank texture
-# — hero pawns (incl. the F2 hot-swap visibility), placed towers, and
-# spawned enemies, (3) V1.1-b tier skins: a ballista upgraded ONCE and
+# 512px, (2) the sprite-backed entity nodes carry their bank texture
+# — hero pawns (incl. the F2 hot-swap visibility) and spawned
+# enemies — while placed defenses carry the LIVE V-B world shape: the
+# TOWER_FORMS container defense_obj delegates to (MC 12082; the
+# sprite-era obj.node-as-Sprite3D pin REDDENED on the live tree and
+# was re-pinned by the MC 12116 de-stale, the VB-wave routed finding),
+# (3) V1.1-b tier ladder: a ballista upgraded ONCE and
 # a hailspire upgraded TWICE through the shipped defense_obj.upgrade()
-# entry point carry their T2/T3 sheet in the live tree, and
-# gate_blockade/barbed_snare are Sprite3D on their batch-2 sheets.
+# entry point swap-rebuild their live form, and the bank's committed
+# (id, tier) answer stays pinned against the literal sheet path it
+# must return; gate_blockade/barbed_snare ride the SAME container
+# shape (their batch-2 Sprite3D pin re-pinned like the tower legs).
 # (3b) Since the MC 11462 DA fix loop the warden_breaker boss carries
 # its batch-5 sheet too, asserted path-pinned (the tier-leg pattern).
 # (3c) Since clean-code W2 (MC 11575 CR-1) the bombard batch-3 T3 skin
-# (committed unwired) rides the same leg shape: load + live repaint +
-# the bank answer pinned against the literal path it must return.
+# (committed unwired) rides the same leg shape: load + form swap-
+# rebuild + the bank answer pinned against the literal path it must
+# return.
 # (4) the ONE facing mechanism flips the left-facing enemy sheets only
 # on a screen-right step, at spawn and live through runner.step.
 # Harness license (the mission_smoke precedent, declared): the main
@@ -35,6 +42,9 @@ const HERO_IDS := ["warden", "deadeye", "embercaller"]
 const TOWER_IDS := ["ballista", "bombard", "hailspire_tower"]
 const ENEMY_IDS := ["skitterling", "husk_brute", "ash_bandit", "bone_lobber",
 	"cinder_wisp", "gale_harpy"]
+const FORM_PREFIX := "TowerForm"   # tower_forms FORM_NAME literal-PINNED
+	# (never preloaded: a builder the probe asks is an oracle — the
+	# bank-as-oracle lesson riding the tower legs since V1.1-b)
 
 
 func _init() -> void:
@@ -97,7 +107,13 @@ func _init() -> void:
 		return
 	print("SPRITEBANK-SWAP active=1 visible=deadeye")
 
-	# --- 3) placed towers carry their sheet at the placement position ---
+	# --- 3) placed defenses carry the LIVE world shape: the TowerForm
+	#         container defense_obj._make_visual delegates to since V-B
+	#         (MC 12082). The sprite-era sheet-on-node pin retired with
+	#         that delegation (MC 12116 de-stale); the form's mesh/
+	#         turret/aim CONTRACT is test_tower_forms.py's home — this
+	#         leg pins only the shape the bank era pinned: the visual
+	#         that stands on the placed slot. ---
 	m.green = 100000                               # license (header)
 	var trows := {}
 	for row: Dictionary in m.tables.rows("towers"):
@@ -110,65 +126,73 @@ func _init() -> void:
 			_fail("place_defense refused %s: %s" % [tid, str(pl)])
 			return
 		var obj = (m.defense_list[-1] as Dictionary)["obj"]
-		var tspr: Sprite3D = obj.node as Sprite3D
-		if tspr == null or tspr.texture != SPRITE_BANK.texture_for(tid):
-			_fail("tower sheet: %s" % tid)
+		if not _is_form(obj.node):
+			_fail("tower form: %s" % tid)
 			return
 		tobjs[tid] = obj
 		ti += 1
 	print("SPRITEBANK-TOWERS n=3")
 
-	# --- 3b) V1.1-b tier skins through the SHIPPED upgrade entry point:
-	#         ballista upgraded once reads T2, hailspire twice reads T3,
-	#         on the live tree node (the upgrade repaint swapped it).
-	#         The expected sheet is pinned by its committed RESOURCE
-	#         PATH, not through the bank: asking the bank would make a
-	#         broken tier map self-consistent via the T1 fallback (the
-	#         planted-red run proved the bank-as-oracle shape goes green
-	#         on a dropped T3 key). ---
+	# --- 3b) V1.1-b tier ladder through the SHIPPED upgrade entry point:
+	#         ballista upgraded once and hailspire twice SWAP-REBUILD the
+	#         live TowerForm (the V-B shape, MC 12116 re-pin) and the
+	#         tier index rides the ladder. The committed tier sheet is
+	#         pinned through the bank answer against its committed
+	#         RESOURCE PATH literal — asking the bank whether its own
+	#         answer holds was the proven false-green shape (a dropped
+	#         T3 key reads green through the T1 fallback); here the
+	#         compare TARGET is the literal, so a dropped entry reddens
+	#         the map itself. ---
 	for legs: Array in [
 			["ballista", 1, "res://assets/v11/tower_ballista_T2.png"],
 			["hailspire_tower", 2, "res://assets/v11/tower_hailspire_T3.png"]]:
 		var tid2: String = String(legs[0])
 		var tobj = tobjs[tid2]
+		var form0 := int(tobj.node.get_instance_id())
 		for _i in range(int(legs[1])):
 			var up: Dictionary = tobj.upgrade()
 			if not bool(up["ok"]):
 				_fail("upgrade refused %s: %s" % [tid2, str(up)])
 				return
 		var uobj = tobj
-		var uspr: Sprite3D = uobj.node as Sprite3D
 		var want_tier: int = int(legs[1]) + 1
-		if uspr == null or String(uspr.texture.resource_path) != String(legs[2]) \
+		if not _is_form(uobj.node) \
+				or int(uobj.node.get_instance_id()) == form0 \
 				or int(uobj.tier) != want_tier - 1:
-			_fail("tier sheet: %s T%d" % [tid2, want_tier])
+			_fail("tier form swap: %s T%d" % [tid2, want_tier])
+			return
+		var tier_tex: Texture2D = SPRITE_BANK.texture_for(tid2, want_tier)
+		if tier_tex == null \
+				or String(tier_tex.resource_path) != String(legs[2]):
+			_fail("tier sheet map: %s T%d" % [tid2, want_tier])
 			return
 	print("SPRITEBANK-TIER ballista=T2 hailspire=T3")
 
 	# --- 3c) W2 (MC 11575 CR-1): bombard T3 — the batch-3 skin that
 	#        shipped COMMITTED BUT UNWIRED (dead weight in the pck, the
-	#        T3 tower still painted T1). Same tier-leg idiom, three
-	#        assertions: the committed sheet LOADS as a Texture2D, the
-	#        live node upgraded twice through the shipped upgrade()
-	#        entry point carries it (pinned by its committed RESOURCE
-	#        PATH, never through the bank), and the bank's own answer
-	#        for ("bombard", 3) is pinned against the literal path it
-	#        must return — a dropped entry now goes RED on both. ---
+	#        T3 tower still painted T1). Same tier-leg idiom (V-B
+	#        re-pin, MC 12116), three assertions: the committed sheet
+	#        LOADS as a Texture2D, the live slot upgraded twice through
+	#        the shipped upgrade() entry point SWAP-REBUILDS its
+	#        TowerForm, and the bank's own answer for ("bombard", 3) is
+	#        pinned against the literal path it must return — a dropped
+	#        entry goes RED on the map. ---
 	var bomb_t3 := "res://assets/v11/tower_bombard_T3.png"
 	var t3res := ResourceLoader.load(bomb_t3)
 	if t3res == null or not (t3res is Texture2D):
 		_fail("bombard T3 sheet does not load as Texture2D")
 		return
 	var bobj = tobjs["bombard"]
+	var bform0 := int(bobj.node.get_instance_id())
 	for _i in range(2):
 		var bup: Dictionary = bobj.upgrade()
 		if not bool(bup["ok"]):
 			_fail("upgrade refused bombard: %s" % str(bup))
 			return
-	var b3spr: Sprite3D = bobj.node as Sprite3D
-	if b3spr == null or String(b3spr.texture.resource_path) != bomb_t3 \
+	if not _is_form(bobj.node) \
+			or int(bobj.node.get_instance_id()) == bform0 \
 			or int(bobj.tier) != 2:
-		_fail("tier sheet: bombard T3")
+		_fail("tier form swap: bombard T3")
 		return
 	var bank_t3: Texture2D = SPRITE_BANK.texture_for("bombard", 3)
 	if bank_t3 == null or not String(bank_t3.resource_path) \
@@ -177,20 +201,21 @@ func _init() -> void:
 		return
 	print("SPRITEBANK-TIER3 bombard=T3")
 
-	# --- 4) V1.1-b: gate_blockade / barbed_snare exit the greybox —
-	#        Sprite3D on their committed batch-2 sheets (tier-agnostic) ---
+	# --- 4) V1.1-b gate art exits the greybox; since V-B (MC 12082)
+	#        gate_blockade / barbed_snare ride the SAME TowerForm
+	#        container shape as the shooters — the batch-2 Sprite3D
+	#        sheet pin re-pinned with the tower legs (MC 12116) ---
 	for gid: String in ["gate_blockade", "barbed_snare"]:
 		var pl2: Dictionary = m.place_defense(trows[gid], 1,
 				Vector3(20 + ti, 0.0, 0.0))
 		if not bool(pl2["ok"]):
 			_fail("place_defense refused %s: %s" % [gid, str(pl2)])
 			return
-		var gspr: Sprite3D = ((m.defense_list[-1] as Dictionary)["obj"]).node as Sprite3D
-		if gspr == null or gspr.texture != SPRITE_BANK.texture_for(gid):
-			_fail("%s not a sprite on its sheet" % gid)
+		if not _is_form(((m.defense_list[-1] as Dictionary)["obj"]).node):
+			_fail("%s not a tower form" % gid)
 			return
 		ti += 1
-	print("SPRITEBANK-GATEART blockade=sprite trap=sprite")
+	print("SPRITEBANK-GATEART blockade=form trap=form")
 
 	# --- 5) spawned enemies carry their sheet (lane_g1 walks +x: the
 	#        left-facing sheets must already read flip at spawn) ---
@@ -242,6 +267,19 @@ func _init() -> void:
 	print("SPRITEBANK-FLIP right=flipped left=plain")
 	print("SPRITEBANK-OK")
 	quit(0)
+
+
+# The V-B live world shape (MC 12116 re-pin): defense_obj hands back the
+# tower_forms container — "TowerForm_<uid>", geometry under it, parented
+# by place_defense. SHAPE-only pin (name prefix + kids + parented): the
+# form's mesh/turret/aim CONTRACT stays test_tower_forms.py's one home —
+# no second copy here (the probe never preloads tower_forms: a builder
+# the probe asks about its own name is an oracle).
+func _is_form(nd) -> bool:
+	return nd != null and is_instance_valid(nd) \
+			and nd.get_parent() != null \
+			and String(nd.name).begins_with(FORM_PREFIX) \
+			and nd.get_child_count() > 0
 
 
 func _fail(why: String) -> void:

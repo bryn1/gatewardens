@@ -1,0 +1,8 @@
+== WORLD_H_TOWER reader census (MC 12116 removal proof) ==
+$ grep -rn WORLD_H_TOWER godot/ tests/ server/ static/ tools/
+rc=1 (1 = ZERO hits in all .gd/.py/code+assets trees — the const site itself is gone)
+
+Remaining repo mentions are HISTORICAL RECORDS, not readers:
+- LEDGER.md:189 (V-B close row that FILED the finding — ledger history stands)
+- .audits/*/VB-wave.log:187 + G7-wave.log:23 + 20261030-1830-v13-clean-code/FINDINGS.md:177 (past-run evidence)
+(no code-tree file mentions it)

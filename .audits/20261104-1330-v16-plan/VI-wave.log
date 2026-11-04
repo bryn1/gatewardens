@@ -1,0 +1,137 @@
+VI-wave.log — MC 12116 · v1.6 V-I DE-STALE RETIRED PROBE PINS (W2 de-stale, routed findings) — 2026-11-04
+worktree /tmp/gw-v16-vi · branch card/12116 · base 18aca6c4660f9d031071afdeef974df6a3c6252b (V-H tip) ·
+brief /tmp/gw-briefs/v16-vi.md · author code (12116) · no push (per brief) · NEVER git config · no spawn.
+
+== 0. DECLARED READINGS (surface before code — coding-discipline) ==
+(a) L7 RATIFIED (VC-close precedent): the card owns the THREE named files for probe MATERIAL/SHAPE
+    rows only. Measured final diff = godot/sim/v1_world_probe.gd (+20/−7) · godot/sim/v11_sprite_probe.gd
+    (+76/−38) · godot/scripts/sprite_bank.gd (+19/−10 const-row + comments) + LEDGER row + this dir.
+    ZERO sim LOGIC: sim/sim_* untouched; tower_forms.gd/defense_obj.gd byte-verified UNTOUCHED
+    (git diff --name-only over sim/scripts/data/scenes/tests/server/static lists ONLY the three
+    files); every sim-contract row inside the probes byte-UNCHANGED (TEX n=12 / HEROES n=3 / SWAP /
+    ENEMIES n=6 / FLIP prints and checks absent from the diff hunks; the tier-INDEX sim reads
+    `int(uobj.tier) != want_tier - 1` and `int(bobj.tier) != 2` ride unchanged).
+(b) RE-PIN vs SUPERSEDE for v11_sprite_probe — DECIDED BY MEASUREMENT, per the brief's OR-branch:
+    driverless: PROVEN (grep: no test/tool runs res://sim/v11_sprite_probe.gd — the driven kit-probe
+    census lists none; test_tower_forms.py:40 states "artifact-only: NO test drives it"; VB finding 1
+    concurs). Covered-by: FAILS — test_tower_forms.py holds the tower FORM/TURRET/TIER-SWAP/AIM
+    contract ONLY; the probe's SPRITEBANK-TEX (12 committed sheets @512px), HEROES (sprite on pawn +
+    greybox hidden), SWAP (F2 hot-swap visibility), ENEMIES (6 sheets + spawn flip) and the boss
+    path-pin are NOT in it — measured at base where those five rows print GREEN (they pin STILL-LIVE
+    claims whose only committed proof a SUPERSEDE would drop). The covered-by clause's own condition
+    is false → RE-PIN (the brief's primary branch). Reading stated.
+(c) SKILLS: coding-discipline + workspace-convention loaded. web-app-hosting NOT loaded (its
+    When-to-load names vm106 portfolio publishing; this card ships no served change — no export, no
+    browser, no GPU window). reuse-research-gate NOT loaded (executing an existing plan; the planner
+    ran the gate — V16-PLAN.log).
+(d) FLOOR IDENTITY: the DoD's "wired flagstone identity" = the material's live albedo resource_path,
+    which is whatever sprite_bank TEXTURES["ground_arena"] preloads = ground_fortress.png (V-A remap
+    MC 12081, read at sprite_bank.gd:68 + mission_world.paint_arena — the ONE consumer). The probe
+    pins the literal PATH (bank-never-oracle) AND now also pins the bank id's ANSWER against the same
+    literal (the remap is the identity; planted-guarded).
+(e) ground_arena.png STAYS committed-unwired per the brief — deletion is NOT this card's authority;
+    zero code references now, the file keeps its own .import sidecar only (grep row §3).
+
+== 1. RED-FIRST (L3 — the OLD shape reddens under the REAL world BEFORE the fix) ==
+Runs against the UNMODIFIED base tree (binary /home/claudecode/Games/.tools/godot/
+Godot_v4.7.2-stable_linux.x86_64, `--headless --path godot -s`):
+  v1_world_probe   rc=1 — "V1W-FAIL ground albedo is not the pinned arena board:
+                   res://assets/v11/ground_fortress.png (want res://assets/v11/ground_arena.png)"
+                   (evidence-12116/red-base-v1world-oldfloor-pin.txt) — MEASUREMENT: ONLY the FLOOR
+                   material row was stale; V1W-AABB / V1W-CORE / V1W-FRAME all printed OK in the same
+                   run (the shape/sim rows the de-stale must NOT touch were already green).
+  v11_sprite_probe rc=1 — rows SPRITEBANK-TEX n=12 · HEROES n=3 · SWAP green, then
+                   "SPRITEBANK-FAIL tower sheet: ballista"
+                   (red-base-v11-sprite3d-shape.txt) — the sprite-era obj.node-as-Sprite3D pin
+                   reddens ON THE SHAPE QUESTION exactly as VB-wave finding 1 predicted, while every
+                   still-live sprite-era row passes (the §0b coverage measurement, run not guessed).
+
+== 2. BUILD (the three routed findings; final LOC 235 / 287 / 168 — all under 400) ==
+godot/sim/v1_world_probe.gd (222→235 ln): FLOOR row ARENA_PATH ground_arena.png → ground_fortress.png
+    (literal, V-A remap note in the const comment); header FLOOR description re-truthed; the bank
+    null-leg EXTENDED to pin the bank id's ANSWER path == ARENA_PATH (not-planted only — the wired
+    identity end-to-end, still literal-ored). PATH_TRAP (ground_path, the OTHER committed terrain
+    sheet) and the committed planted mechanism UNCHANGED.
+godot/sim/v11_sprite_probe.gd (249→287 ln): four shape legs re-pinned to the LIVE V-B container —
+    NEW const FORM_PREFIX := "TowerForm" (tower_forms FORM_NAME literal-PINNED, never preloaded: a
+    builder the probe asks about its own name is an oracle) + NEW _is_form() helper (name prefix +
+    kids + parented — SHAPE only; the mesh/turret/aim CONTRACT stays test_tower_forms.py's one home,
+    no second copy — replace-do-not-add at the test level). Leg 3 TOWERS: container shape on the
+    placed slot. Leg 3b TIER: shipped-upgrade() SWAP-REBUILD (instance identity changed) + tier index
+    (sim read byte-unchanged) + the bank (id, tier) answer pinned against the committed RESOURCE-PATH
+    LITERAL (compare target = literal, never the bank's own node — the file's own bank-as-oracle
+    lesson preserved in the one place it can still bite). Leg 3c TIER3: committed-sheet LOADS leg
+    byte-unchanged, live check → swap-rebuild + tier==2, bank-answer leg byte-unchanged. Leg 4
+    GATEART: container shape; print row "blockade=sprite trap=sprite" → "=form" — the retired claim
+    is not left standing. Header re-truthed (V-B delegation + MC 12116 re-pin + SUPERSEDE reading).
+godot/scripts/sprite_bank.gd (159→168 ln): WORLD_H_TOWER const REMOVED WITH ITS MECHANISM (the
+    capsule-height sentence in the const-block comment removed with it; MC 12116 de-stale note added);
+    the two V-B-retired header sentences rewritten TRUE ("each draw site (hero_pawn, defense_obj,
+    enemy_runner) asks HERE first" — defense_obj left with V-B; "all six are wired" — the tier skins
+    rode the world repaint until V-B, the bank still ANSWERS, pinned by the probe tier legs; map/
+    sheet removal is explicitly NOT taken here).
+
+== 3. REPLACE-DO-NOT-ADD PROOF ROWS ==
+grep -rn WORLD_H_TOWER godot/ tests/ server/ static/ tools/ → rc=1, ZERO hits (evidence-12116/
+    grep-zero-world-h-tower.txt); repo-wide remainder = HISTORICAL RECORDS only (LEDGER V-B close row
+    that filed the finding, VB/G7 wave logs, v13 FINDINGS.md) — history stands, no reader.
+grep -rn "res://assets/v11/ground_arena" over all code trees → the PNG's own .import sidecar ONLY;
+    zero code references; the committed-unwired sheet itself untouched (deletion not this card's).
+grep -rn "obj.node as Sprite3D" godot/sim/ → ZERO — the sprite-era tower pin is gone with its
+    mechanism, re-pinned (not deleted-beside): one probe, same boot, same row names, four legs
+    re-ored to the live shape; NO new test file (test_tower_forms.py already owns the form contract;
+    a twin there would be the add-beside defect).
+Retired-token rows in touched files: "blockade=sprite" 0 · "tower capsule" (sprite_bank) 0 ·
+    "defense_obj asks HERE" 0 · ARENA-path literal ground_arena 0 (code trees).
+
+== 4. PLANTED REDS (L3 — shown RED, reverts byte-verified) ==
+RED 1 committed planted trap (final tree): `-s v1_world_probe.gd -- planted` → rc=1 "want
+    res://assets/v11/ground_path.png" (red-planted-v1world-committed-trap.txt) — the FLOOR leg's
+    own gate still trips AFTER the re-pin.
+RED 2 plant (bank row un-remapped): sprite_bank TEXTURES["ground_arena"] re-pointed at the retired
+    sheet → v1_world rc=1 "…not the pinned arena board: res://assets/v11/ground_arena.png (want
+    …/ground_fortress.png)" (red2-bankrow-unremap-plant.txt) — the re-pinned ARENA_PATH leg is
+    red-able against the wired sheet. Revert: sha256 == pre-plant, "REAPPLY-BYTE-IDENTICAL" (§6h).
+RED 3 plant (builder rename): tower_forms FORM_NAME "TowerForm"→"Medallion" (one token) → v11
+    rc=1 "SPRITEBANK-FAIL tower form: ballista" (red1-towerforms-rename-plant.txt) — the re-pinned
+    container pin is red-able. Revert: git diff --exit-code clean + sha256 OK ("BYTE-REVERT-OK").
+GREEN (final tree): v1_world V1W-OK rc=0 (green-final2-v1world.txt) · v11 SPRITEBANK-OK rc=0 with
+    ALL TEN rows incl. TOWERS n=3 · TIER · TIER3 · GATEART blockade=form trap=form
+    (green-final2-v11.txt).
+
+== 5. SUITE + HYGIENE + GOVERNED + ZERO-DIFF ==
+BASELINE measured at 18aca6c BEFORE edits: suite 363 passed rc=0 (suite1-baseline-363.txt).
+Run 2: 363 rc=0 — completed mid-card, DISCLOSED not authoritative (the sprite_bank header edit
+    landed while it ran; suite2-midrun-363.txt).
+Run 3 AUTHORITATIVE, all file edits final (LEDGER/this log append-only afterwards; no test reads
+    LEDGER or .audits — grep census §measured): 363 passed in 203.81s rc=0 (suite3-final-363.txt).
+    ≥363 DoD met; ZERO tests added or removed (de-stale card — 363 == 363).
+python3 tools/check_hygiene.py → 0 hit(s) rc=0. Note-set +1 (DISCLOSED): v11_sprite_probe 249→287 ln
+    crossed the soft 250 note (still under 400; the probe absorbed the re-pin notes, splitting a sim
+    artifact was not the DoD).
+GOVERNED_LITERALS len = 17 UNCHANGED (test_camera_zoom.py:286 pin; bank/probes ungoverned).
+ZERO-DIFF PROOF: git diff --name-only = the THREE files only (sim/ = the two probes; scripts/ =
+    sprite_bank). mission.gd · mission.tscn · sim/sim_* · tower_forms.gd · defense_obj.gd ·
+    tower_aim.gd · hero_pawn.gd · enemy_runner.gd · data · scenes · fixtures · tests · server ·
+    static: ZERO lines. No .uid churn (no file added/removed). No GPU window opened, no export,
+    no server — no behavior/visual change is shipped by this card (declared: the DoD rows are the
+    three de-stales + suite/hygiene/GOVERNED; no served census was asked or invented).
+
+== 6. FINDINGS + ROUTED (not fixed here — scope) ==
+(a) BANK TOWER/GATE SHEETS post-V-B have NO RUNTIME CONSUMER: TEXTURES base tower sheets + all six
+    TIER_TEXTURES entries answer through the map but nobody in the shipped game asks (panel/HUD ride
+    the separate icon_* ids; tower_forms never touches the bank). They STAY — committed, probe-pinned
+    (TEX + tier legs are the bank-map contract's committed proof) — removal/sheet-retirement needs an
+    owner card exactly like the ground_arena.png committed-unwired row. Not this card's authority.
+(b) ground_arena.png: committed-unwired, deletion NOT this card's authority (brief); §3 grep row.
+(c) Honesty (near-miss, mechanism worked): plant-2's `git checkout --` revert restored HEAD and
+    clobbered the card's own UNCOMMITTED sprite_bank edit — the sha256 -c byte check CAUGHT it
+    ("FAILED" line in the red2 run), the de-stale edit was re-applied and verified BYTE-IDENTICAL to
+    the pre-plant hash (red2-prefix.txt; REAPPLY-BYTE-IDENTICAL). All later state ran on final bytes;
+    §1 base-RED and every GREEN row above is the tree the commit carries.
+(d) The 12-sheet TEX leg still counts tower sheets — that is the bank-map contract (loaded committed
+    art), not a world-visual claim; the world claims live only in the re-pinned legs. Consistent
+    with finding (a) if a future card retires the sheets — the TEX leg rides that card's diff.
+
+SUITE3 (authoritative, final tree): 363 passed in 203.81s rc=0 — ONE attempt.
+VERIFY_EXIT=0

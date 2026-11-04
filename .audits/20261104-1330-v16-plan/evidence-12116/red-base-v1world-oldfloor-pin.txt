@@ -1,0 +1,40 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+V1W-FAIL ground albedo is not the pinned arena board: res://assets/v11/ground_fortress.png (want res://assets/v11/ground_arena.png)
+V1W-AABB pos=(-80.0, 0.0, -80.0) size=(160.0, 0.0, 160.0) origin=0,0,0 unchanged=1
+V1W-CORE n=2 emblem=res://assets/v11/icon_core.png parented=1
+V1W-FRAME-PT lane_g1:wp0 px=346.4,359.7 margin=346.4
+V1W-FRAME-PT lane_g1:wp1 px=425.5,382.5 margin=337.5
+V1W-FRAME-PT lane_g1:wp2 px=530.3,394.6 margin=325.4
+V1W-FRAME-PT lane_g1:wp3 px=594.5,376.6 margin=343.4
+V1W-FRAME-PT lane_g1:wp4 px=640.0,359.7 margin=359.7
+V1W-FRAME-PT lane_g1:end px=640.0,359.7 margin=359.7
+V1W-FRAME-PT lane_g2:wp0 px=640.0,206.0 margin=206.0
+V1W-FRAME-PT lane_g2:wp1 px=663.1,248.3 margin=248.3
+V1W-FRAME-PT lane_g2:wp2 px=679.1,301.6 margin=301.6
+V1W-FRAME-PT lane_g2:wp3 px=661.1,338.8 margin=338.8
+V1W-FRAME-PT lane_g2:wp4 px=640.0,359.7 margin=359.7
+V1W-FRAME-PT lane_g2:end px=640.0,359.7 margin=359.7
+V1W-FRAME-PT lane_g3:wp0 px=1003.9,598.2 margin=121.8
+V1W-FRAME-PT lane_g3:wp1 px=951.6,575.7 margin=144.3
+V1W-FRAME-PT lane_g3:wp2 px=912.3,554.5 margin=165.5
+V1W-FRAME-PT lane_g3:wp3 px=875.3,534.5 margin=185.5
+V1W-FRAME-PT lane_g3:end px=875.3,534.5 margin=185.5
+V1W-FRAME-PT lane_a1:wp0 px=337.6,347.1 margin=337.6
+V1W-FRAME-PT lane_a1:wp1 px=469.6,316.2 margin=316.2
+V1W-FRAME-PT lane_a1:wp2 px=567.5,326.1 margin=326.1
+V1W-FRAME-PT lane_a1:wp3 px=640.0,347.1 margin=347.1
+V1W-FRAME-PT lane_a1:end px=640.0,347.1 margin=347.1
+V1W-FRAME-PT lane_a2:wp0 px=640.0,194.0 margin=194.0
+V1W-FRAME-PT lane_a2:wp1 px=591.9,242.6 margin=242.6
+V1W-FRAME-PT lane_a2:wp2 px=599.1,297.6 margin=297.6
+V1W-FRAME-PT lane_a2:wp3 px=640.0,347.1 margin=347.1
+V1W-FRAME-PT lane_a2:end px=640.0,347.1 margin=347.1
+V1W-FRAME-PT spawn_a px=346.4,359.7 margin=346.4
+V1W-FRAME-PT spawn_b px=640.0,206.0 margin=206.0
+V1W-FRAME-PT spawn_c px=1003.9,598.2 margin=121.8
+V1W-FRAME-PT core_main px=640.0,359.7 margin=359.7
+V1W-FRAME-PT sub_north px=875.3,534.5 margin=185.5
+V1W-FRAME-PT hero_space px=640.0,359.7 margin=359.7
+V1W-FRAME n=33 px_min=337.6,194.0 px_max=1003.9,598.2 min_margin=121.8 worst=lane_g3:wp0 floor=60.0
+RC=1
