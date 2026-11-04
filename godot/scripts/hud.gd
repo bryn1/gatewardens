@@ -58,6 +58,7 @@ extends CanvasLayer
 
 const SIM_WAVE := preload("res://sim/sim_wave.gd")
 const SPRITE_BANK := preload("res://scripts/sprite_bank.gd")
+const UI_THEME := preload("res://scripts/ui_theme.gd")
 
 # G8 (MC 11692): the scripted first-mission copy, VERBATIM from
 # V121-PLAN §G8 — copy strings only, zero balance numbers (I2).
@@ -111,6 +112,7 @@ func setup(mission) -> void:
 	boss_label = $Root/BossBar/BossLabel
 	boss_bar = $Root/BossBar/BossHp
 	banner = $Root/Banner
+	UI_THEME.apply($Root)             # V-E (MC 12084): themed palette
 	# G8 (MC 11692): the banner box is the 480 px center column that keeps
 	# the W17b disjointness budget (right edge 880, clear of the defense
 	# panel at 904 — VERIFIED); the coach copy is longer than that box, so

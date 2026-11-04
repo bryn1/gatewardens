@@ -64,6 +64,7 @@ const BANK_LIST := preload("res://scripts/bank_list.gd")
 const SIM_ECONOMY := preload("res://sim/sim_economy.gd")
 const UITWEEN := preload("res://scripts/ui_tween.gd")
 const ROWS_UI := preload("res://scripts/defense_rows_ui.gd")
+const UI_THEME := preload("res://scripts/ui_theme.gd")
 
 # G5 (MC 11700): MouseLeft CONFIRMS the armed row, MouseRight/Escape
 # CANCEL (plan §1 G5); KeyM stays "place" — confirm when armed (same
@@ -117,6 +118,7 @@ func setup(mission, placer_in = null) -> void:
 	rows_ui.build_sections(box)      # Head/Rows_defenses + Head/Rows_relic
 	assign_btn = _action(box, "Assign relic", _on_assign)
 	unassign_btn = _action(box, "Unassign relic", _on_unassign)
+	UI_THEME.apply(self)               # V-E (MC 12084): themed palette
 	select_class(0)
 	refresh()
 

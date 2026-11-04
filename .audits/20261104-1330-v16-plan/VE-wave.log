@@ -1,0 +1,140 @@
+# VE-wave.log — v1.6 V-E LIGHTING + MATERIALS + THEMED HUD (MC 12084, frontend)
+# Tree: /tmp/gw-v16-ve @ branch card/12084 base 986353d41eadeafcad830360638cdc242605cb58.
+# Plan row V-E (V16-PLAN-c2.md §W1/§3) executed. No push (leaf card).
+
+DoD: VE-wave.log (this file) VERIFY_EXIT=0 last; test_ui_theme.py GREEN (palette
+resolves; button rect UNCHANGED pin); mission.tscn diff = property VALUES only
+(sub_resource ids + load_steps + ext rows byte-unchanged — pin-7 leg green proof
+row); planted-reds x2 (theme-apply removed RED; rect-shift plant RED on geom pin)
++ byte-reverts; served P5 GREEN: full shipped journey (place/upgrade/zoom,
+>=600ms pacing) every click answers, warm-mood+palette census where BEFORE read
+grey, vision read SPLLS "Bram Wardenfell" (P8 contrast lesson); suite >=345 rc=0;
+hygiene 0.
+
+## FILES (exactly the writable set; nothing else touched)
+godot/scenes/mission.tscn        property VALUES only (see VALUES-ONLY leg)
+godot/scripts/ui_theme.gd        NEW (ungoverned palette builder + sidecar .uid)
+godot/scripts/hud.gd             +2 lines (394→396 gate metric — WATCH maxed)
+godot/scripts/defense_panel.gd   +2 lines (366→368; BN1-safe: apply line carries
+                                 ZERO numbers; every Color hex lives in ui_theme.gd
+                                 — the defense_rows_ui:50 Color("808080") idiom)
+tests/test_ui_theme.py           NEW (2 tests, ~335 lines — engine probe + source leg)
+LEDGER.md                        +1 row
+.audits/20261104-1330-v16-plan/VE-wave.log   (this file)
+
+## VALUES-ONLY leg (plan row 7; pin-7 + pin #3 byte law)
+load_steps=11 header, ALL 7 ext_resource rows, [sub_resource ... id="env_greybox"]
++ its WorldEnvironment use-row, the CameraRig transform row (pin #3 SPENT) and
+shadow_enabled = true are BYTE-UNCHANGED — byte-pinned verbatim in
+test_ui_theme.py::EXT_ROWS/CAMERA_ROW and test_mission_clicks' uid legs (green in
+suite). Changed VALUES: env background_color (0.055,0.065,0.085)→(0.165,0.105,0.06),
+ambient_light_color (0.85,0.88,0.95)→(0.95,0.82,0.65); Sun transform row
+RotY(30)·RotX(-45)→RotY(55)·RotX(-20) (serialised row byte-pinned AS SHIPPED,
+SUN_ROW) + NEW value-row light_color = Color(1, 0.72, 0.45, 1). Sun elevation
+asin leg: 45°→20° (moved 25° — golden hour; test band 12..32). F-3 background-vs-
+ground contrast re-measured: |Δ| sum 0.41 > 0.15 (mat_ground 0.22,0.24,0.27).
+No new resource, no new light (existing Sun edited — DA re-check honoured).
+Pin-7 PROOF ROW: test_mission_clicks.py::test_mission_tscn_uids_match_the_sidecars
+collected+passed in the final suite run below (assert ext rows == 7).
+
+## test_ui_theme.py GREEN (2 legs)
+$ python3 -m pytest tests/test_ui_theme.py -v
+tests/test_ui_theme.py::test_ve_theme_palette_resolves_and_rects_never_move PASSED
+tests/test_ui_theme.py::test_ve_mission_tscn_values_only_and_two_line_budget PASSED
+2 passed
+Engine probe (tmp-probe, GWMICE boot idiom, pinned seed 11274, root 1280x720) rows:
+VETH-SCENE bg=(0.165, 0.105, 0.06, 1.0) amb=(0.95, 0.82, 0.65, 1.0) amb_e=0.60 sun=(1.0, 0.72, 0.45, 1.0) shadow=true
+VETH-APPLY normal_bg=(0.3608, 0.2627, 0.149, 1.0) want=(0.3608, 0.2627, 0.149, 1.0) margin_equal=true
+VETH-PALETTE font=(0.9608, 0.9098, 0.8118, 1.0) label=(0.949, 0.9098, 0.8353, 1.0) trough=(0.1412, 0.102, 0.0627, 0.8)
+VETH-RECT-on  x10 buttons (Class_tower (904,39,238,36) … Unassign relic (904,441,238,31))
+VETH-RECT-on  H:HpBar (16,621,131,4) H:WaveLabel (16,12,504,23) H:BossHp (380,12,400,20)
+VETH-RECT-off all 13 recaptured with both themes nulled mid-run — every pair equal
+VETH-RECT-EQUAL count=13
+VETH-OK
+Pixel-judge law ENGINE-SIDE: every rect byte-equal theme ON vs OFF — the theme
+cannot move a button (StyleBoxFlats are duplicates of the engine defaults with
+ONLY bg/border colors rewritten — margins/corners byte-stable by construction).
+Python leg cross-checks the probe colors against the ui_theme.gd FILE hexes
+(print-precision tolerance 1e-3) and computes WCAG: BTN_FONT/BTN_NORMAL and
+BTN_FONT_HOVER/BTN_HOVER >= 4.5, LABEL_TONE luminance >= 0.70 (P8 door).
+
+## planted-reds x2 (L3 staged-first; reverted bytes byte-verified = staged product
+## bytes, sha256 identical pre-plant and post-revert)
+1) THEME-APPLY REMOVED (hud.gd + defense_panel.gd apply lines blanked):
+   pytest …::test_ve_theme_palette_resolves_and_rects_never_move ->
+   VETH-FAIL HUD $Root carries no theme (apply line dead?)  … 1 failed
+   revert: git checkout -- (from staged) ; diff-vs-index 0 lines;
+   hud.gd sha256 c96ce083ffda64ab1d4fc185ac048f3cdb24fc192c131b7540b1a64343ce71a1
+2) RECT-SHIFT PLANT (ui_theme.gd: t.set_font_size("font_size","Button",24) —
+   margins stay legal so the failure lands on the GEOM PIN itself):
+   VETH-FAIL rect moved for B:/root/Mission/DefensePanel/Rows/Class_tower:
+   on=[P: (904.0, 39.0), S: (256.0, 42.0)] off=[P: (904.0, 39.0), S: (238.0, 36.0)]
+   … 1 failed; revert: git checkout -- ; diff-vs-index 0;
+   ui_theme.gd sha256 ebabd02c7e8ff44077d4956bfeedd52aede3fddfd2847b7cd048e463f710c2f2
+   re-run green: 2 passed.
+
+## SERVED P5 (L2 fresh-export law; loopback :8197; server killed after, curl exit 7)
+Export: bash tools/export_web.sh rc=0 — static/index.pck
+md5 510761667158a3f038b19d1d5f06ded4, 5,203,616 B, mtime 2026-11-04T16:27:42Z;
+served body byte-equal (curl pck 200, same size). Fresh chromium (empty cache —
+no fetch-bust needed; stale-pck clause kb e4aa7e1f). Viewport 1280x720 == engine
+root (1:1 px). Harness: /tmp/gw-v16-ve-scratch/ve-p5-journey.cjs +
+ve-p5-upgrade-fix.cjs (playwright-core, the committed WK cjs idiom).
+FULL SHIPPED JOURNEY, every click >=600ms pacing, STATE MARKER first each time:
+VE-HUB {"phase":"hub","gold":100}
+VE-MISSION-MARKER {"phase":"mission","phase_kind":"build","green":300,"defenses":0}   <- hub WAR TABLE "Start gatefall — normal" (90,132)
+VE-ARMED-MARKER green_unchanged true                                                  <- Ballista row click ARMS (G5 NEG: no spend)
+VE-PLACED-MARKER {"green":200,"defenses":1} spent 100                                 <- LMB confirm on ghost slot
+VE-UPGRADE-MARKER {"green":150,"defenses":1} upgrade_spent 50                         <- uid-row select + Upgrade
+VE-ZOOM-MARKER (one wheel-UP step, shipped 64→56)
+VE-COMBAT-MARKER {"phase_kind":"combat"}  VE-ERRS []   (console clean end-to-end)
+Honest note: the FIRST attempt clicked the uid row at y=355 and hit the DEFENSES
+header — Upgrade stayed DISABLED and spent 0 (the disabled button answered
+honestly; no silent swallow). The served row rect (ve-02-placed.png frame: row at
+y 370..402) was then measured and the segment re-run at (1023,386) → selected
+("» uid 1 tower T1 hp 200/200" + selection ring painted, ve-02b-selected.png) and
+Upgrade answered. Frames host-local: /tmp/gw-v16-ve/.tmp/ve-shots/ve-0{1..5}*.png
+sha256 4b3b2327… ve-01, f799f49a… ve-02, a1d072c8… ve-02b, f763317c… ve-03,
+4e592ea4… ve-04, beb06499… ve-05.
+
+## CENSUS where BEFORE read grey (same-region pixel counts, PIL)
+panel column x904..1150 y28..470:  grey(BEFORE) 37,786 px → grey(AFTER) 51 px
+                              (÷740); amber-family 12,360 px AFTER.
+sky/void strip y0..55:  BEFORE cool(r<b+4)=64,130 warm=312  →
+                        AFTER  warm=69,066 cool=30   (the void turned WARM)
+zoom framing: ve-03 vs ve-04 center crop 460x260, sampled every 2px,
+24-unit threshold: 10,568 differing samples — the wheel moved the camera.
+
+## VISION reads (Lane E qwen3.8-flash-next, describe_image.py; ~1.0k tok, 28s)
+Full read of ve-02-placed.png spells — verbatim rows:
+  "(small label near a tower icon …): Bram Wardenfell"
+  "[F1] [F2] [F3] / Bram Wardenfell Sila Deadeye Ysolde Embercaller / ACTIVE"
+  buttons "solid brownish-olive / tan rectangles with white text"
+Targeted read, AFTER (ve-02-placed): "The sky/background area is a dark brown,
+and the checkered ground has a warm orange/amber lighting cast. The enabled
+buttons in the right panel are brown with white text."
+Targeted read, SAME question, BEFORE (v16-before-build.png): "…solid black…
+dark gray/charcoal background with white text."
+P8 CONTRAST LESSON: the cream-on-amber re-theme did NOT kill legibility — the
+hero name still spells, crest AND hero bar, at D=64.
+(VLM nit, honest: the full read rendered the class name as "Hailsnire" for
+"Hailspire" — a transcription wobble on small parchment text, not a paint defect:
+the frame reads "Hailspire" and every click on that row answered in the suite's
+family legs; the P8-named read "Bram Wardenfell" is spelled correctly twice.)
+
+## LAW ROWS
+suite:  $ python3 -m pytest tests/ -q  → 347 passed in 197.24s (rc=0; 345 baseline
+        +2 — plan V-E bar +1..2; served legs ran, export present)
+hygiene: tools/check_hygiene.py → check_hygiene: 0 hit(s)
+fixtures: git diff 986353d -- tests/fixtures/ → 0 lines (EMPTY)
+GOVERNED_LITERALS = 17 (untouched; ui_theme.gd ungoverned, not added to the set)
+mission.gd / test_mission_clicks.py: ZERO new lines (git diff --stat vs base: empty)
+camera 56/128/8 byte-frozen (test_camera_zoom green in suite; rig row byte-pin)
+L7 no new light (existing Sun only); L8 zero scope creep (writable set held).
+ops note (honest): the server-kill pgrep pattern was too broad and SIGTERMed one
+stray process /tmp/f40sc/server.py (PID 836621) whose directory was ALREADY
+deleted and which held no listener — an orphan from another session's scratch,
+not a live service; the card's own server (:8197) died first and was verified
+dead (curl exit 7). Reported to the orchestrator.
+
+VERIFY_EXIT=0
