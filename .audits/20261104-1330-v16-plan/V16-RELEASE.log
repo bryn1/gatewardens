@@ -1,0 +1,9 @@
+# V16 RELEASE TAIL LOG — 2026-11-04 hermes-standby (orchestrator, MC anchor 12071)
+TAG: v1.6 @ bb890d7 (annotated, pushed). Cards: 12072(plan,reviewed) 12081-12084(W1) 12110/12111(W2) 12114(V-H) 12115(V-G) 12116(V-I) 12121(docs,reviewed DA r2 SHIP after r1 FIX c3) 12122(V-J) — ALL verified/reviewed.
+EXE: built ONCE in worktree /tmp/gw-v16-rel at tag: build/Gatewardens.exe 116,585,184 B sha256 68960b87b9f708ebe49db79ac0f55bcc507db6f407a4b9389db5a25e219eb1f1.
+PRE-TAG SUITE at tip: fresh export (EXPORT_RC=0, pck 439a2e50) then 363 passed rc=0. Docs-family re-measure: clean checkout 357 passed 2 skipped rc=0; with export 363 rc=0 (first clean-checkout-green release).
+VM120 BOOT-VERIFY (qga, powershell EncodedCommand): download from VM350 serve (http 192.168.5.231:8199) DOWNLOADED=116585184; guest SHA=68960b87... == shipped; boot probe: alive=True pid=13160 cpuMs=14141 (15 s); Stop-Process -> gone=True; Remove-Item -> folder=True. (TWO earlier probe rounds printed the ALIVE line invisible to my grep -oE pattern — PowerShell string-concat line lost, NOT a game failure; re-ran with raw out-data capture per verify-before-report law; final row above is the authoritative one.)
+RELEASE: https://github.com/bryn1/gatewardens/releases/tag/v1.6 (title "v1.6 — Look & Feel: the fortress milestone"); POST-CREATE VERIFY: asset size 116585184 == shipped; body grep VM120 boot-verified=1, sha=1, DEFER/NOT-SHIPPED=3. Body = RELEASE-NOTES-v1.6.md (DA-gated c3) + binary/VM120/pair rows.
+POST-FLIGHT ROUTED: kit-spark cap-starvation (11897-F1) + tower-sheet art-slim + shadow-on + camera-tracking (owner-gated) + enemy 3D bodies = v1.7 candidates; RN dangling-clause one-word polish next touch (DA r2 note).
+OPS: worktrees /tmp/gw-v16-* removable (rel/build kept until release settled); http 8199 killed; GPU window CLOSED; servers free.
+VERIFY_EXIT=0
