@@ -12,7 +12,11 @@ origin renders INSIDE the 3x4x3 core box — the figure stands BODY_-
 OFFSET camera-side, the crest miniature rides the origin as its medall-
 ion backdrop; the sheet survives visibly only in that 1.2u miniature
 and its G7 eff_h pin stays green on the hidden node — test_hero_crest.py
-stands UNTOUCHED). The crest block is the
+stands UNTOUCHED). V-H RE-TUNE (MC 12114): the merged V-A keep (diorama
+KEEP 9x4x9 at the same core stand) re-swallowed the shipped z=2.6, so
+the engine leg below PINS the offset value and its keep-face clearance
+(PLANTED-RED home #2: an offset moved back into the keep reddens this
+pin AND the served silhouette census, VH-wave.log §PLANT). The crest block is the
 P8 shipped contract: BYTE-PINNED here (consts + the verbatim
 _make_crest body), zero sim writes (L7 — a source-truth leg).
 
@@ -35,6 +39,8 @@ import check_hygiene as hyg  # noqa: E402  (reuse: the gate's blank_code)
 
 PAWN_GD = conftest.repo_path("godot", "scripts", "hero_pawn.gd")
 BANK_GD = conftest.repo_path("godot", "scripts", "sprite_bank.gd")
+DIORAMA_GD = conftest.repo_path("godot", "scripts", "diorama.gd")
+VH_BODY_OFFSET = [0.0, 0.0, 6.5]  # V-H pin (MC 12114): past the keep face
 HEROES = json.load(open(conftest.repo_path(
     "godot", "data", "heroes.json"), encoding="utf-8"))
 ARCH = {r["id"]: r["archetype"] for r in HEROES}
@@ -217,6 +223,12 @@ def _body_offset():
     return [float(v) for v in m.group(1).split(",")]
 
 
+def _keep_size():
+    m = re.search(r"const KEEP := Vector3\(([^)]*)\)", _read(DIORAMA_GD))
+    assert m, "const KEEP missing in diorama.gd"
+    return [float(v) for v in m.group(1).split(",")]
+
+
 def _rows(out, tag):
     rows = {}
     for ln in out.splitlines():
@@ -264,12 +276,26 @@ def test_hero_body_engine_probe(tmp_path, class_cache):
         assert 2.0 <= float(row["top"]) <= door + EPS, (hid, row)
         # OFFSET leg: the figure stands BODY_OFFSET (parsed from
         # hero_pawn.gd itself) camera-side of the pawn origin — the
-        # served truth (§COMPOSITION: the 3x4x3 core box swallows a
-        # pawn at the origin). x/y must stay 0 (visual offset ONLY).
+        # served truth (§COMPOSITION + §BASELINE: a pawn at the origin
+        # or short of the merged keep's near face renders INSIDE the
+        # keep). x/y must stay 0 (visual offset ONLY).
         off = _body_offset()
         got_off = [float(v) for v in row["bpos"].split(",")]
         assert all(abs(g - w) < EPS for g, w in zip(got_off, off)), (hid, row)
         assert off[2] > 0.0, "figure must stand camera-side"
+        # V-H PIN leg (MC 12114): the knob VALUE is pinned, not just
+        # self-consistent (the f1a2c51 served frame proved z=2.6 renders
+        # zero figure px behind the V-A keep); an intentional re-tune
+        # must re-pin here consciously.
+        assert len(off) == 3 and all(
+            abs(g - w) < EPS for g, w in zip(off, VH_BODY_OFFSET)), \
+            "BODY_OFFSET drifted from the V-H pin: %s" % (off,)
+        # KEEP-CLEARANCE leg (source truth): the pinned z stands past
+        # the diorama keep's near face (KEEP.z/2 at the core stand)
+        # with stance margin — a value moved back into the box reddens
+        # this leg AND the served census (VH-wave.log §PLANT).
+        keep = _keep_size()
+        assert off[2] > keep[2] * 0.5 + 1.0, (off, keep)
         # PRIMITIVE LAW leg (L5): only engine-managed part classes.
         for tok in row["finger"].split("|"):
             assert tok.split(":")[0] in ("BoxMesh", "CylinderMesh"), row

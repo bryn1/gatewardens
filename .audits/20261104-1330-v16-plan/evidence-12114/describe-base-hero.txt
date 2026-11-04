@@ -1,0 +1,7 @@
+The frame shows a top‑down game view laid over a background of rounded rectangular brown tiles (a cobblestone/brick pattern) separated by darker brown grout lines. A winding path made of a speckled, grainy tan‑and‑beige texture enters at the top‑center edge, runs downward and slightly right, then bends left and exits at the left edge of the frame.
+
+In the centre of the image stands a stone structure composed of two vertical cylindrical pillars (tan/beige with the same speckled texture as the path) joined by a short horizontal bridge segment between them, forming an arch‑ or gate‑like shape. A small yellow‑gold icon (coin/star‑shaped) sits directly above the middle of this structure.
+
+Text is overlaid on the scene. Just above the structure, in small white type, is the label "Brave Werewolf", with a line of smaller text above it that is unreadable. Across the middle of the frame, in larger white type, is the line ": tower buttons on the right panel — click arms" (the beginning of the line is cut off by the left edge, so it starts with a colon), and directly below it the line "again places". The white text is centred horizontally and overlaps the stone structure and the path.
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=270 completion_tokens=654 20.2s

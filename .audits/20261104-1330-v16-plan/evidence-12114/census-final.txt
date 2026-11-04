@@ -1,0 +1,3 @@
+SELF /tmp/vh-shots/vh-base-1-build.png HERO=0
+SELF /tmp/vh-shots/vh-final-1-build.png HERO=0
+DIFF vh-base-1-build.png vs vh-final-1-build.png: HERO=262 MARK=0

@@ -1,0 +1,13 @@
+The frame is filled edge‑to‑edge by a floor of large, irregular brown stone paving tiles separated by darker brown mortar seams.
+
+In the centre of the image stands a small stone keep built from orange‑tan brick blocks. It is a roughly square walled enclosure with four short cylindrical corner towers, each capped with a rounded top, one at each corner of the square. The walls form a closed ring with an opening at the bottom (south) side.
+
+A winding path of pale, speckled tan material (resembling gravel or packed earth) enters from the top edge of the frame, curves downward and to the right, and meets the right‑hand wall of the keep. A second segment of the same pale speckled path enters from the left edge of the frame and runs rightward to meet the left‑hand wall of the keep.
+
+Inside the keep, near the upper‑middle area, is a small bright yellow‑gold figure. Directly above it is a small label in white text with a black outline reading "Brain Hardened". At the bottom opening (gate) of the keep stands a small dark grey figure, partly inside the doorway.
+
+Overlaid across the middle of the image, on top of the keep and the path, is white instructional text in two lines. The first line reads ": tower buttons on the right panel — click arms" (the line is cut off at the left edge, beginning with a colon). The second line, below it, reads "again places".
+
+No other objects, figures, or readable text are visible.
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=634 completion_tokens=645 13.7s

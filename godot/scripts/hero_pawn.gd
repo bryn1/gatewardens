@@ -66,16 +66,20 @@ const CREST_NAME_OUTLINE := 10 # px outline over OUTLINE_PX for the floor
 # {"at": pos}, world units. Feet sit on the pawn origin (y=0); every
 # top stays inside the 3u door (the crest miniature 1.8..3.0 rides the
 # pawn origin BEHIND the figure as its medallion backdrop).
-# SERVED TRUTH (VD-wave.log §COMPOSITION): the main core's greybox box
-# (mesh_core 3x4x3, rim y~2) stands ON the hero stand (hero_controller
-# position = core_main.pos), so a pawn at the origin renders INSIDE the
-# box — the shipped sheet top (1.5u) was already under the rim, which
-# is WHY F-BUILD reads only crest + rim. The figure therefore stands
-# BODY_OFFSET toward the camera, on the board in front of the near box
-# face: hero-forward framing at the frozen D=64 rig, feet on the ground
-# plane, a visual-only offset (the pawn node and every sim position are
-# untouched — zero-sim-writes law).
-const BODY_OFFSET := Vector3(0.0, 0.0, 2.6)  # toward the camera (+z at rig)
+# SERVED TRUTH (VD-wave.log §COMPOSITION + VH-wave.log §BASELINE, the
+# merge-occlusion law kb c11293b5): the hero stand is the main-core
+# stand (hero_controller position = core_main.pos), so EVERY box built
+# there swallows the figure — the v1.5 greybox rim (y~2) ate the sheet
+# (why F-BUILD read only crest + rim), and the merged V-A keep (diorama
+# KEEP 9x4x9 centred on core_main.pos, near face z=+4.5) re-swallowed
+# the shipped z=2.6: the served frame at f1a2c51 is byte-identical to
+# the pre-V-D frame (zero figure px). The figure therefore stands
+# BODY_OFFSET PAST the keep's near face, feet on the flagstones ~2u in
+# front of it (body half-depth <= 0.5u keeps the whole silhouette clear
+# of the wall): hero-forward framing at the frozen D=64 rig, feet on
+# the ground plane, a visual-only offset (the pawn node and every sim
+# position are untouched — zero-sim-writes law).
+const BODY_OFFSET := Vector3(0.0, 0.0, 6.5)  # past the keep face (+z at rig)
 const BODY_PARTS := {
 	"melee": [
 		{"box": Vector3(0.45, 0.82, 0.45), "at": Vector3(-0.34, 0.41, 0.0)},

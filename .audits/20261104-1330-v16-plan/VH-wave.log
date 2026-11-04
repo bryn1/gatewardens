@@ -1,0 +1,129 @@
+VH-wave.log — MC 12114 v1.6 V-H HERO-OVERLAP RE-TUNE (post-merge occlusion)
+worktree /tmp/gw-v16-vh · branch card/12114 · base f1a2c51f2efbc73686bc8989311074230755ed92
+author code (12114) <code@agent-town.local> — no push (leaf) — 2026-11-04
+
+§0 BRIEF (from /tmp/gw-briefs/v16-vh.md) — the ONE-KNOB card
+kb c11293b5 merge-occlusion law: V-D (MC 12083) mounted the hero body at BODY_OFFSET
+(0,0,2.6) camera-side and was served-GREEN AT ITS OWN BASE (crop 0→155px). V-A (MC
+12081) then landed the keep box (diorama KEEP 9x4x9) at the main-core stand. AT THE
+MERGED TREE the two cancel: the served frame at f1a2c51 is byte-identical to the
+pre-V-D frame — zero figure px. Task: re-tune BODY_OFFSET so the figure stands
+legibly in front of the keep at the frozen D=64 rig. NOT touched: camera files,
+crest block (P8 pinned y), keep geometry / diorama budget (≤30), sim, anything
+byte-pinned; zero sim writes. WRITABLE set: hero_pawn.gd (+ .uid — UNCHANGED, not
+in git status), tests/test_hero_body.py, this log, LEDGER row.
+
+§1 BASELINE — the occluded merged tree, measured this session (not quoted from the brief)
+Fresh export at UNTOUCHED f1a2c51 (stale-pck law kb e4aa7e1f): rm static/index.pck →
+tools/export_web.sh rc=0 → pck md5 d4fcfcd1fcb70ed2476927a26eab3699, 7,452,980 B ==
+SERVED bytes (curl md5 + size_download over loopback server/server.py :51231).
+Harness evidence-12114/vh-served-12114.cjs (vc-served-12110 idiom: shipped START
+click (105,165), waits 14s/10s hold the ≥600ms pacing, no seeded save).
+STATE MARKER: SNAP phase_kind=build wave=0 core=1800 · ERRS [] (baseline-run.log;
+core=1800 = the shipped START route lands gatefall-HARD, VA §6h precedent, the
+camera pose is difficulty-independent). Marker crop read (seat read_image):
+"Build: wave 1 in 19 s / Green 300 / cap 10000 / Defenses 0 / cap 60 / Core 1800 /
+1800 | sub_north 700 / 700" — the same row class as the V-C control frame.
+Lane E LITERAL on the baseline hero crop (vh-base-3-hero.png), describe-base-hero.txt:
+  "In the centre of the image stands a stone structure composed of two vertical
+  cylindrical pillars … A small yellow-gold icon (coin/star-shaped) sits directly
+  above the middle of this structure." — ZERO figure mention. That is the BEFORE-
+  merged occluded read: the hero body renders entirely inside/behind the keep.
+Server killed (SERVER_KILLED, ss re-check).
+
+§2 THE KNOB (only tracked changes: hero_pawn.gd +24/−13-comment-block, test +32/−3)
+godot/scripts/hero_pawn.gd:
+  const BODY_OFFSET := Vector3(0.0, 0.0, 6.5)   # was (0.0, 0.0, 2.6)
+  Value derived, not guessed: the V-A keep is KEEP 9x4x9 CENTRED on core_main.pos
+  (diorama.gd:52 + _paint_keep pos+(0,KEEP.y/2,0)) → near face z = +4.5; body part
+  half-depths ≤ 0.5u (shield box 0.94 z is the widest); 6.5 puts the whole
+  silhouette ~1.5u clear of the wall, feet on the flagstones, top 2.88u under the
+  4.0 keep crest line — hero-forward framing at the frozen rig. Pure-z keeps the
+  shipped door legs true (feet y≈0, x/y=0 visual-only). Comment block re-truthed
+  (the 3x4x3-core-box reading SUPERSEDED-IN-PLACE by the merge-occlusion truth;
+  versioned-truth law — the old value survives only in git history).
+tests/test_hero_body.py — engine leg EXTENDED per DoD ("pin the new offset value"):
+  V-H PIN leg: parsed BODY_OFFSET == VH_BODY_OFFSET [0.0, 0.0, 6.5] (EPS) — a knob
+  that moves again must re-pin consciously.
+  KEEP-CLEARANCE leg: off[2] > KEEP.z/2 + 1.0 with KEEP parsed LIVE from diorama.gd
+  — the pin stays MEANINGFUL against the keep geometry, not just self-consistent.
+  OFFSET-leg comment re-truthed to the keep. CREST consts + _make_crest byte-pin:
+  UNTOUCHED and green. Zero sim writes, blank_code banned-token walk unchanged.
+ZERO-DIFF PROOF (git diff f1a2c51 --name-only): ONLY hero_pawn.gd +
+test_hero_body.py; --stat over camera_zoom.gd mission.tscn mission.gd
+hero_controller.gd mission_world.gd diorama.gd godot/sim tests/fixtures godot/data
+test_hero_crest.py = 0 lines. L4/L7/D-A grants held.
+
+§3 GATES (final tree)
+Full suite: 358 passed in 198.04s rc=0 (base count 358 — legs extended, zero added;
+DoD ≥358 held). check_hygiene: 0 hit(s) rc=0 (24 notes = the pre-existing baseline
+set; hero_pawn.gd 212 lines, test 347 — under caps). GOVERNED_LITERALS untouched
+(sim/data zero-diff).
+
+§4 SERVED (L2) — fresh exports, pck-md5-change row, census rule LOCKED pre-AFTER
+Census (evidence-12114/vh-census-12114.py): frame-diff changed-px |Δ|>40 (the VD
+idiom) in HERO (460,210,360x360 — the VD hero crop widened 300→360 so the moved
+figure cannot escape it) + MARK ctrl strip (0,0,520x116) + SELF sanity; rects
+locked IN THE HARNESS HEADER before any AFTER frame existed.
+pck-md5-change row (never-stale law): baseline d4fcfcd1fcb70ed2476927a26eab3699 →
+FIXED b5d6d36443e7dfbf8d53ba188410602d (both 7,452,980 B, each == its served bytes
+via curl md5). Bonus determinism row: the post-revert re-export byte-REPRODUCED
+b5d6d364 — the pck carries the knob (the planted tree exported a1ba19e6…).
+Frames (1280x720, every run SNAP phase_kind=build · ERRS []): shots/vh-base-1-build
+/ vh-fix-1-build / vh-red-1-build / vh-final-1-build (+hub/marker/hero crops;
+before|after pair vh-hero-before-after-final.png).
+CENSUS TRANSCRIPT:
+  SELF base/final HERO=0 (metric sanity)
+  base vs FINAL: HERO=262 px  ← the figure renders at D=64 on the merged tree (262
+    changed px cluster where the baseline had zero — above the 155px V-D cluster:
+    the figure now stands against flagstone + wall, not under a rim)
+  base vs PLANTED(2.6): HERO=0 px  ← §5 RED
+  MARK=0 across runs honestly: the wave countdown paced IDENTICALLY ("in 19 s" both
+  runs), so the ctrl crop carries no delta here; non-vacuity is carried INSTEAD by
+  the planted swing 262→0→262 under the same locked rule + SELF=0 — the metric
+  tracks the knob, not drift.
+Lane E LITERAL on the FINAL hero crop (2x LANCZOS), describe-final-hero.txt
+(cost line prompt_tokens=634 completion_tokens=645 13.7s; fix-frame call 633/604
+16.2s read the same figure — crops from byte-identical exports):
+  "At the bottom opening (gate) of the keep stands a small dark grey figure, partly
+  inside the doorway." — a figure named BESIDE the keep, contrasted against §1's
+  occluded read that names NO figure at all. (The same read also sees the byte-
+  pinned crest medallion "small bright yellow-gold figure … 'Brain Hardened'" —
+  that is the P8 crest miniature, not the body; the body is the grey figure at the
+  gate opening. Judged by the seat; REPORTS, I JUDGE.)
+Servers :51231–:51234 all KILLED after capture (ss re-checks). No GPU window opened
+(vision = Lane E API only). Pacing: one START click per run, waits ≥ 14s.
+
+§5 PLANTED RED (L3) — offset moved back INTO the keep box (2.6)
+Engine leg RED (red-pin.txt): assert (3 == 3 and False) … BODY_OFFSET drifted from
+the V-H pin: [0.0, 0.0, 2.6] → 1 failed, 1 passed, rc=1.
+Served census RED (census-red.txt, planted fresh export a1ba19e6…, ERRS []):
+  base vs PLANTED: HERO=0 px — the silhouette census goes back to ZERO, i.e. the
+  §4 GREEN row is red-able and measures the knob, not the build.
+BYTE-REVERT: cmp /tmp/vh-green-hero_pawn.gd godot/scripts/hero_pawn.gd → identical
+(BYTE-REVERT-OK), sha256 58060c2d5f586d865807c9ef706498e9c62f6fa1223aaedda0044d465c381f28
+== pre-plant; re-run 2 passed (revert-green.txt); re-export reproduced the GREEN pck
+md5 b5d6d364; final §4 capture ran on the reverted tree.
+
+§6 DoD checklist
+[x] hero VISIBLE at D=64 on the MERGED TREE served frame: census HERO 262 px vs the
+    f1a2c51 occluded control (0), SELF=0 sanity — §4 VERIFIED
+[x] fresh export, pck-md5-change row d4fcfcd1→b5d6d364, served==export bytes, ≥600ms
+    pacing, servers killed, no GPU window — §4 VERIFIED
+[x] describe-image literal naming a figure beside the keep, occluded BEFORE read
+    quoted as contrast — §1/§4 VERIFIED
+[x] test_hero_body legs GREEN with the knob moved, engine leg EXTENDED with the
+    exact-value pin + live-KEEP clearance — §2/§5 TESTED
+[x] planted-red (offset into the box) census RED + engine-pin RED + byte-revert —
+    §5 VERIFIED
+[x] suite 358 rc=0 (≥358), hygiene 0, camera/crest/keep/sim/data/fixtures 0-line,
+    zero sim writes, hero_pawn.gd.uid untouched — §2/§3 VERIFIED
+[x] LEDGER row beside evidence — this tree
+KNOWN LIMITS (honest): (a) the figure stands ~2u OUT FROM the keep gate opening on
+the flagstones — a presentation offset, same cosmetic class as V-D declared: during
+combat-walk the visual rides ahead of the sim position (unchanged class, widened
+from 2.6 to 6.5). (b) at the frozen D=64 the figure is a ~30px dark-grey read; arms
+merge into the torso (V-D §6b limit stands — silhouette readable, not detailed).
+(c) the crest medallion miniature still rides the origin behind/inside the keep
+(P8-pinned block, zero-line grant — it reads as the banner over the gate).
+VERIFY_EXIT=0

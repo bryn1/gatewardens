@@ -1,0 +1,18 @@
+The image is a top‑down / slightly isometric game frame set on a floor of large brown stone slabs separated by darker brown grout lines, giving a tiled, cracked‑rock appearance.
+
+In the centre of the frame is a stone/brick structure: a roughly square building rendered in tan‑and‑orange brick texture, with four short cylindrical corner towers (flat‑topped cylinders, same brick texture) at its four corners.
+
+Relative to this structure:
+- A sandy, speckled tan path enters from the top edge of the frame and curves down to meet the upper‑right side of the structure.
+- A second sandy, speckled tan path enters from the left edge and runs to the lower‑left side of the structure.
+- At the top‑centre of the structure, between the two upper towers, there is a small yellow‑and‑orange starburst / explosion graphic.
+- At the bottom‑centre of the structure, just below the lower two towers, there is a small dark grey figure (a tiny blocky character/creature shape).
+
+Text rendered on the image:
+- A small label in white with a black outline, partly overlapped by the starburst, reads: "Brain Hardened".
+- A large white overlay line across the middle reads: ": tower buttons on the right panel — click arms" (the line is cut off at the left edge, beginning with a colon).
+- A second white overlay line below it reads: "again places".
+
+Colours present: brown/tan stone slabs, darker brown grout, sandy beige paths, orange‑tan brick, yellow‑orange starburst, dark grey figure, and white overlay text.
+
+[describe_image] model=qwen3.8-flash-next from=content prompt_tokens=633 completion_tokens=604 16.2s

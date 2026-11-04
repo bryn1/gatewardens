@@ -1,0 +1,68 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_________________________ test_hero_body_engine_probe __________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-claudecode/pytest-5276/test_hero_body_engine_probe0')
+class_cache = '/home/claudecode/Games/.tools/godot/Godot_v4.7.2-stable_linux.x86_64'
+
+    def test_hero_body_engine_probe(tmp_path, class_cache):
+        probe = tmp_path / "v16_vd_hero_body.gd"
+        probe.write_text(PROBE_SRC, encoding="utf-8")
+        proc = conftest.run_probe_script(str(probe), (),
+                                         tmp_path / "user_home")
+        assert proc.returncode == 0, \
+            "probe rc=%d\nOUT:%s\nERR:%s" % (proc.returncode, proc.stdout,
+                                             proc.stderr)
+        assert proc.stderr == "", \
+            "-s probe stderr must be EMPTY (true parse/crash signal):\n%s" \
+            % proc.stderr
+        out = proc.stdout
+        assert "HB-FAIL" not in out, out
+        assert out.rstrip().splitlines()[-1].startswith("HB-OK"), out
+    
+        body = _rows(out, "HB-BODY")
+        assert set(body) == set(DECK), out
+        door = _const(BANK_GD, "WORLD_H_HERO")
+        fingers = set()
+        for hid in DECK:
+            row = body[hid]
+            # ARCHETYPE leg: shape selection is DATA — the printed archetype
+            # equals heroes.json for THIS id (re-derived, never copied).
+            assert row["arch"] == ARCH[hid], (hid, row)
+            assert int(row["parts"]) >= 3, (hid, row)
+            # TINT-REUSE leg: every part carries the shipped .tres albedo
+            # (values parsed from the committed asset, EPS-declared).
+            assert row["mat"] == "1", (hid, row)
+            want = _tres_albedo(hid)
+            got = [float(v) for v in row["alb"].split(",")]
+            assert all(abs(g - w) < EPS for g, w in zip(got, want)), (hid, row)
+            # DOOR leg: the silhouette stands on the origin inside the
+            # WORLD_H_HERO gate (feet ~0, top >= 2.0u readable floor —
+            # declared: a flat blob reddens).
+            assert -EPS <= float(row["bot"]) <= 0.25, (hid, row)
+            assert 2.0 <= float(row["top"]) <= door + EPS, (hid, row)
+            # OFFSET leg: the figure stands BODY_OFFSET (parsed from
+            # hero_pawn.gd itself) camera-side of the pawn origin — the
+            # served truth (§COMPOSITION + §BASELINE: a pawn at the origin
+            # or short of the merged keep's near face renders INSIDE the
+            # keep). x/y must stay 0 (visual offset ONLY).
+            off = _body_offset()
+            got_off = [float(v) for v in row["bpos"].split(",")]
+            assert all(abs(g - w) < EPS for g, w in zip(got_off, off)), (hid, row)
+            assert off[2] > 0.0, "figure must stand camera-side"
+            # V-H PIN leg (MC 12114): the knob VALUE is pinned, not just
+            # self-consistent (the f1a2c51 served frame proved z=2.6 renders
+            # zero figure px behind the V-A keep); an intentional re-tune
+            # must re-pin here consciously.
+>           assert len(off) == 3 and all(
+                abs(g - w) < EPS for g, w in zip(off, VH_BODY_OFFSET)), \
+                "BODY_OFFSET drifted from the V-H pin: %s" % (off,)
+E           AssertionError: BODY_OFFSET drifted from the V-H pin: [0.0, 0.0, 2.6]
+E           assert (3 == 3 and False)
+E            +  where 3 = len([0.0, 0.0, 2.6])
+E            +  and   False = all(<generator object test_hero_body_engine_probe.<locals>.<genexpr> at 0x7f349ca15e70>)
+
+tests/test_hero_body.py:290: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_hero_body.py::test_hero_body_engine_probe - AssertionError:...
+1 failed, 1 passed in 5.70s
