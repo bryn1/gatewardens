@@ -1,0 +1,123 @@
+VD-wave.log — MC 12083 v1.6 V-D HERO BODY (P4a) — branch card/12083 @ base 986353d
+author: code (12083) <code@agent-town.local> — worktree /tmp/gw-v16-vd — no push (leaf)
+
+§0 BRIEF (from /tmp/gw-briefs/v16-vd.md)
+Turn the ~8px hero speck into a readable primitive-composed figure per archetype,
+REUSING shipped MATS hero tints; crest block byte-untouched; ZERO lines in
+camera_zoom.gd / mission.tscn / hero_controller.gd (owner OD1 "Defer tracking" —
+fixed framing). WRITABLE set: hero_pawn.gd, tests/test_hero_body.py, LEDGER row,
+this log. L2 served-verify-first, L3 planted-red, L4 camera frozen, L5 engine-
+managed PrimitiveMesh only, L7 sim frozen.
+
+§1 SERVED TRUTH — the composition inverted mid-card (the honest headline)
+First build shipped a ground-anchored figure at the pawn origin (z=-0.15 behind
+the sheet plane). The served D=64 capture came back PIXEL-IDENTICAL to BEFORE
+(hero crop |A-B| max delta 11, census px=0 while the CTRL crop moved 295 px).
+Instrumenting a scratch copy (temporary console print, separate export/port —
+product tree untouched; scratch later deleted) proved the web engine DID execute
+setup_pawn with the body built ("VDPRINT setup_pawn warden body=true" x3, real
+Chromium console) — yet nothing painted. Root cause, measured from mesh_core.tres
++ the CORE_EMBLEM comment in mission_world.gd: the main core is a 3x4x3 BoxMesh
+whose rim tops out at y~2, and hero_controller pins the pawn at core_main.pos —
+THE HERO STANDS INSIDE THE CORE BOX. The v1.5 sheet (top 1.5u) was ALREADY under
+the rim: the shipped "~8px speck" was crest medallion + box rim, and any 0..3u
+figure at the origin is swallowed by the opaque box. A second scratch experiment
+(BODY_OFFSET z=5.5, same export path) then RASTERIZED ON WEB — a legged blue
+figure with shadow visible on the open board — proving runtime BoxMesh/Cylinder-
+Mesh renders fine in the Compatibility/WebGL2 renderer (range_ring's runtime
+TorusMesh precedent holds). FINAL COMPOSITION (declared in the file header):
+the figure stands BODY_OFFSET = (0,0,2.6) camera-side of the box, feet on the
+ground plane, feet-to-top within the WORLD_H_HERO 3u door; the byte-pinned crest
+(medallion miniature + name at the pawn origin) now reads as the figure's
+backdrop banner; the main sheet stays HIDDEN (declared; its G7 eff_h=3.0 pin
+stays green on the hidden node, test_hero_crest.py UNTOUCHED and green). The
+offset is visual-only (a child-of-pawn position — every sim position, hero
+state and the pawn node itself untouched, zero-sim-writes law kept).
+
+§2 FILES
+- god/scripts/hero_pawn.gd (MODIFIED, only tracked change): v1.6 header block;
+  const BODY_OFFSET := Vector3(0.0, 0.0, 2.6); const BODY_PARTS — melee/ranger
+  6 BoxMesh parts each (legs, torso, shoulder bar, head; shield / bow), mage
+  CylinderMesh robe + staff + 2 boxes; every top <= 2.88u (measured, <=3.0+EPS
+  door), feet at 0.0; shared `mat = MATS.get(id, MATS["warden"]).duplicate()`
+  (hero tints REUSED — albedo pinned vs mat_hero_<id>.tres EPS 0.01); archetype
+  read heroes.json-row "archetype" through GW_TABLES (no per-id branch);
+  setup_pawn mounts Body first via null-guard (planted-red home), hides sheet +
+  $Visual via the shipped visibility idiom, crest call byte-identical.
+- tests/test_hero_body.py (NEW, 2 legs): engine -s probe (frame-4, HB-* rows,
+  stderr EMPTY): HB-BODY per deck hero — archetype == heroes.json, parts>=3,
+  exactly 1 material, albedo vs .tres, bpos == BODY_OFFSET parsed from source,
+  feet bot in [-0.01,0.25], top in [2.0, WORLD_H_HERO+0.01], part classes in
+  {BoxMesh,CylinderMesh} (L5), >=3 distinct fingers; HB-SPRITE: eff==door,
+  vis=0, sheet node pinned (G7). Byte-pinned CREST_BLOCK source + consts regex
+  + occurrence counts; banned-token walk (blank_code): mission hero_state
+  hero_defs deck bridge phase gold step( ArrayMesh get_image SurfaceTool
+  randf randi.
+- ZERO lines: git diff 986353d -- camera_zoom.gd mission.tscn hero_controller.gd
+  test_hero_crest.py godot/sim tests/fixtures data  -> 0 lines (L4/L7 grant).
+
+§3 GATES (this tree, final)
+check_hygiene: 0 hits. tests/test_hero_crest.py untouched, GREEN.
+Full suite: 347 passed rc=0 (base 345 + 2 legs; matches V16-PLAN projection).
+
+§4 SERVED (L2, the P4a evidence) — instrument: server/server.py loopback :8191,
+chromium (playwright-core 1.63.0-alpha) 1280x720, all pacing waits >= 1.5s,
+ERRS [] every run. pck FRESH per stale-pck law: rm static/index.pck -> export
+-> md5 938d43823b6ce4b6c5fdb9526424f1ef, 5,203,584 B == served bytes (curl
+size_download). Engine pck-boot probe on an earlier export proved packed code
+loads (PACK-BODY true); grep-on-pck is NOT a freshness check (compressed pack).
+STATE MARKER at capture: {"phase":"mission","phase_kind":"build","gold":100,
+"hero":"warden"}. Frames (1280x720): vd-0-hub.png, vd-1-d64.png (default D=64),
+ONE wheel-UP (mouse.wheel(0,-120) @640,360) -> vd-2-d56.png (D=56 close read,
+camera_zoom steps -8 on WHEEL_UP, |origin| 63.909->56 clamped — camera files
+byte-frozen per §2 diff). Hero crops: v16-vd-hero-d64.png, v16-vd-hero-d56.png,
+side-by-side triple v16-vd-hero-triple.png (BEFORE | D64 | D56, 5x LANCZOS).
+CENSUS (frame-diff |delta|>40, hero crop (460,210,360x300), self-diff=0
+verified): BEFORE-vs-BEFORE hero px=0; BEFORE vs D64 hero px=155, hspan=18,
+wspan=19 — a silhouette-shaped cluster where BEFORE was the bare rim (the ~8px
+speck is gone); non-vacuity CTRL crop px=295. D64-vs-D56 diff bbox (0,18,
+1280,720) = whole scene scaled — the ONE wheel-UP applied, nothing else moved.
+describe-image LITERAL reads (qwen3.8-flash-next, Lane E, on 200x150->800x600
+LANCZOS crops), quoted verbatim:
+  D64 crop: "So, yes: a humanoid figure is painted in the middle — a small
+  crowned, blue-robed pixel character with a brown head, topped by the name
+  label \"Bram Wardenfell\" and partially covered by the large white overlay
+  text."
+  D56 close read: "The painted pixels form a blocky, top-heavy blue mass with
+  a small head block on top and two foot-like squares at the bottom — i.e., a
+  simple pixel-art humanoid silhouette. However, because the arms are not
+  distinguishable from the torso and the body is largely covered by white text
+  and a circular badge, the figure is only partially readable as a humanoid;
+  the head, torso block, feet, and left shadow are the clearly visible
+  components."
+Honest reading: readable humanoid head/torso/legs/shadow, arms merge into the
+torso block at this size, coach-text overlays cross the figure (HUD layer,
+frozen this wave). Server killed after capture (fuser -k -n tcp 8191).
+
+§5 PLANTED RED (L3) — gate proves it can go RED
+Patch: _make_body returns null at top (null-guard skips mount).
+Transcript (tests/test_hero_body.py, probe stdout row + rc):
+  HB-FAIL pawn warden has no Body child
+  assert 1 == 0 ... rc=1, stderr='' -> FAILED test_hero_body_engine_probe
+Byte-revert: cmp /tmp/vd-green-hero_pawn.gd godot/scripts/hero_pawn.gd ->
+identical (BYTE-REVERT-OK), re-run -> 2 passed.
+
+§6 DoD checklist
+[x] hero body child per deck hero, primitive-composed, MATS tint reused — §2/§3 TESTED
+[x] silhouette within WORLD_H_HERO~3u door (feet ~0, top<=2.88) — engine leg TESTED
+[x] zero sim writes, crest consts+block byte-pinned, camera/mission/hero files 0-line — §2 VERIFIED
+[x] served P4 GREEN at D=64: hero-region silhouette vs BEFORE speck (census 155px
+    cluster vs 0) + literal vision read quoted — §4 VERIFIED
+[x] ONE wheel-UP D=56 close read + camera-diff-empty grant — §4 VERIFIED
+[x] fresh export never stale (md5==served), >=600ms pacing, server killed — §4 VERIFIED
+[x] planted-red RED transcript + byte-revert GREEN — §5 VERIFIED
+[x] suite >=345 rc=0 (347), hygiene 0 — §3 VERIFIED
+[x] LEDGER.md row committed beside evidence frames — this tree
+KNOWN LIMITS (honest): (a) the figure stands 2.6u camera-side of the pawn origin
+— a presentation offset forced by the core box (§1); if V-A's fortress re-dresses
+the core region the offset constant is the single knob. (b) vision calls the read
+"partially readable" (arms merge into the torso block at ~19px; coach text
+overlaps) — P4a ships the readable head/torso/legs silhouette; refinement is
+V-E/V-G territory. (c) combat-walk parallax: the visual rides 2.6u ahead of the
+sim position, same cosmetic class the billboard sheets always had — declared.
+VERIFY_EXIT=0
